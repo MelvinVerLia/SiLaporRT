@@ -1,0 +1,182 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id          String   @id @default(cuid())
+  name        String
+  phone       String?  @unique
+  email       String?  @unique
+  role        Role     @default(CITIZEN)
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  // Relations
+  reports         Report[]
+  responses       Response[]
+  reportComments  ReportComment[]
+  reportUpvotes   ReportUpvote[]
+  
+  @@map("users")
+}
+
+enum Role {
+  CITIZEN   // Warga biasa
+  RT_ADMIN  // Admin RT - yang bisa memberikan response resmi
+}
+
+// === LAPORAN SEBAGAI PUSAT DISKUSI ===
+model Report {
+  id          String        @id @default(cuid())
+  title       String
+  description String        @db.Text
+  category    ReportCategory
+  status      ReportStatus  @default(PENDING)
+  
+  // Privacy settings
+  isAnonymous Boolean       @default(false) // Apakah nama pelapor disembunyikan
+  isPublic    Boolean       @default(true)  // Apakah ditampilkan di menu laporan publik
+  
+  // Community engagement metrics
+  upvoteCount   Int         @default(0)     // Cache jumlah upvote
+  commentCount  Int         @default(0)     // Cache jumlah comment
+  
+  // Location
+  location    Location      @relation(fields: [locationId], references: [id])
+  locationId  String        
+  
+  // User (optional untuk anonymous)
+  user        User?         @relation(fields: [userId], references: [id])
+  userId      String?
+  
+  // Media
+  attachments     Attachment[]
+  
+  // Official response dari RT Admin
+  responses       Response[]
+  
+  // Community discussion dalam laporan
+  reportComments  ReportComment[]
+  reportUpvotes   ReportUpvote[]
+  
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+  
+  @@map("reports")
+}
+
+enum ReportCategory {
+  INFRASTRUCTURE  // Jalan rusak, got mampet
+  CLEANLINESS    // Sampah, kebersihan  
+  LIGHTING       // Lampu jalan mati
+  SECURITY       // Keamanan lingkungan
+  UTILITIES      // Air, listrik
+  ENVIRONMENT    // Pohon tumbang, banjir
+  ANNOUNCEMENT   // Pengumuman dari RT (sticky posts)
+  SUGGESTION     // Saran untuk perbaikan lingkungan
+  EVENT          // Info kegiatan warga (gotong royong, dll)
+  OTHER          // Lainnya
+}
+
+enum ReportStatus {
+  PENDING      // Baru dilaporkan
+  IN_PROGRESS  // Sedang ditangani
+  RESOLVED     // Sudah selesai
+  REJECTED     // Ditolak
+  CLOSED       // Ditutup (untuk diskusi/announcement)
+}
+
+// Response resmi hanya dari RT Admin
+model Response {
+  id          String       @id @default(cuid())
+  message     String       @db.Text
+  attachments Attachment[] // RT bisa attach foto progress, dll
+  
+  report      Report       @relation(fields: [reportId], references: [id], onDelete: Cascade)
+  reportId    String
+  
+  // Hanya RT_ADMIN yang bisa buat response
+  responder   User         @relation(fields: [responderId], references: [id])
+  responderId String
+  
+  createdAt   DateTime     @default(now())
+  
+  @@map("responses")
+}
+
+// Comment/diskusi warga di laporan
+model ReportComment {
+  id       String @id @default(cuid())
+  content  String @db.Text
+  
+  report   Report @relation(fields: [reportId], references: [id], onDelete: Cascade)
+  reportId String
+  user     User   @relation(fields: [userId], references: [id])
+  userId   String
+  
+  createdAt DateTime @default(now())
+  
+  @@map("report_comments")
+}
+
+// Upvote/dukungan warga terhadap laporan
+model ReportUpvote {
+  id       String @id @default(cuid())
+  
+  report   Report @relation(fields: [reportId], references: [id], onDelete: Cascade)
+  reportId String
+  user     User   @relation(fields: [userId], references: [id])
+  userId   String
+  
+  createdAt DateTime @default(now())
+  
+  // Satu user hanya bisa upvote sekali per laporan
+  @@unique([reportId, userId])
+  @@map("report_upvotes")
+}
+
+model Location {
+  id        String @id @default(cuid())
+  latitude  Float
+  longitude Float
+  address   String
+  
+  // Administrative
+  rt        String
+  rw        String
+  kelurahan String?
+  kecamatan String?
+  
+  report    Report[]
+  
+  @@map("locations")
+}
+
+model Attachment {
+  id       String @id @default(cuid())
+  filename String
+  url      String
+  fileType String // image, video, document
+  
+  // Relations (bisa attach ke Report atau Response)
+  report     Report?   @relation(fields: [reportId], references: [id], onDelete: Cascade)
+  reportId   String?
+  response   Response? @relation(fields: [responseId], references: [id], onDelete: Cascade)
+  responseId String?
+  
+  createdAt DateTime @default(now())
+  
+  @@map("attachments")
+}
