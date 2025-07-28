@@ -14,6 +14,9 @@ import RegisterPage from "./pages/auth/RegisterPage";
 import ReportsPage from "./pages/reports/ReportsPage";
 import CreateReportPage from "./pages/reports/CreateReportPage";
 import ReportDetailPage from "./pages/reports/ReportDetailPage";
+import MyReportsPage from "./pages/reports/MyReportsPage";
+import AdminDashboard from "./pages/dashboard/AdminDashboard";
+import NotFoundPage from "./pages/NotFoundPage";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -51,7 +54,27 @@ function App() {
                     // </ProtectedRoute>
                   }
                 />
+                <Route
+                  path="my-reports"
+                  element={
+                    // <ProtectedRoute>
+                    <MyReportsPage />
+                    // </ProtectedRoute>
+                  }
+                />
+
+                {/* Admin only routes */}
+                <Route
+                  path="admin"
+                  element={
+                    // <ProtectedRoute requiredRole="RT_ADMIN">
+                    <AdminDashboard />
+                    // </ProtectedRoute>
+                  }
+                />
               </Route>
+
+              <Route path="*" element={<NotFoundPage />} />
             </Routes>
           </div>
         </Router>
