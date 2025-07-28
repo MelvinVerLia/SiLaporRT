@@ -169,7 +169,7 @@ const Header: React.FC = () => {
             {/* Mobile Menu Button */}
             <button
               onClick={toggleMobileMenu}
-              className="lg :hidden p-2 text-gray-400 hover:text-gray-600 transition-colors"
+              className="lg:hidden p-2 text-gray-400 hover:text-gray-600 transition-colors"
             >
               {isMobileMenuOpen ? (
                 <X className="h-6 w-6" />
@@ -183,7 +183,7 @@ const Header: React.FC = () => {
 
       {/* Mobile Menu */}
       {isMobileMenuOpen && (
-        <div className="md:hidden border-t border-gray-200 bg-white">
+        <div className="lg:hidden border-t border-gray-200 bg-white">
           <div className="px-4 py-2 space-y-1">
             {/* Navigation Items */}
             {navigationItems.map((item) => {

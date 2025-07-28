@@ -4,9 +4,13 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 
 import Layout from "./components/layout/Layout";
+// import ProtectedRoute from "./components/common/ProtectedRoute";
+// import { AuthProvider } from "./contexts/AuthContext";
 
 // Pages
 import HomePage from "./pages/HomePage";
+import LoginPage from "./pages/auth/LoginPage";
+import RegisterPage from "./pages/auth/RegisterPage";
 import ReportsPage from "./pages/reports/ReportsPage";
 import CreateReportPage from "./pages/reports/CreateReportPage";
 import ReportDetailPage from "./pages/reports/ReportDetailPage";
@@ -28,6 +32,10 @@ function App() {
         <Router>
           <div className=" bg-gray-50">
             <Routes>
+              {/* Public routes */}
+              <Route path="/login" element={<LoginPage />} />
+              <Route path="/register" element={<RegisterPage />} />
+
               {/* Routes with layout */}
               <Route path="/" element={<Layout />}>
                 <Route index element={<HomePage />} />
