@@ -7,6 +7,9 @@ import Layout from "./components/layout/Layout";
 
 // Pages
 import HomePage from "./pages/HomePage";
+import ReportsPage from "./pages/reports/ReportsPage";
+import CreateReportPage from "./pages/reports/CreateReportPage";
+import ReportDetailPage from "./pages/reports/ReportDetailPage";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -28,6 +31,18 @@ function App() {
               {/* Routes with layout */}
               <Route path="/" element={<Layout />}>
                 <Route index element={<HomePage />} />
+                <Route path="reports" element={<ReportsPage />} />
+                <Route path="reports/:id" element={<ReportDetailPage />} />
+
+                {/* Protected routes */}
+                <Route
+                  path="create-report"
+                  element={
+                    // <ProtectedRoute>
+                    <CreateReportPage />
+                    // </ProtectedRoute>
+                  }
+                />
               </Route>
             </Routes>
           </div>
