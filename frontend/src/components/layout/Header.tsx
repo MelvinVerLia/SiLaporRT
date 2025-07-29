@@ -11,6 +11,7 @@ import {
   LogOut,
   Shield,
   Bell,
+  MapPin,
 } from "lucide-react";
 import Button from "../ui/Button";
 import Badge from "../ui/Badge";
@@ -77,7 +78,7 @@ const Header: React.FC = () => {
               className="flex items-center space-x-2 text-xl font-bold text-blue-600 hover:text-blue-700 transition-colors"
             >
               <div className="flex h-8 w-8 items-center justify-center rounded-md bg-blue-600 text-white">
-                <FileText className="h-5 w-5" />
+                <MapPin className="h-5 w-5" />
               </div>
               <span className="hidden sm:block">SiLaporRT</span>
             </Link>
