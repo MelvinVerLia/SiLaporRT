@@ -5,9 +5,9 @@ import Footer from "./Footer";
 
 const Layout: React.FC = () => {
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gradient-to-b from-blue-50 to-gray-50">
       <Header />
-      <main className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-8">
+      <main className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8 py-12">
         <Outlet />
       </main>
       <Footer />

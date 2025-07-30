@@ -378,24 +378,11 @@ const CreateReportPage: React.FC = () => {
   };
 
   return (
-    <div className="max-w-4xl mx-auto space-y-6">
+    <div className="max-w-6xl mx-auto space-y-6">
       {/* Header */}
-      <div className="flex items-center">
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={() => navigate(-1)}
-          className="mr-4"
-        >
-          <ArrowLeft className="mr-2 h-4 w-4" />
-          Kembali
-        </Button>
-        <div>
-          <h1 className="text-3xl font-bold text-gray-900">Buat Laporan</h1>
-          <p className="text-gray-600">
-            Laporkan masalah di lingkungan RT Anda
-          </p>
-        </div>
+      <div>
+        <h1 className="text-3xl font-bold text-gray-900">Buat Laporan</h1>
+        <p className="text-gray-600">Laporkan masalah di lingkungan RT Anda</p>
       </div>
 
       {/* Progress Steps */}

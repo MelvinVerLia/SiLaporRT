@@ -3,7 +3,7 @@ import { MapPin, Mail, Phone, Clock } from "lucide-react";
 
 const Footer: React.FC = () => {
   return (
-    <footer className="bg-gray-900 text-white py-12 mt-16">
+    <footer className="bg-gray-900 text-white py-6 mt-16">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid md:grid-cols-4 gap-8">
           <div className="md:col-span-2">
@@ -49,13 +49,10 @@ const Footer: React.FC = () => {
               <p>Senin - Jumat: 08:00 - 17:00</p>
               <p>Sabtu: 08:00 - 12:00</p>
               <p>Minggu: Tutup</p>
-              <p className="text-sm mt-3">
-                <span className="text-green-400">●</span> Sistem Online 24/7
-              </p>
             </div>
           </div>
         </div>
-        <div className="border-t border-gray-800 mt-8 pt-8 text-center text-gray-400">
+        <div className="border-t border-gray-800 mt-6 pt-6 text-center text-gray-400">
           <p>
             &copy; 2025 SiLaporRT. Platform Pelaporan Digital untuk Masyarakat
             Indonesia.

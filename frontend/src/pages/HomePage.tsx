@@ -153,85 +153,129 @@ const HomePage: React.FC = () => {
   };
 
   return (
-    <div className="space-y-8">
-      {/* Hero Section */}
-      <section className="min-h-[90vh] bg-gradient-to-b from-blue-100 to-gray-50 -mx-4 sm:-mx-6 lg:-mx-8 -mt-8 px-4 sm:px-6 lg:px-8 py-12 lg:py-20">
-        <div className="text-center">
-          <h1 className="text-4xl lg:text-6xl font-bold text-gray-900 mb-6">
-            Laporkan Masalah
-            <span className="block text-blue-600">Lingkungan Anda</span>
-          </h1>
-          <p className="text-xl text-gray-600 mb-8 max-w-3xl mx-auto">
-            Platform digital untuk warga RT melaporkan masalah infrastruktur,
-            kebersihan, dan keamanan lingkungan secara cepat, transparan, dan
-            terorganisir.
-          </p>
+    <div className="space-y-16">
+      {/* Hero Section */}  
+      <section>
+        <div className="max-w-7xl mx-auto">
+          <div className="grid lg:grid-cols-2 gap-12 lg:gap-16 items-center">
+            {/* Left Content */}
+            <div className="text-center lg:text-left">
+              <h1 className="text-4xl lg:text-5xl xl:text-6xl font-bold text-gray-900 mb-6 leading-tight">
+                Laporkan Masalah
+                <span className="block text-blue-600">Lingkungan Anda</span>
+              </h1>
+              <p className="text-lg lg:text-xl text-gray-600 mb-8 leading-relaxed">
+                Platform digital untuk warga RT melaporkan masalah
+                infrastruktur, kebersihan, dan keamanan lingkungan secara cepat,
+                transparan, dan terorganisir.
+              </p>
 
-          {isAuthenticated ? (
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Link to="/create-report">
-                <Button size="lg" className="w-full sm:w-auto">
-                  <FileText className="mr-2 h-5 w-5" />
-                  Buat Laporan Baru
-                </Button>
-              </Link>
-              <Link to="/reports">
-                <Button
-                  variant="outline"
-                  size="lg"
-                  className="w-full sm:w-auto"
-                >
-                  Lihat Semua Laporan
-                </Button>
-              </Link>
+              {/* Integrated Statistics */}
+              <div className="flex flex-wrap justify-center lg:justify-start gap-6 lg:gap-8 mb-8">
+                {stats.map((stat, index) => (
+                  <div key={index} className="text-center lg:text-left">
+                    <div
+                      className={`text-2xl lg:text-3xl font-bold ${stat.color} mb-1`}
+                    >
+                      {stat.value}
+                    </div>
+                    <div className="text-xs lg:text-sm text-gray-600 font-medium">
+                      {stat.title}
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              {/* Action Buttons */}
+              {isAuthenticated ? (
+                <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
+                  <Link to="/create-report">
+                    <Button size="lg" className="w-full sm:w-auto">
+                      <FileText className="mr-2 h-5 w-5" />
+                      Buat Laporan Baru
+                    </Button>
+                  </Link>
+                  <Link to="/reports">
+                    <Button
+                      variant="outline"
+                      size="lg"
+                      className="w-full sm:w-auto"
+                    >
+                      Lihat Semua Laporan
+                    </Button>
+                  </Link>
+                </div>
+              ) : (
+                <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
+                  <Link to="/reports">
+                    <Button size="lg" className="w-full sm:w-auto">
+                      Lihat Laporan Publik
+                    </Button>
+                  </Link>
+                  <Link to="/login">
+                    <Button
+                      variant="outline"
+                      size="lg"
+                      className="w-full sm:w-auto"
+                    >
+                      Masuk untuk Melaporkan
+                    </Button>
+                  </Link>
+                </div>
+              )}
             </div>
-          ) : (
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Link to="/reports">
-                <Button size="lg" className="w-full sm:w-auto">
-                  Lihat Laporan Publik
-                </Button>
-              </Link>
-              <Link to="/login">
-                <Button
-                  variant="outline"
-                  size="lg"
-                  className="w-full sm:w-auto"
-                >
-                  Masuk untuk Melaporkan
-                </Button>
-              </Link>
+
+            {/* Right Image */}
+            <div className="flex justify-center lg:justify-end">
+              <div className="relative">
+                <img
+                  src="/assets/hero.png"
+                  alt="Platform Pelaporan RT"
+                  className="w-full max-w-lg h-auto object-contain drop-shadow-2xl"
+                />
+              </div>
             </div>
-          )}
+          </div>
         </div>
       </section>
 
-      {/* Statistics Cards */}
-      <section className="color-black py-8">
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
-          {stats.map((stat, index) => {
-            const Icon = stat.icon;
-            return (
-              <Card key={index} className="hover:shadow-md transition-shadow">
-                <CardContent className="p-6">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-sm font-medium text-gray-600 mb-1">
-                        {stat.title}
-                      </p>
-                      <p className="text-3xl font-bold text-gray-900">
-                        {stat.value}
-                      </p>
-                    </div>
-                    <div className={`p-3 rounded-full ${stat.bgColor}`}>
-                      <Icon className={`h-6 w-6 ${stat.color}`} />
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            );
-          })}
-        </div>
+      {/* Features Section */}
+      <section>
+        <Card>
+          <CardHeader>
+            <div className="text-center">
+              <div className="text-sm font-semibold text-blue-600 uppercase tracking-wide mb-2">
+                SISTEM PELAPORAN RT
+              </div>
+              <CardTitle className="text-2xl lg:text-3xl font-bold leading-tight mb-3">
+                Platform yang tumbuh bersama komunitas Anda
+              </CardTitle>
+              <p className="text-gray-600 leading-relaxed">
+                Dirancang sebagai sistem pelaporan yang dapat beradaptasi dengan
+                kebutuhan RT dan mempermudah pengelolaan laporan warga secara
+                transparan dan efisien.
+              </p>
+            </div>
+          </CardHeader>
+          <CardContent>
+            <div className="grid md:grid-cols-3 gap-6">
+              {features.slice(0, 6).map((feature, index) => (
+                <div
+                  key={index}
+                  className="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow cursor-pointer bg-white"
+                >
+                  <div className="mb-4">{feature.icon}</div>
+                  <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                    {feature.title}
+                  </h3>
+                  <p className="text-sm text-gray-600 leading-relaxed">
+                    {feature.description}
+                  </p>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
       </section>
 
       {/* Recent Reports */}
@@ -300,32 +344,6 @@ const HomePage: React.FC = () => {
             </div>
           </CardContent>
         </Card>
-      </section>
-
-      {/* Features Section */}
-      <section className="py-8">
-        <div className="text-center mb-12">
-          <h2 className="text-3xl font-bold text-gray-900 mb-4">
-            Fitur Unggulan
-          </h2>
-          <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-            SiLaporRT menyediakan berbagai fitur untuk memudahkan pelaporan dan
-            meningkatkan transparansi
-          </p>
-        </div>
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {features.map((feature, index) => (
-            <Card key={index} className="hover:shadow-lg transition-shadow">
-              <CardContent className="p-8">
-                <div className="mb-6">{feature.icon}</div>
-                <h3 className="text-xl font-semibold text-gray-900 mb-4">
-                  {feature.title}
-                </h3>
-                <p className="text-gray-600">{feature.description}</p>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
       </section>
     </div>
   );
