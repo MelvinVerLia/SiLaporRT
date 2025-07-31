@@ -16,6 +16,7 @@ import CreateReportPage from "./pages/reports/CreateReportPage";
 import ReportDetailPage from "./pages/reports/ReportDetailPage";
 import MyReportsPage from "./pages/reports/MyReportsPage";
 import AdminDashboard from "./pages/dashboard/AdminDashboard";
+import ProfilePage from "./pages/ProfilePage";
 import NotFoundPage from "./pages/NotFoundPage";
 
 const queryClient = new QueryClient({
@@ -59,6 +60,14 @@ function App() {
                   element={
                     // <ProtectedRoute>
                     <MyReportsPage />
+                    // </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="profile"
+                  element={
+                    // <ProtectedRoute>
+                    <ProfilePage />
                     // </ProtectedRoute>
                   }
                 />

@@ -69,7 +69,7 @@ const Header: React.FC = () => {
   const getNavigationItems = () => {
     const publicItems = [
       { path: "/", label: "Beranda", icon: Home },
-      { path: "/reports", label: "Laporan", icon: FileText },
+      { path: "/reports", label: "Forum", icon: FileText },
     ];
 
     if (!isAuthenticated) {
@@ -79,7 +79,6 @@ const Header: React.FC = () => {
     const authenticatedItems = [
       ...publicItems,
       { path: "/create-report", label: "Buat Laporan", icon: PlusCircle },
-      { path: "/my-reports", label: "Laporan Saya", icon: User },
     ];
 
     // Add admin-only items
@@ -99,8 +98,8 @@ const Header: React.FC = () => {
   // User dropdown menu items
   const userDropdownItems = [
     { path: "/profile", label: "Profil Saya", icon: UserCircle },
-    ...(user?.role === Role.RT_ADMIN
-      ? [{ path: "/admin", label: "Admin Panel", icon: Shield }]
+    ...(user?.role === Role.CITIZEN
+      ? [{ path: "/my-reports", label: "Laporan Saya", icon: User }]
       : []),
   ];
 

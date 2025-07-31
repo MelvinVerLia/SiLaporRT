@@ -10,6 +10,7 @@ import {
   ThumbsUp,
   Shield,
   BarChart3,
+  HelpCircle,
 } from "lucide-react";
 import {
   Card,
@@ -19,6 +20,8 @@ import {
 } from "../components/ui/Card";
 import Button from "../components/ui/Button";
 import Badge from "../components/ui/Badge";
+import Accordion from "../components/ui/Accordion";
+import AccordionItem from "../components/ui/AccordionItem";
 import { useAuth } from "../hooks/useAuth";
 
 const HomePage: React.FC = () => {
@@ -130,6 +133,34 @@ const HomePage: React.FC = () => {
     },
   ];
 
+  const faqItems = [
+    {
+      question: "Apa itu SiLaporRT?",
+      answer:
+        "SiLaporRT adalah aplikasi pelaporan masalah lingkungan di tingkat RT berbasis lokasi, yang memungkinkan warga menyampaikan keluhan seperti jalan rusak, sampah menumpuk, atau lampu mati kepada pengurus RT secara cepat, transparan, dan terdokumentasi.",
+    },
+    {
+      question: "Bagaimana cara membuat laporan di SiLaporRT?",
+      answer:
+        "Untuk membuat laporan, Anda perlu login terlebih dahulu. Setelah itu, Anda akan mengikuti 4 langkah mudah: (1) Detail Laporan – isi judul dan deskripsi masalah, (2) Lokasi – tentukan titik lokasi kejadian, (3) Lampiran – unggah foto pendukung (opsional), (4) Review – periksa kembali dan kirim laporan.",
+    },
+    {
+      question: "Apa perbedaan laporan publik dan privat?",
+      answer:
+        "Laporan publik akan ditampilkan di forum transparansi dan bisa dilihat oleh warga lain, sedangkan laporan privat hanya bisa diakses oleh pengurus RT. Anda dapat memilih jenis laporan saat mengisi formulir.",
+    },
+    {
+      question: "Apa itu opsi laporan anonim?",
+      answer:
+        "Opsi anonim menyembunyikan identitas Anda dari warga lain, namun laporan tetap tampil di forum publik. Pengurus RT tetap dapat melihat identitas pelapor untuk proses tindak lanjut.",
+    },
+    {
+      question: "Bagaimana tindak lanjut terhadap laporan saya?",
+      answer:
+        "Setelah laporan dikirim, pengurus RT akan mendapatkan notifikasi dan dapat memberikan respons resmi. Status laporan akan terus diperbarui mulai dari diterima, diproses, hingga selesai.",
+    },
+  ];
+
   const getStatusBadge = (status: string) => {
     const variants = {
       PENDING: { variant: "warning" as const, label: "Menunggu" },
@@ -154,7 +185,7 @@ const HomePage: React.FC = () => {
 
   return (
     <div className="space-y-16">
-      {/* Hero Section */}  
+      {/* Hero Section */}
       <section>
         <div className="max-w-7xl mx-auto">
           <div className="grid lg:grid-cols-2 gap-12 lg:gap-16 items-center">
@@ -248,12 +279,12 @@ const HomePage: React.FC = () => {
                 SISTEM PELAPORAN RT
               </div>
               <CardTitle className="text-2xl lg:text-3xl font-bold leading-tight mb-3">
-                Platform yang tumbuh bersama komunitas Anda
+                Fitur Unggulan SiLaporRT
               </CardTitle>
               <p className="text-gray-600 leading-relaxed">
-                Dirancang sebagai sistem pelaporan yang dapat beradaptasi dengan
-                kebutuhan RT dan mempermudah pengelolaan laporan warga secara
-                transparan dan efisien.
+                Fitur-fitur inovatif untuk memudahkan warga melaporkan masalah,
+                berkolaborasi, dan meningkatkan kualitas lingkungan secara
+                bersama-sama.
               </p>
             </div>
           </CardHeader>
@@ -342,6 +373,36 @@ const HomePage: React.FC = () => {
                 );
               })}
             </div>
+          </CardContent>
+        </Card>
+      </section>
+
+      {/* FAQ Section */}
+      <section>
+        <Card>
+          <CardHeader>
+            <div className="text-center">
+              <div className="text-sm font-semibold text-blue-600 uppercase tracking-wide mb-2">
+                PERTANYAAN UMUM
+              </div>
+              <CardTitle className="text-2xl lg:text-3xl font-bold leading-tight mb-3">
+                Pertanyaan yang Sering Diajukan
+              </CardTitle>
+              <p className="text-gray-600 leading-relaxed">
+                Temukan jawaban atas pertanyaan paling umum tentang SiLaporRT.
+              </p>
+            </div>
+          </CardHeader>
+          <CardContent>
+            <Accordion className="space-y-4">
+              {faqItems.map((item, index) => (
+                <AccordionItem
+                  key={index}
+                  question={item.question}
+                  answer={item.answer}
+                />
+              ))}
+            </Accordion>
           </CardContent>
         </Card>
       </section>
