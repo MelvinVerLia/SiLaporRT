@@ -21,21 +21,23 @@ export const useAuth = () => {
   const [error, setError] = useState<AuthError | null>(null);
   const navigate = useNavigate();
 
+  const initializeAuth = async () => {
+    setIsLoading(true);
+
+    // Simulate network delay
+    // await new Promise((resolve) => setTimeout(resolve, 800));
+
+    const authData = getAuthData();
+    if (authData) {
+      setUser(authData.user);
+    }
+
+    setIsLoading(false);
+  };
+
   // Initialize auth state from localStorage
   useEffect(() => {
-    const initializeAuth = async () => {
-      setIsLoading(true);
-
-      // Simulate network delay
-      await new Promise((resolve) => setTimeout(resolve, 800));
-
-      const authData = getAuthData();
-      if (authData) {
-        setUser(authData.user);
-      }
-
-      setIsLoading(false);
-    }, 1000);
+    initializeAuth();
   }, []);
 
   // Enhanced login with validation
@@ -157,7 +159,7 @@ export const useAuth = () => {
     clearAuthData();
     setUser(null);
     setError(null);
-    navigate("/login"); 
+    navigate("/login");
   }, [navigate]);
 
   // Update user profile

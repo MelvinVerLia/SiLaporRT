@@ -72,7 +72,8 @@ export class AuthController {
 
       // Redirect to frontend with token (adjust URL as needed)
       res.redirect(
-        `${process.env.FRONTEND_URL}/auth/success?token=${result.token}`
+        // `${process.env.FRONTEND_URL}/auth/success?token=${result.token}`
+        `${process.env.FRONTEND_URL}`
       );
     } catch (error) {
       res.status(500).json({
@@ -96,6 +97,35 @@ export class AuthController {
         success: false,
         message:
           error instanceof Error ? error.message : "Failed to get profile",
+      });
+    }
+  }
+
+  static async forgotPassword(req: Request, res: Response) {
+    try {
+      const { email } = req.body;
+
+      if (!email) {
+        return res.status(400).json({
+          success: false,
+          message: "Email is required",
+        });
+      }
+
+      const result = await AuthService.forgotPassword(email);
+
+      res.status(200).json({
+        success: true,
+        message: "Password reset email sent successfully",
+        data: result,
+      });
+    } catch (error) {
+      res.status(400).json({
+        success: false,
+        message:
+          error instanceof Error
+            ? error.message
+            : "Failed to send password reset email",
       });
     }
   }

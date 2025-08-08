@@ -15,8 +15,26 @@ export class AuthRepository {
     return await prisma.user.create({ data });
   }
 
-  static async findByGoogleId(googleId: string) {
+  static async getUserByGoogleId(googleId: string) {
     return prisma.user.findUnique({ where: { googleId } });
   }
 
+  static async updateUserGoogleID(userId: string, googleId: string) {
+    return prisma.user.update({ where: { id: userId }, data: { googleId } });
+  }
+
+  static async changeUserPassword(userId: string, password: string) {
+    return prisma.user.update({ where: { id: userId }, data: { password } });
+  }
+
+  static async updatePasswordResetToken(
+    userId: string,
+    token: string,
+    expiry: Date
+  ) {
+    return prisma.user.update({
+      where: { id: userId },
+      data: { resetToken: token, resetTokenExp: expiry },
+    });
+  }
 }

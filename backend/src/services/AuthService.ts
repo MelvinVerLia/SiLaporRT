@@ -1,6 +1,8 @@
 import { AuthRepository } from "../repositories/AuthRepository";
-import bcrypt from "bcrypt";
+import bcrypt, { hash } from "bcrypt";
+import crypto from "crypto";
 import jwt from "jsonwebtoken";
+import { sendPasswordResetEmail } from "../email/EmailForm";
 
 export interface RegisterData {
   email: string;
@@ -28,7 +30,7 @@ export class AuthService {
     const user = await AuthRepository.createUser({
       email,
       password: hashedPassword,
-      name: name || email.split("@")[0], 
+      name: name || email.split("@")[0],
     });
 
     const token = this.generateToken(user.id);
@@ -76,29 +78,26 @@ export class AuthService {
     }
 
     // Try to find user by Google ID first
-    let user = await AuthRepository.findByGoogleId(googleId);
+    let user = await AuthRepository.getUserByGoogleId(googleId);
 
     if (!user) {
-      // If not found by Google ID, try to find by email
       user = await AuthRepository.getUserByEmail(email);
 
-      if (user) {
-        // User exists with email but no Google ID - update with Google ID
-        // You'd need an update method in repository for this
-        throw new Error(
-          "Email already registered. Please login with password or link your Google account."
-        );
-      } else {
-        // Create new user
-        user = await AuthRepository.createUser({
+      if (!user) {
+        await AuthRepository.createUser({
           email,
           name,
           googleId,
         });
+      } else {
+        await AuthRepository.updateUserGoogleID(user.id, googleId);
       }
     }
 
-    // Generate JWT token
+    if (!user) {
+      throw new Error("User not found after Google authentication");
+    }
+
     const token = this.generateToken(user.id);
 
     return {
@@ -120,16 +119,37 @@ export class AuthService {
   }
 
   private static generateToken(userId: string): string {
-  const jwtSecret = process.env.JWT_SECRET;
-  if (!jwtSecret) {
-    throw new Error("JWT_SECRET is not defined in environment variables");
+    const jwtSecret = process.env.JWT_SECRET;
+    if (!jwtSecret) {
+      throw new Error("JWT_SECRET is not defined in environment variables");
+    }
+
+    const payload = { userId };
+    const options: jwt.SignOptions = {
+      // expiresIn: process.env.JWT_EXPIRES_IN || "7d"
+    };
+
+    return jwt.sign(payload, jwtSecret, options);
   }
-  
-  const payload = { userId };
-  const options: jwt.SignOptions = { 
-    // expiresIn: process.env.JWT_EXPIRES_IN || "7d" 
-  };
-  
-  return jwt.sign(payload, jwtSecret, options);
-}
+
+  static async forgotPassword(email: string) {
+    const user = await AuthRepository.getUserByEmail(email);
+    if (!user) {
+      throw new Error("User not found");
+    }
+
+    const rawToken = crypto.randomBytes(20).toString("hex");
+    const hashedToken = await hash(rawToken, 10);
+    const expiry = new Date(Date.now() + 5 * 60 * 1000);
+
+    const response = await AuthRepository.updatePasswordResetToken(
+      user.id,
+      hashedToken,
+      expiry
+    );
+    const resetPasswordUrl = `${process.env.FRONTEND_URL}/reset-password?token=${hashedToken}&email=${email}`;
+
+    sendPasswordResetEmail(email, resetPasswordUrl, expiry);
+
+  }
 }

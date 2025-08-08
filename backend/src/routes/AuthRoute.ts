@@ -20,6 +20,9 @@ router.get(
   passport.authenticate("google", { session: false }),
   AuthController.googleCallback
 );
+
+router.post("/forgot/password", AuthController.forgotPassword);
+
 router.get("/profile", authenticateJWT, AuthController.getProfile);
 
 export default router;

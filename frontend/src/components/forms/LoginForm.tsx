@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "../ui/Card";
 import Button from "../ui/Button";
 import Input from "../ui/Input";
 import { useAuth } from "../../hooks/useAuth";
+import { AuthFinder } from "../../api/AuthFinder";
 
 const LoginForm: React.FC = () => {
   const [email, setEmail] = useState("");
@@ -21,7 +22,10 @@ const LoginForm: React.FC = () => {
     e.preventDefault();
     clearError();
 
-    const success = await login({ email, password });
+    const success = await AuthFinder.post("/login", {
+      email,
+      password,
+    });
     if (success) {
       navigate(from, { replace: true });
     }
@@ -41,7 +45,7 @@ const LoginForm: React.FC = () => {
   };
 
   const handleGoogleLogin = () => {
-    // Implementasi Google OAuth akan ditambahkan nanti
+    window.location.href = "http://localhost:5000/api/auth/google";
     console.log("Google login clicked");
   };
 
@@ -186,7 +190,7 @@ const LoginForm: React.FC = () => {
               <Button
                 type="button"
                 variant="outline"
-                className="w-full border-gray-300 hover:bg-gray-50 transition-colors duration-200"
+                className="w-full border-gray-300 hover:bg-gray-50 transition-colors duration-200 hover:cursor-pointer"
                 onClick={handleGoogleLogin}
                 disabled={isLoading}
               >

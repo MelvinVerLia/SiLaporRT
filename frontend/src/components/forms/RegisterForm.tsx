@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "../ui/Card";
 import Button from "../ui/Button";
 import Input from "../ui/Input";
 import { useAuth } from "../../hooks/useAuth";
+import { AuthFinder } from "../../api/AuthFinder";
 
 const RegisterForm: React.FC = () => {
   const [formData, setFormData] = useState({
@@ -34,15 +35,15 @@ const RegisterForm: React.FC = () => {
       return; // could show error message if needed
     }
 
-    const success = await register(formData);
+    const success = await AuthFinder.post("/register", formData);
     if (success) {
       navigate("/", { replace: true });
     }
   };
 
   const handleGoogleRegister = () => {
-    // Implementasi Google OAuth akan ditambahkan nanti
-    console.log("Google register clicked");
+    window.location.href = "http://localhost:5000/api/auth/google";
+    console.log("Google login clicked");
   };
 
   const passwordsMatch =
