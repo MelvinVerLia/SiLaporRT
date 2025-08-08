@@ -35,7 +35,9 @@ export const useAuth = () => {
       }
 
       setIsLoading(false);
-    }, 1000);
+    };
+
+    initializeAuth();
   }, []);
 
   // Enhanced login with validation
@@ -157,7 +159,7 @@ export const useAuth = () => {
     clearAuthData();
     setUser(null);
     setError(null);
-    navigate("/login"); 
+    navigate("/login");
   }, [navigate]);
 
   // Update user profile
