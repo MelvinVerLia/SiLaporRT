@@ -15,7 +15,6 @@
     "@tanstack/react-query": "^5.83.0",
     "@tanstack/react-query-devtools": "^5.83.0",
     "@types/leaflet": "^1.9.20",
-    "@types/react-router-dom": "^5.3.3",
     "axios": "^1.11.0",
     "cloudinary-core": "^2.14.0",
     "clsx": "^2.1.1",

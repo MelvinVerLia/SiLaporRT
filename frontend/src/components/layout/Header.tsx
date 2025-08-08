@@ -113,10 +113,10 @@ const Header: React.FC = () => {
               to="/"
               className="flex items-center space-x-2 text-xl font-bold text-blue-600 hover:text-blue-700 transition-colors"
             >
-              <div className="flex h-8 w-8 items-center justify-center rounded-md bg-blue-600 text-white">
-                <MapPin className="h-5 w-5" />
-              </div>
-              <span className="hidden sm:block">SiLaporRT</span>
+              <img src="/assets/logo.png" alt="Logo" className="h-8 w-8" />
+              <span className="hidden sm:block">
+                SiLapor<span className="text-blue-950">RT</span>
+              </span>
             </Link>
           </div>
 

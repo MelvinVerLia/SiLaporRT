@@ -23,6 +23,10 @@ const Footer: React.FC = () => {
               Memudahkan warga dalam menyampaikan keluhan dan meningkatkan
               transparansi penanganan.
             </p>
+
+            <a className="text-gray-400 mb-4" href="http://www.freepik.com">
+              Illustrations by vectorjuice / Freepik
+            </a>
           </div>
           <div>
             <h4 className="text-lg font-semibold mb-4 flex items-center">
