@@ -18,3 +18,21 @@ export interface AuthUser {
   user: User;
   token: string;
 }
+
+export interface LoginCredentials {
+  email: string;
+  password: string;
+}
+
+export interface RegisterData {
+  name: string;
+  email: string;
+  phone: string;
+  password: string;
+  confirmPassword: string;
+}
+
+export interface AuthError {
+  message: string;
+  field?: string;
+}

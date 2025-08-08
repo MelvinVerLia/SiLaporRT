@@ -11,11 +11,14 @@ import Layout from "./components/layout/Layout";
 import HomePage from "./pages/HomePage";
 import LoginPage from "./pages/auth/LoginPage";
 import RegisterPage from "./pages/auth/RegisterPage";
+import LoginForm from "./components/forms/LoginForm";
+import RegisterForm from "./components/forms/RegisterForm";
 import ReportsPage from "./pages/reports/ReportsPage";
 import CreateReportPage from "./pages/reports/CreateReportPage";
 import ReportDetailPage from "./pages/reports/ReportDetailPage";
 import MyReportsPage from "./pages/reports/MyReportsPage";
 import AdminDashboard from "./pages/dashboard/AdminDashboard";
+import ProfilePage from "./pages/ProfilePage";
 import NotFoundPage from "./pages/NotFoundPage";
 
 const queryClient = new QueryClient({
@@ -33,11 +36,11 @@ function App() {
       <QueryClientProvider client={queryClient}>
         {/* <AuthProvider> */}
         <Router>
-          <div className=" bg-gray-50">
+          <div className="bg-gray-50">
             <Routes>
               {/* Public routes */}
-              <Route path="/login" element={<LoginPage />} />
-              <Route path="/register" element={<RegisterPage />} />
+              <Route path="/login" element={<LoginForm />} />
+              <Route path="/register" element={<RegisterForm />} />
 
               {/* Routes with layout */}
               <Route path="/" element={<Layout />}>
@@ -59,6 +62,14 @@ function App() {
                   element={
                     // <ProtectedRoute>
                     <MyReportsPage />
+                    // </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="profile"
+                  element={
+                    // <ProtectedRoute>
+                    <ProfilePage />
                     // </ProtectedRoute>
                   }
                 />

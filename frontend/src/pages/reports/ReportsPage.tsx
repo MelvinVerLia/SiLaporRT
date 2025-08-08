@@ -160,22 +160,11 @@ const ReportsPage: React.FC = () => {
   return (
     <div className="space-y-6">
       {/* Page Header */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-        <div>
-          <h1 className="text-3xl font-bold text-gray-900">Laporan Warga</h1>
-          <p className="text-gray-600 mt-1">
-            Lihat dan pantau laporan dari warga RT
-          </p>
-        </div>
-
-        {isAuthenticated && (
-          <Link to="/create-report">
-            <Button className="w-full sm:w-auto">
-              <Plus className="mr-2 h-4 w-4" />
-              Buat Laporan
-            </Button>
-          </Link>
-        )}
+      <div>
+        <h1 className="text-3xl font-bold text-gray-900">Laporan Warga</h1>
+        <p className="text-gray-600 mt-1">
+          Lihat dan pantau laporan dari warga RT
+        </p>
       </div>
 
       {/* Filters */}
