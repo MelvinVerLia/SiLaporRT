@@ -18,7 +18,7 @@ const RegisterForm: React.FC = () => {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [agreedToTerms, setAgreedToTerms] = useState(false);
   const navigate = useNavigate();
-  const { register, isLoading, error, clearError } = useAuth();
+  const { register, sendOTP, isLoading, error, clearError } = useAuth();
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -30,13 +30,17 @@ const RegisterForm: React.FC = () => {
     e.preventDefault();
     clearError();
 
-    if (!agreedToTerms) {
-      return; // could show error message if needed
-    }
+    if (!agreedToTerms) return;
 
-    const success = await register(formData);
-    if (success) {
-      navigate("/", { replace: true });
+    const sent = await sendOTP(formData.email);
+    if (sent) {
+      navigate("/verify-otp", {
+        state: {
+          email: formData.email,
+          name: formData.name,
+          userData: formData, // simpan sementara untuk proses register nanti
+        },
+      });
     }
   };
 
