@@ -35,9 +35,7 @@ export const useAuth = () => {
       }
 
       setIsLoading(false);
-    };
-
-    initializeAuth();
+    }, 1000);
   }, []);
 
   // Enhanced login with validation

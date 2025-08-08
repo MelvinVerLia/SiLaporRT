@@ -1,25 +1,36 @@
 import { Request, Response } from "express";
 import ReportService from "../services/ReportService";
+import { Role } from "@prisma/client";
 
-interface AuthenticatedRequest extends Request {
-  user?: {
-    id: string;
-    role: string;
-    name: string;
-  };
-}
+// interface AuthenticatedRequest extends Request {
+//   user?: {
+//     id: string;
+//     role: string;
+//     name: string;
+//   };
+// }
 
 class ReportController {
-  static async createReport(req: AuthenticatedRequest, res: Response) {
+  static async createReport(req: Request, res: Response) {
     try {
       const data = req.body;
+      if (!data.title || !data.description || !data.category) {
+        throw new Error("Title, description, and category are required");
+      }
+
+      if (!data.location.latitude || !data.location.longitude) {
+        throw new Error("Location coordinates are required");
+      }
       const result = await ReportService.createReport(data);
-      res.status(201).json(result);
-    } catch (error) {
+      res.status(201).json({
+        success: true,
+        message: "Report created successfully",
+        data: result,
+      });
+    } catch (error: any) {
       res.status(400).json({
         success: false,
-        message:
-          error instanceof Error ? error.message : "Failed to create report",
+        message: error.message,
       });
     }
   }
@@ -27,143 +38,135 @@ class ReportController {
   static async getAllReports(req: Request, res: Response) {
     try {
       const reports = await ReportService.getAllReports();
-      res.json(reports);
-    } catch (error) {
+      res.json({
+        success: true,
+        message: `Retrieved ${reports.length} reports`,
+        data: reports,
+      });
+    } catch (error: any) {
       res.status(500).json({
         success: false,
-        message:
-          error instanceof Error ? error.message : "Failed to fetch reports",
+        message: error.message || "Failed to fetch reports",
       });
     }
   }
 
   static async getReportById(req: Request, res: Response) {
     try {
-      const { id } = req.params;
-      const report = await ReportService.getReportById(id);
-      res.json(report);
-    } catch (error) {
-      const statusCode =
-        error instanceof Error && error.message.includes("not found")
-          ? 404
-          : 500;
-      res.status(statusCode).json({
+      const { reportId } = req.params;
+
+      if (!reportId) {
+        throw new Error("Report ID is required");
+      }
+      const report = await ReportService.getReportById(reportId);
+      res.json({
+        success: true,
+        message: "Report retrieved successfully",
+        data: report,
+      });
+    } catch (error: any) {
+      res.status(500).json({
         success: false,
-        message:
-          error instanceof Error ? error.message : "Failed to fetch report",
+        message: error.message || "Failed to fetch report",
       });
     }
   }
 
-  static async addComment(req: AuthenticatedRequest, res: Response) {
+  static async addComment(req: Request, res: Response) {
     try {
-      const { id } = req.params;
+      const { reportId } = req.params;
       const { userId, content } = req.body;
 
-      // Use authenticated user ID if available, otherwise use provided userId
-      const actualUserId = req.user?.id || userId;
-
-      if (!actualUserId) {
-        return res.status(400).json({
-          success: false,
-          message: "User ID is required",
-        });
+      console.log(reportId, userId, content);
+      if (!reportId || !userId || !content?.trim()) {
+        throw new Error("Report ID, user ID, and content are required");
       }
 
-      const comment = await ReportService.addComment(id, actualUserId, content);
-      res.json(comment);
-    } catch (error) {
+      const comment = await ReportService.addComment(reportId, userId, content);
+      res.json({
+        success: true,
+        message: "Comment added successfully",
+        data: comment,
+      });
+    } catch (error: any) {
       res.status(400).json({
         success: false,
-        message:
-          error instanceof Error ? error.message : "Failed to add comment",
+        message: error.message || "Failed to add comment",
       });
     }
   }
 
-  static async toggleUpvote(req: AuthenticatedRequest, res: Response) {
+  static async toggleUpvote(req: Request, res: Response) {
     try {
-      const { id } = req.params;
+      const { reportId } = req.params;
       const { userId } = req.body;
 
-      // Use authenticated user ID if available, otherwise use provided userId
-      const actualUserId = req.user?.id || userId;
-
-      if (!actualUserId) {
-        return res.status(400).json({
-          success: false,
-          message: "User ID is required",
-        });
+      if (!reportId || !userId) {
+        throw new Error("Report ID and user ID are required");
       }
 
-      const upvote = await ReportService.toggleUpvote(id, actualUserId);
-      res.json(upvote);
-    } catch (error) {
+      const result = await ReportService.toggleUpvote(reportId, userId);
+      res.json({
+        success: true,
+        message: result.message,
+        data: result,
+      });
+    } catch (error: any) {
       res.status(400).json({
         success: false,
-        message:
-          error instanceof Error ? error.message : "Failed to toggle upvote",
+        message: error.message || "Failed to toggle upvote",
       });
     }
   }
 
-  static async updateStatus(req: AuthenticatedRequest, res: Response) {
+  static async updateStatus(req: Request, res: Response) {
     try {
-      const { id } = req.params;
-      const { status } = req.body;
+      const { reportId } = req.params;
+      const { status, userId } = req.body;
 
-      const userContext = req.user
-        ? {
-            id: req.user.id,
-            role: req.user.role as any,
-          }
-        : undefined;
-
-      const updated = await ReportService.updateStatus(id, status, userContext);
-      res.json(updated);
-    } catch (error) {
-      const statusCode =
-        error instanceof Error && error.message.includes("permission")
-          ? 403
-          : 400;
-      res.status(statusCode).json({
-        success: false,
-        message:
-          error instanceof Error ? error.message : "Failed to update status",
-      });
-    }
-  }
-
-  static async addOfficialResponse(req: AuthenticatedRequest, res: Response) {
-    try {
-      const { id } = req.params;
-      const { userId, message, attachments } = req.body;
-
-      // Use authenticated user ID if available, otherwise use provided userId
-      const actualUserId = req.user?.id || userId;
-
-      if (!actualUserId) {
-        return res.status(400).json({
-          success: false,
-          message: "User ID is required",
-        });
+      if (!reportId || !status) {
+        throw new Error("Report ID and status are required");
       }
 
-      const userContext = req.user
-        ? {
-            id: req.user.id,
-            role: req.user.role as any,
-          }
-        : undefined;
+      // if(req.user?.role !== Role.ADMIN && req.user?.id !== adminId) {
+      //   throw new Error("You don't have permission to update this report");
+      // }
+
+      const result = await ReportService.updateStatus(reportId, status);
+
+      res.json({
+        success: true,
+        message: `Report status updated to ${status} for user ${userId}`,
+        data: result,
+      });
+    } catch (error: any) {
+      res.status(404).json({
+        success: false,
+        message: error.message || "Failed to update status",
+      });
+    }
+  }
+
+  static async addOfficialResponse(req: Request, res: Response) {
+    try {
+      const { reportId } = req.params;
+      const { adminId, message, attachments } = req.body;
+
+      if (!reportId || !adminId || !message?.trim()) {
+        throw new Error("Report ID, user ID, and message are required");
+      }
 
       const response = await ReportService.addOfficialResponse(
-        id,
-        actualUserId,
+        reportId,
+        adminId,
         message,
-        userContext,
         attachments
       );
-      res.json(response);
+      res.json({
+        success: true,
+        data: response,
+        message: "Official response added successfully",
+      });
     } catch (error) {
       const statusCode =
         error instanceof Error && error.message.includes("permission")
@@ -179,13 +182,21 @@ class ReportController {
     }
   }
 
-  // Additional controller methods
-
   static async getReportsByCategory(req: Request, res: Response) {
+    const { category } = req.params;
+
+    if (!category)
+      return res
+        .status(400)
+        .json({ success: false, message: "Category is required" });
+
     try {
-      const { category } = req.params;
       const reports = await ReportService.getReportsByCategory(category);
-      res.json(reports);
+      res.json({
+        success: true,
+        data: reports,
+        message: `Retrieved ${reports.count} reports for category ${category}`,
+      });
     } catch (error) {
       res.status(400).json({
         success: false,
@@ -198,10 +209,20 @@ class ReportController {
   }
 
   static async getReportsByStatus(req: Request, res: Response) {
+    const { status } = req.params;
+
+    if (!status)
+      return res
+        .status(400)
+        .json({ success: false, message: "Status is required" });
+
     try {
-      const { status } = req.params;
       const reports = await ReportService.getReportsByStatus(status);
-      res.json(reports);
+      res.json({
+        success: true,
+        data: reports,
+        message: `Retrieved ${reports.count} reports with status ${status}`,
+      });
     } catch (error) {
       res.status(400).json({
         success: false,
@@ -213,23 +234,22 @@ class ReportController {
     }
   }
 
-  static async getUserUpvoteStatus(req: AuthenticatedRequest, res: Response) {
+  static async getUserUpvoteStatus(req: Request, res: Response) {
+    const { reportId } = req.params;
+    const { userId } = req.body;
+
+    if (!reportId || !userId)
+      return res
+        .status(400)
+        .json({ success: false, message: "Report ID is required" });
+
     try {
-      const { id } = req.params;
-      const { userId } = req.query;
-
-      // Use authenticated user ID if available, otherwise use query userId
-      const actualUserId = req.user?.id || (userId as string);
-
-      if (!actualUserId) {
-        return res.status(400).json({
-          success: false,
-          message: "User ID is required",
-        });
-      }
-
-      const result = await ReportService.getUserUpvoteStatus(id, actualUserId);
-      res.json(result);
+      const result = await ReportService.getUserUpvoteStatus(reportId, userId);
+      res.json({
+        success: true,
+        data: { result },
+        message: "Upvote status retrieved successfully",
+      });
     } catch (error) {
       res.status(400).json({
         success: false,

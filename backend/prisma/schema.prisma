@@ -18,6 +18,9 @@ model User {
   name        String
   phone       String?  @unique
   email       String?  @unique
+  password    String?  
+  googleId    String?  @unique
+
   role        Role     @default(CITIZEN)
   isActive    Boolean  @default(true)
   createdAt   DateTime @default(now())
@@ -37,7 +40,6 @@ enum Role {
   RT_ADMIN  // Admin RT - yang bisa memberikan response resmi
 }
 
-// === LAPORAN SEBAGAI PUSAT DISKUSI ===
 model Report {
   id          String        @id @default(cuid())
   title       String
@@ -45,29 +47,22 @@ model Report {
   category    ReportCategory
   status      ReportStatus  @default(PENDING)
   
-  // Privacy settings
   isAnonymous Boolean       @default(false) // Apakah nama pelapor disembunyikan
   isPublic    Boolean       @default(true)  // Apakah ditampilkan di menu laporan publik
   
-  // Community engagement metrics
   upvoteCount   Int         @default(0)     // Cache jumlah upvote
   commentCount  Int         @default(0)     // Cache jumlah comment
   
-  // Location
   location    Location      @relation(fields: [locationId], references: [id])
   locationId  String        
   
-  // User (optional untuk anonymous)
   user        User?         @relation(fields: [userId], references: [id])
   userId      String?
   
-  // Media
   attachments     Attachment[]
   
-  // Official response dari RT Admin
   responses       Response[]
   
-  // Community discussion dalam laporan
   reportComments  ReportComment[]
   reportUpvotes   ReportUpvote[]
   
@@ -91,11 +86,11 @@ enum ReportCategory {
 }
 
 enum ReportStatus {
-  PENDING      // Baru dilaporkan
-  IN_PROGRESS  // Sedang ditangani
-  RESOLVED     // Sudah selesai
-  REJECTED     // Ditolak
-  CLOSED       // Ditutup (untuk diskusi/announcement)
+  PENDING      
+  IN_PROGRESS  
+  RESOLVED     
+  REJECTED     
+  CLOSED       
 }
 
 // Response resmi hanya dari RT Admin
@@ -131,7 +126,6 @@ model ReportComment {
   @@map("report_comments")
 }
 
-// Upvote/dukungan warga terhadap laporan
 model ReportUpvote {
   id       String @id @default(cuid())
   
