@@ -1,16 +1,6 @@
-// src/pages/ProfilePage.tsx
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import {
-  User,
-  Mail,
-  Phone,
-  Shield,
-  Edit2,
-  Save,
-  X,
-  CheckCircle,
-} from "lucide-react";
+import { User, Shield, Edit2, Save, X, CheckCircle } from "lucide-react";
 import {
   Card,
   CardContent,
@@ -38,6 +28,7 @@ const ProfilePage: React.FC = () => {
 
   // Loading states
   const [isSavingProfile, setIsSavingProfile] = useState(false);
+
   // Redirect if not authenticated
   if (!isAuthenticated || !user) {
     navigate("/login");
@@ -99,7 +90,7 @@ const ProfilePage: React.FC = () => {
       <div className="text-center sm:text-left">
         <h1 className="text-3xl font-bold text-gray-900">Profil Saya</h1>
         <p className="text-gray-600 mt-1">
-          Kelola informasi akun dan pengaturan keamanan
+          Kelola informasi akun dan profil Anda
         </p>
       </div>
 
@@ -145,54 +136,17 @@ const ProfilePage: React.FC = () => {
           </Card>
         </div>
 
-        {/* Profile Information */}
+        {/* Profile Information Form */}
         <div className="lg:col-span-2">
           <Card className="h-full">
             <CardHeader className="flex flex-row items-center justify-between">
               <CardTitle>Informasi Profil</CardTitle>
-              {!isEditingProfile && (
-                <Button variant="outline" size="sm" onClick={handleEditProfile}>
-                  <Edit2 className="mr-1 h-4 w-4" />
-                  Edit
-                </Button>
-              )}
-            </CardHeader>
-            <CardContent>
-              {isEditingProfile ? (
-                /* Edit Profile Form */
-                <div className="space-y-4">
-                  <Input
-                    label="Nama Lengkap"
-                    value={profileForm.name}
-                    onChange={(e) =>
-                      setProfileForm({ ...profileForm, name: e.target.value })
-                    }
-                    placeholder="Masukkan nama lengkap"
-                  />
-
-                  <Input
-                    label="Email"
-                    type="email"
-                    value={profileForm.email}
-                    onChange={(e) =>
-                      setProfileForm({ ...profileForm, email: e.target.value })
-                    }
-                    placeholder="Masukkan email"
-                  />
-
-                  <Input
-                    label="Nomor Telepon"
-                    type="tel"
-                    value={profileForm.phone}
-                    onChange={(e) =>
-                      setProfileForm({ ...profileForm, phone: e.target.value })
-                    }
-                    placeholder="Masukkan nomor telepon"
-                  />
-
-                  <div className="flex justify-end space-x-2 pt-4">
+              <div className="flex space-x-2">
+                {isEditingProfile ? (
+                  <>
                     <Button
                       variant="outline"
+                      size="sm"
                       onClick={handleCancelEditProfile}
                       disabled={isSavingProfile}
                     >
@@ -200,52 +154,60 @@ const ProfilePage: React.FC = () => {
                       Batal
                     </Button>
                     <Button
+                      size="sm"
                       onClick={handleSaveProfile}
                       loading={isSavingProfile}
                     >
                       <Save className="mr-1 h-4 w-4" />
                       Simpan
                     </Button>
-                  </div>
-                </div>
-              ) : (
-                /* Profile Information Display */
-                <div className="space-y-4">
-                  <div className="flex items-center space-x-3 border-b border-gray-100">
-                    <User className="h-5 w-5 text-gray-400" />
-                    <div className="flex-1">
-                      <label className="text-sm font-medium text-gray-600">
-                        Nama Lengkap
-                      </label>
-                      <p className="text-gray-900">{user.name}</p>
-                    </div>
-                  </div>
+                  </>
+                ) : (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={handleEditProfile}
+                  >
+                    <Edit2 className="mr-1 h-4 w-4" />
+                    Edit
+                  </Button>
+                )}
+              </div>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                <Input
+                  label="Nama Lengkap"
+                  value={profileForm.name}
+                  onChange={(e) =>
+                    setProfileForm({ ...profileForm, name: e.target.value })
+                  }
+                  placeholder="Masukkan nama lengkap"
+                  disabled={!isEditingProfile}
+                />
 
-                  <div className="flex items-center space-x-3 py-3 border-b border-gray-100">
-                    <Mail className="h-5 w-5 text-gray-400" />
-                    <div className="flex-1">
-                      <label className="text-sm font-medium text-gray-600">
-                        Email
-                      </label>
-                      <p className="text-gray-900">
-                        {user.email || "Belum diatur"}
-                      </p>
-                    </div>
-                  </div>
+                <Input
+                  label="Email"
+                  type="email"
+                  value={profileForm.email}
+                  onChange={(e) =>
+                    setProfileForm({ ...profileForm, email: e.target.value })
+                  }
+                  placeholder="Masukkan email"
+                  disabled={!isEditingProfile}
+                />
 
-                  <div className="flex items-center space-x-3 py-3">
-                    <Phone className="h-5 w-5 text-gray-400" />
-                    <div className="flex-1">
-                      <label className="text-sm font-medium text-gray-600">
-                        Nomor Telepon
-                      </label>
-                      <p className="text-gray-900">
-                        {user.phone || "Belum diatur"}
-                      </p>
-                    </div>
-                  </div>
-                </div>
-              )}
+                <Input
+                  label="Nomor Telepon"
+                  type="tel"
+                  value={profileForm.phone}
+                  onChange={(e) =>
+                    setProfileForm({ ...profileForm, phone: e.target.value })
+                  }
+                  placeholder="Masukkan nomor telepon"
+                  disabled={!isEditingProfile}
+                />
+              </div>
             </CardContent>
           </Card>
         </div>

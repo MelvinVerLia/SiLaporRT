@@ -1,5 +1,6 @@
 import React from "react";
 import { MapPin, Mail, Phone, Clock } from "lucide-react";
+import { Link } from "react-router-dom";
 
 const Footer: React.FC = () => {
   return (
@@ -8,8 +9,8 @@ const Footer: React.FC = () => {
         <div className="grid md:grid-cols-4 gap-8">
           <div className="md:col-span-2">
             <div className="flex items-center mb-4">
-              <div className="w-10 h-10 bg-gradient-to-br from-blue-600 to-blue-700 rounded-xl flex items-center justify-center">
-                <MapPin className="w-6 h-6 text-white" />
+              <div className="h-10 w-10 rounded-md bg-white flex items-center justify-center">
+                <img src="/assets/logo.png" alt="Logo" className="h-8 w-8" />
               </div>
               <div className="ml-3">
                 <h3 className="text-xl font-bold">SiLaporRT</h3>
@@ -23,10 +24,15 @@ const Footer: React.FC = () => {
               Memudahkan warga dalam menyampaikan keluhan dan meningkatkan
               transparansi penanganan.
             </p>
-
-            <a className="text-gray-400 mb-4" href="http://www.freepik.com">
-              Illustrations by vectorjuice / Freepik
-            </a>
+            <p className="text-xs text-gray-500 mt-2">
+              Some illustrations designed by{" "}
+              <a
+                href="http://www.freepik.com"
+                className="underline hover:text-gray-300"
+              >
+                vectorjuice / Freepik
+              </a>
+            </p>
           </div>
           <div>
             <h4 className="text-lg font-semibold mb-4 flex items-center">

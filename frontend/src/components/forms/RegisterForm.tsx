@@ -53,29 +53,36 @@ const RegisterForm: React.FC = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-blue-50 flex flex-col justify-center py-12 px-4 sm:px-6 lg:px-8">
       <Card className="max-w-4xl w-full mx-auto shadow-xl border-0 bg-white/80 backdrop-blur-sm rounded-xl">
-        {/* Main content: Form kiri, ilustrasi kanan */}
-        <CardContent className="flex flex-col md:flex-row gap-8 p-8">
+        {/* Logo positioned absolutely at the top of the card - visible on all screen sizes */}
+        <div className="absolute top-4 left-8">
+          <Link
+            to="/"
+            className="flex items-center space-x-2 text-lg font-bold text-blue-600 hover:text-blue-700 transition-colors"
+          >
+            <img
+              src="/assets/logo.png"
+              alt="Logo"
+              className="h-8 w-8 md:h-10 md:w-10"
+            />
+            <span className="text-xl md:text-2xl">
+              SiLapor<span className="text-blue-950">RT</span>
+            </span>
+          </Link>
+        </div>
+
+        {/* Main content: Form kanan, ilustrasi kiri */}
+        <CardContent className="flex flex-col md:flex-row gap-8 p-8 pt-16 md:pt-8">
           {/* Ilustrasi - Kolom kiri */}
           <div className="hidden md:flex md:w-1/2 items-center justify-center rounded-lg p-4 relative">
-            {/* Logo and App Name in top left corner */}
-            <Link
-              to="/"
-              className="absolute top-1 left-2 flex items-center space-x-2 text-lg font-bold text-blue-600 hover:text-blue-700 transition-colors"
-            >
-              <img src="/assets/logo.png" alt="Logo" className="h-10 w-10" />
-              <span className="text-2xl">
-                SiLapor<span className="text-blue-950">RT</span>
-              </span>
-            </Link>
-
             <img
               src="/assets/register.png"
               alt="Register Illustration"
               className="w-full h-full max-h-[500px] object-contain"
             />
           </div>
+
           {/* Form - Kolom Kanan */}
-          <div className="md:w-1/2 flex flex-col justify-center">
+          <div className="md:w-1/2 flex flex-col justify-center md:mt-12">
             {/* Title dan Subtitle - Di atas form */}
             <div className="mb-6">
               <CardTitle className="text-3xl font-bold text-gray-900 mb-2">
