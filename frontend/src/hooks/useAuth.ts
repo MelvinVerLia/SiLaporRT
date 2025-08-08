@@ -212,6 +212,85 @@ export const useAuth = () => {
     setError(null);
   }, []);
 
+  const sendOTP = useCallback(async (email: string): Promise<boolean> => {
+    setIsLoading(true);
+    setError(null);
+
+    // Simulasi delay kirim OTP via email
+    await new Promise((resolve) => setTimeout(resolve, 1500));
+
+    // Simulasi selalu berhasil kirim OTP
+    setIsLoading(false);
+    return true;
+  }, []);
+
+  const resendOTP = useCallback(async (email: string): Promise<boolean> => {
+    // Bisa reuse sendOTP, tapi buat metode terpisah agar UI bisa track loading resend
+    setIsLoading(true);
+    setError(null);
+
+    await new Promise((resolve) => setTimeout(resolve, 1500));
+
+    setIsLoading(false);
+    return true;
+  }, []);
+
+  const verifyOTP = useCallback(
+    async (
+      email: string,
+      otpCode: string,
+      userData: RegisterData
+    ): Promise<boolean> => {
+      setIsLoading(true);
+      setError(null);
+
+      // Simulasi delay verifikasi
+      await new Promise((resolve) => setTimeout(resolve, 1500));
+
+      // Simulasi OTP yang valid adalah "123456"
+      if (otpCode !== "123456") {
+        setError({ message: "Kode OTP salah" });
+        setIsLoading(false);
+        return false;
+      }
+
+      // OTP valid → lanjut proses registrasi user (re-use fungsi register tapi tanpa confirmPassword dan tanpa kirim OTP lagi)
+      // Kita buat versi internal register tanpa validasi confirmPassword dan password length (karena sudah validasi di awal)
+      try {
+        // Create new user object
+        const newUser: User = {
+          id: `user_${Date.now()}`,
+          name: userData.name,
+          email: userData.email,
+          phone: userData.phone,
+          role: Role.CITIZEN,
+          isActive: true,
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+        };
+
+        // Add to mock DB
+        MOCK_USERS.push({ ...newUser, password: userData.password } as any);
+
+        // Save auth data & set user
+        const token = generateMockToken(newUser.id);
+        const authData = { user: newUser, token };
+        saveAuthData(authData);
+        setUser(newUser);
+
+        setIsLoading(false);
+        return true;
+      } catch {
+        setError({
+          message: "Gagal melakukan registrasi setelah verifikasi OTP",
+        });
+        setIsLoading(false);
+        return false;
+      }
+    },
+    []
+  );
+
   return {
     // ✅ Same interface as before (backward compatible)
     user,
@@ -225,5 +304,9 @@ export const useAuth = () => {
     updateProfile,
     error,
     clearError,
+
+    sendOTP,
+    resendOTP,
+    verifyOTP,
   };
 };

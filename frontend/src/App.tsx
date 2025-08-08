@@ -13,6 +13,9 @@ import LoginPage from "./pages/auth/LoginPage";
 import RegisterPage from "./pages/auth/RegisterPage";
 import LoginForm from "./components/forms/LoginForm";
 import RegisterForm from "./components/forms/RegisterForm";
+import ForgotPasswordPage from "./pages/auth/ForgotPasswordPage";
+import ResetPasswordPage from "./pages/auth/ResetPasswordPage";
+import OTPVerificationForm from "./components/forms/OTPVerificationForm";
 import ReportsPage from "./pages/reports/ReportsPage";
 import CreateReportPage from "./pages/reports/CreateReportPage";
 import ReportDetailPage from "./pages/reports/ReportDetailPage";
@@ -41,6 +44,12 @@ function App() {
               {/* Public routes */}
               <Route path="/login" element={<LoginForm />} />
               <Route path="/register" element={<RegisterForm />} />
+              <Route path="forgot-password" element={<ForgotPasswordPage />} />
+              <Route
+                path="reset-password/:token"
+                element={<ResetPasswordPage />}
+              />
+              <Route path="/verify-otp" element={<OTPVerificationForm />} />
 
               {/* Routes with layout */}
               <Route path="/" element={<Layout />}>
