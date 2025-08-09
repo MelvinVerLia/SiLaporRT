@@ -23,7 +23,7 @@ export class AuthRepository {
     return prisma.user.update({ where: { id: userId }, data: { googleId } });
   }
 
-  static async changeUserPassword(userId: string, password: string) {
+  static async changePassword(userId: string, password: string) {
     return prisma.user.update({ where: { id: userId }, data: { password } });
   }
 

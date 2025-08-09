@@ -21,8 +21,10 @@ router.get(
   AuthController.googleCallback
 );
 
-router.post("/forgot/password", AuthController.forgotPassword);
+router.post("/forgot-password", AuthController.forgotPassword);
+router.post("/validate-token", AuthController.validateToken)
+router.put("/change-password", AuthController.changePassword)
 
-router.get("/profile", authenticateJWT, AuthController.getProfile);
+router.get("/profile", AuthController.changePassword);
 
 export default router;

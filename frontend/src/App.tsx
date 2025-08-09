@@ -46,7 +46,7 @@ function App() {
               <Route path="/register" element={<RegisterForm />} />
               <Route path="forgot-password" element={<ForgotPasswordPage />} />
               <Route
-                path="reset-password/:token"
+                path="reset/:token/:email"
                 element={<ResetPasswordPage />}
               />
               <Route path="/verify-otp" element={<OTPVerificationForm />} />

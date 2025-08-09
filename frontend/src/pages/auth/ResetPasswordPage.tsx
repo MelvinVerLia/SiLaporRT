@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Link, useSearchParams, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useParams } from "react-router-dom";
 import { Eye, EyeOff, Lock, Check, X } from "lucide-react";
 import {
   Card,
@@ -9,12 +9,11 @@ import {
 } from "../../components/ui/Card";
 import Button from "../../components/ui/Button";
 import Input from "../../components/ui/Input";
+import { AuthFinder } from "../../api/AuthFinder";
 
 const ResetPasswordPage: React.FC = () => {
-  const [searchParams] = useSearchParams();
   const navigate = useNavigate();
-  const token = searchParams.get("token");
-  const email = searchParams.get("email");
+  const { token, email } = useParams();
 
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -37,28 +36,29 @@ const ResetPasswordPage: React.FC = () => {
   // Validate token on component mount
   useEffect(() => {
     const validateToken = async () => {
-      if (!token || !email) {
+      if (!token) {
         setIsTokenValid(false);
         return;
       }
-
       // Simulate token validation API call
+      console.log("hello");
+      console.log(`token: ${token}, email: ${email}`);
       try {
-        await new Promise((resolve) => setTimeout(resolve, 1000));
+        const response = await AuthFinder.post("/validate-token", {
+          token,
+          email,
+        });
+        console.log("response", response);
 
-        // For demo, validate token format (in real app, this would be API call)
-        if (token.length > 10) {
-          setIsTokenValid(true);
-        } else {
-          setIsTokenValid(false);
-        }
+        setIsTokenValid(true);
       } catch (err) {
+        console.log("somethingw ontg");
         setIsTokenValid(false);
       }
     };
 
     validateToken();
-  }, [token, email]);
+  }, [token]);
 
   // Validate password criteria
   useEffect(() => {
@@ -93,8 +93,11 @@ const ResetPasswordPage: React.FC = () => {
     try {
       // Simulate API call untuk reset password
       await new Promise((resolve) => setTimeout(resolve, 2000));
-
-      // Simulate success
+      const response = await AuthFinder.put("/change-password", {
+        email,
+        password,
+      });
+      console.log(response)
       setIsResetSuccessful(true);
 
       // Redirect to login after 3 seconds
@@ -232,7 +235,7 @@ const ResetPasswordPage: React.FC = () => {
                 Buat Password Baru
               </CardTitle>
               <p className="text-sm text-gray-600">
-                Reset password untuk:{" "}
+                Reset password untuk: {""}
                 <span className="font-semibold text-blue-600">{email}</span>
               </p>
             </div>

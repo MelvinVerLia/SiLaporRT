@@ -129,4 +129,58 @@ export class AuthController {
       });
     }
   }
+
+  static async validateToken(req: Request, res: Response) {
+    try {
+      const { token, email } = req.body;
+      console.log(`token: ${token}, email: ${email}`);
+      if (!token) {
+        return res.status(400).json({
+          success: false,
+          message: "Token is required",
+        });
+      }
+
+      const result = await AuthService.validateToken(token, email);
+      console.log("result", result);
+      res.status(200).json({
+        success: true,
+        message: "Token is valid",
+        data: result,
+      });
+    } catch (error) {
+      console.log("error", error);
+      res.status(400).json({
+        success: false,
+        message:
+          error instanceof Error ? error.message : "Failed to validate token",
+      });
+    }
+  }
+
+  static async changePassword(req: Request, res: Response) {
+    try {
+      const { email, password } = req.body;
+
+      if (!email || !password) {
+        return res.status(400).json({
+          success: false,
+          message: "email, and password are required",
+        });
+      }
+
+      await AuthService.changePassword(email, password);
+
+      res.json({
+        success: true,
+        message: "Password changed successfully",
+      });
+    } catch (error) {
+      res.status(400).json({
+        success: false,
+        message:
+          error instanceof Error ? error.message : "Failed to change password",
+      });
+    }
+  }
 }

@@ -2,7 +2,11 @@ import { Resend } from "resend";
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
-export const sendPasswordResetEmail = async (email: string, resetLink: any, expiry:any) => {
+export const sendPasswordResetEmail = async (
+  email: string,
+  resetLink: any,
+  expiry: any
+) => {
   const emailHTML = `
 <!DOCTYPE html>
 <html>
@@ -49,7 +53,7 @@ export const sendPasswordResetEmail = async (email: string, resetLink: any, expi
             </div>
             
             <p style="color: #475569; font-size: 16px; line-height: 1.6; margin-bottom: 20px;">
-                This link will expire in ${expiry} minutes for security purposes.
+                This link will expire in ${expiry.getMinutes()} minutes for security purposes.
             </p>
             
             <p style="color: #475569; font-size: 16px; line-height: 1.6; margin-bottom: 20px;">
@@ -71,8 +75,8 @@ export const sendPasswordResetEmail = async (email: string, resetLink: any, expi
 
   try {
     const { data, error } = await resend.emails.send({
-      from: "SiLaporRT <noreply@yourapp.com>",
-      to: [email],
+      from: "onboarding@resend.dev",
+      to: email,
       subject: "Reset Your SiLaporRT Password",
       html: emailHTML,
     });
@@ -89,6 +93,3 @@ export const sendPasswordResetEmail = async (email: string, resetLink: any, expi
     return false;
   }
 };
-
-// How to use it:
-// sendPasswordResetEmail('user@example.com', 'John Doe', 'https://yourapp.com/reset?token=abc123');

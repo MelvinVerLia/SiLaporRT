@@ -35,10 +35,7 @@ export class AuthService {
 
     const token = this.generateToken(user.id);
 
-    const { password: _, ...userWithoutPassword } = user;
-
     return {
-      user: userWithoutPassword,
       token,
     };
   }
@@ -142,14 +139,47 @@ export class AuthService {
     const hashedToken = await hash(rawToken, 10);
     const expiry = new Date(Date.now() + 5 * 60 * 1000);
 
-    const response = await AuthRepository.updatePasswordResetToken(
+    console.log("rawToken", rawToken);
+    console.log("expiry", expiry);
+    console.log("DateTime Now", Date.now());
+    await AuthRepository.updatePasswordResetToken(user.id, hashedToken, expiry);
+    const resetPasswordUrl = `${process.env.FRONTEND_URL}/reset/${rawToken}/${user.email}`;
+
+    await sendPasswordResetEmail(email, resetPasswordUrl, expiry);
+  }
+
+  static async validateToken(token: string, email: string) {
+    const user = await AuthRepository.getUserByEmail(email);
+    if (!user) {
+      throw new Error("User not found");
+    }
+    if (!user.resetToken) {
+      throw new Error("No reset token found");
+    }
+    if (!user.resetTokenExp) {
+      throw new Error("No reset token expiry found");
+    }
+    const isValid = await bcrypt.compare(token, user.resetToken);
+    if (!isValid) {
+      throw new Error("Invalid token");
+    }
+    // if (user.resetTokenExp.getTime() < Date.now()) {
+    //   throw new Error("Token expired");
+    // }
+    console.log("hello");
+    return { success: true };
+  }
+
+  static async changePassword(email: string, password: string) {
+    const user = await AuthRepository.getUserByEmail(email);
+    if (!user) {
+      throw new Error("User not found");
+    }
+    const hashedPassword = await bcrypt.hash(password, 10);
+    const response = await AuthRepository.changePassword(
       user.id,
-      hashedToken,
-      expiry
+      hashedPassword
     );
-    const resetPasswordUrl = `${process.env.FRONTEND_URL}/reset-password?token=${hashedToken}&email=${email}`;
-
-    sendPasswordResetEmail(email, resetPasswordUrl, expiry);
-
+    return response;
   }
 }

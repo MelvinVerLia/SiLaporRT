@@ -9,6 +9,7 @@ import {
 } from "../../components/ui/Card";
 import Button from "../../components/ui/Button";
 import Input from "../../components/ui/Input";
+import { AuthFinder } from "../../api/AuthFinder";
 
 const ForgotPasswordPage: React.FC = () => {
   const [email, setEmail] = useState("");
@@ -29,6 +30,8 @@ const ForgotPasswordPage: React.FC = () => {
         return;
       }
 
+      const response = await AuthFinder.post("/forgot-password", { email });
+
       // Simulate API delay
       await new Promise((resolve) => setTimeout(resolve, 2000));
 
@@ -44,10 +47,14 @@ const ForgotPasswordPage: React.FC = () => {
   const handleResendEmail = async () => {
     setIsLoading(true);
     setError("");
+    if (!email.includes("@")) {
+        setError("Alamat email tidak valid");
+        return;
+      }
 
+      const response = await AuthFinder.post("/forgot-password", { email });
     // Simulate resend email
-    await new Promise((resolve) => setTimeout(resolve, 1000));
-    setIsLoading(false);
+    setIsLoading(false);  
   };
 
   // Success state - Email telah dikirim
