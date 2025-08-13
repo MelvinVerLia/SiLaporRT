@@ -1,11 +1,12 @@
 import { Resend } from "resend";
+import { transporter } from "./mailer";
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
 export const sendPasswordResetEmail = async (
   email: string,
-  resetLink: any,
-  expiry: any
+  resetLink: string,
+  expiryNumber: number
 ) => {
   const emailHTML = `
 <!DOCTYPE html>
@@ -53,7 +54,7 @@ export const sendPasswordResetEmail = async (
             </div>
             
             <p style="color: #475569; font-size: 16px; line-height: 1.6; margin-bottom: 20px;">
-                This link will expire in ${expiry.getMinutes()} minutes for security purposes.
+                This link will expire in ${expiryNumber} minutes for security purposes.
             </p>
             
             <p style="color: #475569; font-size: 16px; line-height: 1.6; margin-bottom: 20px;">
@@ -74,19 +75,25 @@ export const sendPasswordResetEmail = async (
   `;
 
   try {
-    const { data, error } = await resend.emails.send({
-      from: "onboarding@resend.dev",
+    // const { data, error } = await resend.emails.send({
+    //   from: "onboarding@resend.dev",
+    //   to: email,
+    //   subject: "Reset Your SiLaporRT Password",
+    //   html: emailHTML,
+    // });
+
+    // if (error) {
+    //   console.error("Email error:", error);
+    //   return false;
+    // }
+
+    await transporter.sendMail({
+      from: process.env.MAIL_FROM,
       to: email,
       subject: "Reset Your SiLaporRT Password",
       html: emailHTML,
     });
 
-    if (error) {
-      console.error("Email error:", error);
-      return false;
-    }
-
-    console.log("Email sent successfully:", data);
     return true;
   } catch (error) {
     console.error("Failed to send email:", error);
