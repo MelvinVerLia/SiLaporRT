@@ -4,11 +4,10 @@ import reportRouter from "./routes/ReportRoute";
 import authRouter from "./routes/AuthRoute";
 import cookieParser from "cookie-parser";
 import passport from "./config/GoogleStrategy";
-
 const app = express();
 app.use(
   cors({
-    origin: "http://localhost:5173", // persis!
+    origin: process.env.FRONTEND_URL,
     credentials: true,
   })
 );

@@ -30,7 +30,7 @@ passport.use(
     {
       jwtFromRequest: ExtractJwt.fromExtractors([
         ExtractJwt.fromAuthHeaderAsBearerToken(),
-        cookieExtractor, // ⬅️ baca dari cookie "auth"
+        cookieExtractor,
       ]),
       secretOrKey: process.env.JWT_SECRET as string,
     },

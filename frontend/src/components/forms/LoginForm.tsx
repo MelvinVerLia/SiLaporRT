@@ -27,19 +27,6 @@ const LoginForm: React.FC = () => {
     }
   };
 
-  const handleDemoLogin = async (role: "citizen" | "admin") => {
-    clearError();
-    const credentials =
-      role === "admin"
-        ? { email: "admin@example.com", password: "admin123" }
-        : { email: "citizen@example.com", password: "password123" };
-
-    const success = await login(credentials);
-    if (success) {
-      navigate(from, { replace: true });
-    }
-  };
-
   const handleGoogleLogin = () => {
     window.location.href = "http://localhost:5000/api/auth/google";
     console.log("Google login clicked");

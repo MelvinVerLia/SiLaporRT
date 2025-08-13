@@ -19,7 +19,6 @@ export const useAuth = () => {
   const [error, setError] = useState<AuthError | null>(null);
   const navigate = useNavigate();
 
-  // Sumber kebenaran sesi = cookie HttpOnly → panggil profil saat init
   const initializeAuth = async () => {
     setIsLoading(true);
     try {
