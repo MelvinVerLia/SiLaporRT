@@ -4,25 +4,31 @@ import { Request, Response } from "express";
 export class AuthController {
   static async login(req: Request, res: Response) {
     try {
-      const { email, password } = req.body;
-
-      // Validation
+      const { email, password, rememberMe } = req.body;
       if (!email || !password) {
-        return res.status(400).json({
-          success: false,
-          message: "Email and password are required",
-        });
+        return res
+          .status(400)
+          .json({ success: false, message: "Email and password are required" });
       }
 
-      const result = await AuthService.login({ email, password });
+      const result = await AuthService.login({ email, password }); // { user, token }
 
-      res.status(200).json({
+      res.cookie("auth", result.token, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === "production",
+        sameSite: "lax",
+        path: "/",
+        // kalau remember me, bikin lebih lama. kalau tidak, pakai sesi (tanpa maxAge).
+        ...(rememberMe ? { maxAge: 7 * 24 * 60 * 60 * 1000 } : {}),
+      });
+
+      return res.status(200).json({
         success: true,
         message: "Login successful",
-        data: result,
+        data: result, // { user, token }
       });
     } catch (error) {
-      res.status(401).json({
+      return res.status(401).json({
         success: false,
         message:
           error instanceof Error ? error.message : "Failed to login user",
@@ -44,6 +50,15 @@ export class AuthController {
 
       const result = await AuthService.register({ email, password, name });
 
+      // Auto-login: set HttpOnly cookie valid 7 hari
+      res.cookie("auth", result.token, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === "production",
+        sameSite: "lax",
+        path: "/",
+        maxAge: 7 * 24 * 60 * 60 * 1000, // 7 hari
+      });
+
       res.status(201).json({
         success: true,
         message: "User registered successfully",
@@ -58,28 +73,32 @@ export class AuthController {
     }
   }
 
+  static async logout(_req: Request, res: Response) {
+    res.clearCookie("auth", { path: "/" });
+    return res.status(200).json({ success: true, message: "Logged out" });
+  }
+
   static async googleCallback(req: Request, res: Response) {
     try {
-      // The user should be attached by passport middleware
       const result = req.user as { user: any; token: string };
-
-      if (!result) {
-        return res.status(400).json({
-          success: false,
-          message: "Google authentication failed",
-        });
+      if (!result?.token) {
+        return res
+          .status(400)
+          .json({ success: false, message: "Google authentication failed" });
       }
 
-      // Redirect to frontend with token (adjust URL as needed)
-      res.redirect(
-        // `${process.env.FRONTEND_URL}/auth/success?token=${result.token}`
-        `${process.env.FRONTEND_URL}`
-      );
-    } catch (error) {
-      res.status(500).json({
-        success: false,
-        message: error instanceof Error ? error.message : "Google auth failed",
+      res.cookie("auth", result.token, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === "production",
+        sameSite: "lax",
+        path: "/",
+        maxAge: 7 * 24 * 60 * 60 * 1000, // 7 hari
       });
+
+      // redirect bersih ke home FE
+      res.redirect(process.env.FRONTEND_URL || "/");
+    } catch (error) {
+      res.status(500).json({ success: false, message: "Google auth failed" });
     }
   }
 

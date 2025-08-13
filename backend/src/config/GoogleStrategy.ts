@@ -4,6 +4,8 @@ import passport from "passport";
 import { AuthRepository } from "../repositories/AuthRepository";
 import { AuthService } from "../services/AuthService";
 
+const cookieExtractor = (req: any) => req?.cookies?.auth || null;
+
 passport.use(
   new GoogleStrategy(
     {
@@ -26,7 +28,10 @@ passport.use(
 passport.use(
   new JwtStrategy(
     {
-      jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
+      jwtFromRequest: ExtractJwt.fromExtractors([
+        ExtractJwt.fromAuthHeaderAsBearerToken(),
+        cookieExtractor,
+      ]),
       secretOrKey: process.env.JWT_SECRET as string,
     },
     async (payload, done) => {

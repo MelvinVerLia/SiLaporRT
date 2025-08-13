@@ -7,6 +7,7 @@ const router = Router();
 
 router.post("/login", AuthController.login);
 router.post("/register", AuthController.register);
+router.post("/logout", AuthController.logout);
 
 router.get(
   "/google",
@@ -25,6 +26,6 @@ router.post("/forgot-password", AuthController.forgotPassword);
 router.post("/validate-token", AuthController.validateToken)
 router.put("/change-password", AuthController.changePassword)
 
-router.get("/profile", AuthController.changePassword);
+router.get("/profile", authenticateJWT, AuthController.getProfile);
 
 export default router;

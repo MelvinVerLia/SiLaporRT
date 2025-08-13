@@ -1,19 +1,17 @@
 import { useState, useEffect, useCallback } from "react";
 import {
   User,
-  Role,
   LoginCredentials,
   RegisterData,
   AuthError,
 } from "../types/auth.types";
-import {
-  MOCK_USERS,
-  generateMockToken,
-  saveAuthData,
-  getAuthData,
-  clearAuthData,
-} from "../utils/auth.utils";
 import { useNavigate } from "react-router-dom";
+import {
+  login as apiLogin,
+  register as apiRegister,
+  getProfile,
+  logout as apiLogout,
+} from "../services/authService";
 
 export const useAuth = () => {
   const [user, setUser] = useState<User | null>(null);
@@ -23,290 +21,149 @@ export const useAuth = () => {
 
   const initializeAuth = async () => {
     setIsLoading(true);
-
-    // Simulate network delay
-    // await new Promise((resolve) => setTimeout(resolve, 800));
-
-    const authData = getAuthData();
-    if (authData) {
-      setUser(authData.user);
+    try {
+      const freshUser = await getProfile().catch(() => null);
+      setUser(freshUser);
+    } finally {
+      setIsLoading(false);
     }
-
-    setIsLoading(false);
   };
 
-  // Initialize auth state from localStorage
   useEffect(() => {
     initializeAuth();
   }, []);
 
-  // Enhanced login with validation
+  // LOGIN: server set cookie; FE TIDAK menyimpan apa pun di localStorage
   const login = useCallback(
     async (credentials: LoginCredentials): Promise<boolean> => {
       setIsLoading(true);
       setError(null);
-
-      // Simulate network delay
-      await new Promise((resolve) => setTimeout(resolve, 1500));
-
       try {
-        // Find user in mock database
-        const foundUser = MOCK_USERS.find((u) => u.email === credentials.email);
-
-        if (!foundUser) {
-          setError({ message: "Email tidak ditemukan", field: "email" });
-          setIsLoading(false);
-          return false;
-        }
-
-        if (foundUser.password !== credentials.password) {
-          setError({ message: "Password salah", field: "password" });
-          setIsLoading(false);
-          return false;
-        }
-
-        if (!foundUser.isActive) {
-          setError({ message: "Akun Anda tidak aktif" });
-          setIsLoading(false);
-          return false;
-        }
-
-        // Create user object (exclude password)
-        const { password, ...userWithoutPassword } = foundUser;
-        const user = userWithoutPassword as User;
-
-        // Generate token and save
-        const token = generateMockToken(user.id);
-        const authData = { user, token };
-
-        saveAuthData(authData);
+        const { user } = await apiLogin(credentials); // { user, token } — token tidak dipakai di FE
         setUser(user);
-        setIsLoading(false);
-
         return true;
-      } catch (err) {
-        setError({ message: "Terjadi kesalahan saat login" });
-        setIsLoading(false);
+      } catch (e: any) {
+        setError({ message: e?.message || "Terjadi kesalahan saat login" });
         return false;
+      } finally {
+        setIsLoading(false);
       }
     },
     []
   );
 
-  // Enhanced register
+  // REGISTER: validasi ringan → ikut hasil server; FE tidak menyimpan token
   const register = useCallback(async (data: RegisterData): Promise<boolean> => {
     setIsLoading(true);
     setError(null);
-
-    // Simulate network delay
-    await new Promise((resolve) => setTimeout(resolve, 2000));
-
     try {
-      // Validate data
       if (data.password !== data.confirmPassword) {
         setError({ message: "Password tidak sama", field: "confirmPassword" });
-        setIsLoading(false);
         return false;
       }
-
       if (data.password.length < 6) {
         setError({ message: "Password minimal 6 karakter", field: "password" });
-        setIsLoading(false);
         return false;
       }
 
-      // Check if email already exists
-      const existingUser = MOCK_USERS.find((u) => u.email === data.email);
-      if (existingUser) {
-        setError({ message: "Email sudah terdaftar", field: "email" });
-        setIsLoading(false);
-        return false;
-      }
-
-      // Create new user
-      const newUser: User = {
-        id: `user_${Date.now()}`,
-        name: data.name,
-        email: data.email,
-        phone: data.phone,
-        role: Role.CITIZEN, // Default role
-        isActive: true,
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-      };
-
-      // Add to mock database (in real app, this would be API call)
-      MOCK_USERS.push({ ...newUser, password: data.password } as any);
-
-      // Generate token and save
-      const token = generateMockToken(newUser.id);
-      const authData = { user: newUser, token };
-
-      saveAuthData(authData);
-      setUser(newUser);
-      setIsLoading(false);
-
+      const { confirmPassword, ...body } = data as any;
+      const { user } = await apiRegister(body); // { user, token } — token tidak dipakai di FE
+      setUser(user);
       return true;
-    } catch (err) {
-      setError({ message: "Terjadi kesalahan saat registrasi" });
-      setIsLoading(false);
+    } catch (e: any) {
+      setError({ message: e?.message || "Terjadi kesalahan saat registrasi" });
       return false;
+    } finally {
+      setIsLoading(false);
     }
   }, []);
 
-  // Enhanced logout
-  const logout = useCallback(() => {
-    clearAuthData();
+  // LOGOUT: hapus cookie di server; FE bersihkan state & arahkan ke login
+  const logout = useCallback(async () => {
+    try {
+      await apiLogout();
+    } catch {
+      // abaikan error logout
+    }
     setUser(null);
     setError(null);
     navigate("/login");
   }, [navigate]);
 
-  // Update user profile
+  // UPDATE PROFILE: TODO sambungkan ke endpoint BE (mis. PATCH /api/users/me)
   const updateProfile = useCallback(
-    async (updates: Partial<User>): Promise<boolean> => {
-      if (!user) return false;
-
-      setIsLoading(true);
-      setError(null);
-
-      // Simulate network delay
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-
-      try {
-        const updatedUser = {
-          ...user,
-          ...updates,
-          updatedAt: new Date().toISOString(),
-        };
-
-        // Update in mock database
-        const userIndex = MOCK_USERS.findIndex((u) => u.id === user.id);
-        if (userIndex !== -1) {
-          MOCK_USERS[userIndex] = {
-            ...MOCK_USERS[userIndex],
-            ...updates,
-          } as any;
-        }
-
-        // Update localStorage
-        const authData = getAuthData();
-        if (authData) {
-          saveAuthData({ ...authData, user: updatedUser });
-        }
-
-        setUser(updatedUser);
-        setIsLoading(false);
-        return true;
-      } catch (err) {
-        setError({ message: "Gagal memperbarui profil" });
-        setIsLoading(false);
-        return false;
-      }
+    async (_updates: Partial<User>): Promise<boolean> => {
+      // TODO: implement ke backend. Untuk sekarang kembalikan false agar UI tahu belum didukung.
+      setError({ message: "Update profil belum didukung" });
+      return false;
     },
-    [user]
+    []
   );
 
-  // Clear error
-  const clearError = useCallback(() => {
-    setError(null);
-  }, []);
-
-  const sendOTP = useCallback(async (email: string): Promise<boolean> => {
+  // OTP FLOW: TODO sambungkan ke BE (forgot/validate/change-password atau OTP khusus)
+  const sendOTP = useCallback(async (_email: string): Promise<boolean> => {
     setIsLoading(true);
     setError(null);
-
-    // Simulasi delay kirim OTP via email
-    await new Promise((resolve) => setTimeout(resolve, 1500));
-
-    // Simulasi selalu berhasil kirim OTP
-    setIsLoading(false);
-    return true;
+    try {
+      // TODO: panggil endpoint BE, contoh: await apiSendOTP(email)
+      return true;
+    } catch (e: any) {
+      setError({ message: e?.message || "Gagal mengirim OTP" });
+      return false;
+    } finally {
+      setIsLoading(false);
+    }
   }, []);
 
-  const resendOTP = useCallback(async (email: string): Promise<boolean> => {
-    // Bisa reuse sendOTP, tapi buat metode terpisah agar UI bisa track loading resend
+  const resendOTP = useCallback(async (_email: string): Promise<boolean> => {
     setIsLoading(true);
     setError(null);
-
-    await new Promise((resolve) => setTimeout(resolve, 1500));
-
-    setIsLoading(false);
-    return true;
+    try {
+      // TODO: panggil endpoint BE, contoh: await apiResendOTP(email)
+      return true;
+    } catch (e: any) {
+      setError({ message: e?.message || "Gagal mengirim ulang OTP" });
+      return false;
+    } finally {
+      setIsLoading(false);
+    }
   }, []);
 
   const verifyOTP = useCallback(
     async (
-      email: string,
-      otpCode: string,
-      userData: RegisterData
+      _email: string,
+      _otpCode: string,
+      _userData: RegisterData
     ): Promise<boolean> => {
       setIsLoading(true);
       setError(null);
-
-      // Simulasi delay verifikasi
-      await new Promise((resolve) => setTimeout(resolve, 1500));
-
-      // Simulasi OTP yang valid adalah "123456"
-      if (otpCode !== "123456") {
-        setError({ message: "Kode OTP salah" });
-        setIsLoading(false);
-        return false;
-      }
-
-      // OTP valid → lanjut proses registrasi user (re-use fungsi register tapi tanpa confirmPassword dan tanpa kirim OTP lagi)
-      // Kita buat versi internal register tanpa validasi confirmPassword dan password length (karena sudah validasi di awal)
       try {
-        // Create new user object
-        const newUser: User = {
-          id: `user_${Date.now()}`,
-          name: userData.name,
-          email: userData.email,
-          phone: userData.phone,
-          role: Role.CITIZEN,
-          isActive: true,
-          createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString(),
-        };
-
-        // Add to mock DB
-        MOCK_USERS.push({ ...newUser, password: userData.password } as any);
-
-        // Save auth data & set user
-        const token = generateMockToken(newUser.id);
-        const authData = { user: newUser, token };
-        saveAuthData(authData);
-        setUser(newUser);
-
-        setIsLoading(false);
-        return true;
-      } catch {
-        setError({
-          message: "Gagal melakukan registrasi setelah verifikasi OTP",
-        });
-        setIsLoading(false);
+        // TODO: panggil endpoint BE verifikasi OTP
+        // sementara: belum didukung
+        setError({ message: "Verifikasi OTP belum didukung" });
         return false;
+      } catch (e: any) {
+        setError({ message: e?.message || "Gagal verifikasi OTP" });
+        return false;
+      } finally {
+        setIsLoading(false);
       }
     },
     []
   );
 
   return {
-    // ✅ Same interface as before (backward compatible)
     user,
     isLoading,
     isAuthenticated: !!user,
-    login, // Enhanced but same signature for simple login
+    login,
     logout,
-
-    // ✨ New enhanced features
     register,
-    updateProfile,
+    updateProfile, // TODO
     error,
-    clearError,
-
-    sendOTP,
-    resendOTP,
-    verifyOTP,
+    clearError: () => setError(null),
+    sendOTP, // TODO
+    resendOTP, // TODO
+    verifyOTP, // TODO
   };
 };

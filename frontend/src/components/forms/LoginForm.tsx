@@ -5,7 +5,6 @@ import { Card, CardContent, CardHeader, CardTitle } from "../ui/Card";
 import Button from "../ui/Button";
 import Input from "../ui/Input";
 import { useAuth } from "../../hooks/useAuth";
-import { AuthFinder } from "../../api/AuthFinder";
 
 const LoginForm: React.FC = () => {
   const [email, setEmail] = useState("");
@@ -22,23 +21,7 @@ const LoginForm: React.FC = () => {
     e.preventDefault();
     clearError();
 
-    const success = await AuthFinder.post("/login", {
-      email,
-      password,
-    });
-    if (success) {
-      navigate(from, { replace: true });
-    }
-  };
-
-  const handleDemoLogin = async (role: "citizen" | "admin") => {
-    clearError();
-    const credentials =
-      role === "admin"
-        ? { email: "admin@example.com", password: "admin123" }
-        : { email: "citizen@example.com", password: "password123" };
-
-    const success = await login(credentials);
+    const success = await login({ email, password, rememberMe });
     if (success) {
       navigate(from, { replace: true });
     }
