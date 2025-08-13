@@ -5,7 +5,6 @@ import { Card, CardContent, CardHeader, CardTitle } from "../ui/Card";
 import Button from "../ui/Button";
 import Input from "../ui/Input";
 import { useAuth } from "../../hooks/useAuth";
-import { AuthFinder } from "../../api/AuthFinder";
 
 const RegisterForm: React.FC = () => {
   const [formData, setFormData] = useState({
@@ -33,7 +32,7 @@ const RegisterForm: React.FC = () => {
 
     if (!agreedToTerms) return;
 
-    const success = await AuthFinder.post("/register", formData);
+    const success = await register(formData);
     if (success) {
       navigate("/", { replace: true });
     }

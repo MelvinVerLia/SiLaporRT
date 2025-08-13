@@ -35,9 +35,15 @@ export class AuthService {
 
     const token = this.generateToken(user.id);
 
-    return {
-      token,
-    };
+    const {
+      password: _pw,
+      resetToken: _rt,
+      resetTokenExp: _rte,
+      googleId: _gi,
+      ...safeUser
+    } = user;
+
+    return { user: safeUser, token };
   }
 
   static async login({ email, password }: LoginData) {
@@ -81,13 +87,13 @@ export class AuthService {
       user = await AuthRepository.getUserByEmail(email);
 
       if (!user) {
-        await AuthRepository.createUser({
+        user = await AuthRepository.createUser({
           email,
           name,
           googleId,
         });
       } else {
-        await AuthRepository.updateUserGoogleID(user.id, googleId);
+        user = await AuthRepository.updateUserGoogleID(user.id, googleId);
       }
     }
 
