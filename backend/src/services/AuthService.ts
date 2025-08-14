@@ -3,6 +3,9 @@ import bcrypt, { hash } from "bcrypt";
 import crypto from "crypto";
 import jwt from "jsonwebtoken";
 import { sendPasswordResetEmail } from "../email/EmailForm";
+import { RedisClient } from "../config/RedisClient";
+import otpGenerator from "otp-generator";
+import { sendOTPEmail } from "../email/OTP";
 
 export interface RegisterData {
   email: string;
@@ -37,17 +40,33 @@ export class AuthService {
 
     const token = this.generateToken(user.id);
 
-    const {
-      password: _pw,
-      resetToken: _rt,
-      resetTokenExp: _rte,
-      googleId: _gi,
-      ...safeUser
-    } = user;
+    const { password: _pw, googleId: _gi, ...safeUser } = user;
 
     return { user: safeUser, token };
   }
 
+  static async sendOtp(email: string) {
+    const otp = otpGenerator.generate(6, {
+      digits: true,
+      upperCaseAlphabets: false,
+      lowerCaseAlphabets: false,
+      specialChars: false,
+    });
+    const redis = RedisClient.instance;
+    await redis.set(email, otp);
+    await sendOTPEmail(email, otp, 5);
+  }
+
+  static async validateOtp(email: string, otp: string) {
+    const redis = RedisClient.instance;
+    const storedOtp = await redis.get(email);
+    if (storedOtp === otp) {
+      this.register({ email, password: "password", name: "name" });
+      return true;
+    } else {
+      return false;
+    }
+  }
   static async login({ email, password }: LoginData) {
     const user = await AuthRepository.getUserByEmail(email);
     if (!user) {
@@ -137,45 +156,55 @@ export class AuthService {
     return jwt.sign(payload, jwtSecret, options);
   }
 
+  // static async forgotPassword(email: string) {
+  //   const user = await AuthRepository.getUserByEmail(email);
+  //   if (!user) {
+  //     throw new Error("User not found");
+  //   }
+
+  //   const rawToken = crypto.randomBytes(20).toString("hex");
+  //   const hashedToken = await hash(rawToken, 10);
+  //   const expiry = new Date(Date.now() + 5 * 60 * 1000);
+
+  //   console.log(`NOW ${Date.now()} expiry ${expiry}`);
+  //   await AuthRepository.updatePasswordResetToken(user.id, hashedToken, expiry);
+  //   const resetPasswordUrl = `${process.env.FRONTEND_URL}/reset/${rawToken}/${user.email}`;
+
+  //   await sendPasswordResetEmail(email, resetPasswordUrl, 5);
+  // }
+
+  static async validateToken(token: string) {
+    const redis = RedisClient.instance;
+    const hashedToken = crypto.createHash("sha256").update(token).digest("hex");
+    const userId = await redis.get(`reset:${hashedToken}`);
+
+    if (!userId) {
+      throw new Error("Invalid or expired token");
+    }
+
+    await redis.del(`reset:${hashedToken}`);
+    console.log("hello");
+    return { success: true };
+  }
+
   static async forgotPassword(email: string) {
     const user = await AuthRepository.getUserByEmail(email);
     if (!user) {
       throw new Error("User not found");
     }
 
-    const rawToken = crypto.randomBytes(20).toString("hex");
-    const hashedToken = await hash(rawToken, 10);
-    const expiry = new Date(Date.now() + 5 * 60 * 1000);
+    const rawToken = crypto.randomBytes(32).toString("hex");
+    const hashedToken = crypto
+      .createHash("sha256")
+      .update(rawToken)
+      .digest("hex");
 
-    console.log("rawToken", rawToken);
-    console.log("expiry", expiry);
-    console.log("DateTime Now", Date.now());
-    await AuthRepository.updatePasswordResetToken(user.id, hashedToken, expiry);
+    const redis = RedisClient.instance;
+    await redis.set(`reset:${hashedToken}`, user.id, "EX", 300);
+
     const resetPasswordUrl = `${process.env.FRONTEND_URL}/reset/${rawToken}/${user.email}`;
 
     await sendPasswordResetEmail(email, resetPasswordUrl, 5);
-  }
-
-  static async validateToken(token: string, email: string) {
-    const user = await AuthRepository.getUserByEmail(email);
-    if (!user) {
-      throw new Error("User not found");
-    }
-    if (!user.resetToken) {
-      throw new Error("No reset token found");
-    }
-    if (!user.resetTokenExp) {
-      throw new Error("No reset token expiry found");
-    }
-    const isValid = await bcrypt.compare(token, user.resetToken);
-    if (!isValid) {
-      throw new Error("Invalid token");
-    }
-    // if (user.resetTokenExp.getTime() < Date.now()) {
-    //   throw new Error("Token expired");
-    // }
-    console.log("hello");
-    return { success: true };
   }
 
   static async changePassword(email: string, password: string) {

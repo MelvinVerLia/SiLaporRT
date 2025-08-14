@@ -42,11 +42,10 @@ const ResetPasswordPage: React.FC = () => {
       }
       // Simulate token validation API call
       console.log("hello");
-      console.log(`token: ${token}, email: ${email}`);
+      console.log(`token: ${token}`);
       try {
         const response = await AuthFinder.post("/validate-token", {
           token,
-          email,
         });
         console.log("response", response);
 
@@ -92,7 +91,7 @@ const ResetPasswordPage: React.FC = () => {
 
     try {
       // Simulate API call untuk reset password
-      await new Promise((resolve) => setTimeout(resolve, 2000));
+      // await new Promise((resolve) => setTimeout(resolve, 2000));
       const response = await AuthFinder.put("/change-password", {
         email,
         password,
@@ -108,7 +107,7 @@ const ResetPasswordPage: React.FC = () => {
               "Password berhasil diubah. Silakan login dengan password baru.",
           },
         });
-      }, 3000);
+      }, 2000);
     } catch (err) {
       setError("Terjadi kesalahan saat mengubah password. Silakan coba lagi.");
     } finally {
