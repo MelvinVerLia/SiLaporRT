@@ -38,17 +38,17 @@ export class AuthController {
 
   static async register(req: Request, res: Response) {
     try {
-      const { email, password, name } = req.body;
+      const { email, password, name, phone } = req.body;
 
       // Validation
-      if (!email || !password) {
+      if (!email || !password || !phone) {
         return res.status(400).json({
           success: false,
-          message: "Email and password are required",
+          message: "Email, password, and phone are required",
         });
       }
 
-      const result = await AuthService.register({ email, password, name });
+      const result = await AuthService.register({ email, password, name, phone });
 
       // Auto-login: set HttpOnly cookie valid 7 hari
       res.cookie("auth", result.token, {

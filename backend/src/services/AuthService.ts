@@ -8,6 +8,7 @@ export interface RegisterData {
   email: string;
   password: string;
   name?: string;
+  phone?: string;
 }
 
 export interface LoginData {
@@ -19,7 +20,7 @@ export class AuthService {
     return await AuthRepository.getUserByEmail(email);
   }
 
-  static async register({ email, password, name }: RegisterData) {
+  static async register({ email, password, name, phone }: RegisterData) {
     const exists = await AuthRepository.getUserByEmail(email);
     if (exists) {
       throw new Error("Email already in use");
@@ -31,6 +32,7 @@ export class AuthService {
       email,
       password: hashedPassword,
       name: name || email.split("@")[0],
+      phone,
     });
 
     const token = this.generateToken(user.id);
@@ -151,7 +153,7 @@ export class AuthService {
     await AuthRepository.updatePasswordResetToken(user.id, hashedToken, expiry);
     const resetPasswordUrl = `${process.env.FRONTEND_URL}/reset/${rawToken}/${user.email}`;
 
-    await sendPasswordResetEmail(email, resetPasswordUrl, expiry);
+    await sendPasswordResetEmail(email, resetPasswordUrl, 5);
   }
 
   static async validateToken(token: string, email: string) {
