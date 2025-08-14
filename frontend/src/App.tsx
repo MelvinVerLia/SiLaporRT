@@ -4,13 +4,9 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 
 import Layout from "./components/layout/Layout";
-// import ProtectedRoute from "./components/common/ProtectedRoute";
-// import { AuthProvider } from "./contexts/AuthContext";
 
 // Pages
 import HomePage from "./pages/HomePage";
-import LoginPage from "./pages/auth/LoginPage";
-import RegisterPage from "./pages/auth/RegisterPage";
 import LoginForm from "./components/forms/LoginForm";
 import RegisterForm from "./components/forms/RegisterForm";
 import ForgotPasswordPage from "./pages/auth/ForgotPasswordPage";
@@ -24,10 +20,14 @@ import AdminDashboard from "./pages/dashboard/AdminDashboard";
 import ProfilePage from "./pages/ProfilePage";
 import NotFoundPage from "./pages/NotFoundPage";
 
+// Wrapper
+import PublicOnlyRoute from "./routes/PublicOnlyRoute";
+import ProtectedRoute from "./routes/ProtectedRoute";
+
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
-      staleTime: 5 * 60 * 1000, // 5 minutes
+      staleTime: 5 * 60 * 1000,
       retry: 1,
     },
   },
@@ -35,73 +35,101 @@ const queryClient = new QueryClient({
 
 function App() {
   return (
-    <>
-      <QueryClientProvider client={queryClient}>
-        {/* <AuthProvider> */}
-        <Router>
-          <div className="bg-gray-50">
-            <Routes>
-              {/* Public routes */}
-              <Route path="/login" element={<LoginForm />} />
-              <Route path="/register" element={<RegisterForm />} />
-              <Route path="forgot-password" element={<ForgotPasswordPage />} />
+    <QueryClientProvider client={queryClient}>
+      <Router>
+        <div className="bg-gray-50">
+          <Routes>
+            {/* Public-only routes (redirect ke "/" jika sudah login) */}
+            <Route
+              path="/login"
+              element={
+                <PublicOnlyRoute>
+                  <LoginForm />
+                </PublicOnlyRoute>
+              }
+            />
+            <Route
+              path="/register"
+              element={
+                <PublicOnlyRoute>
+                  <RegisterForm />
+                </PublicOnlyRoute>
+              }
+            />
+            <Route
+              path="/forgot-password"
+              element={
+                <PublicOnlyRoute>
+                  <ForgotPasswordPage />
+                </PublicOnlyRoute>
+              }
+            />
+            <Route
+              path="/reset/:token/:email"
+              element={
+                <PublicOnlyRoute>
+                  <ResetPasswordPage />
+                </PublicOnlyRoute>
+              }
+            />
+            <Route
+              path="/verify-otp"
+              element={
+                <PublicOnlyRoute>
+                  <OTPVerificationForm />
+                </PublicOnlyRoute>
+              }
+            />
+
+            {/* Routes with layout */}
+            <Route path="/" element={<Layout />}>
+              <Route index element={<HomePage />} />
+              <Route path="reports" element={<ReportsPage />} />
+              <Route path="reports/:id" element={<ReportDetailPage />} />
+
+              {/* Protected routes */}
               <Route
-                path="reset/:token/:email"
-                element={<ResetPasswordPage />}
-              />
-              <Route path="/verify-otp" element={<OTPVerificationForm />} />
-
-              {/* Routes with layout */}
-              <Route path="/" element={<Layout />}>
-                <Route index element={<HomePage />} />
-                <Route path="reports" element={<ReportsPage />} />
-                <Route path="reports/:id" element={<ReportDetailPage />} />
-
-                {/* Protected routes */}
-                <Route
-                  path="create-report"
-                  element={
-                    // <ProtectedRoute>
+                path="create-report"
+                element={
+                  <ProtectedRoute>
                     <CreateReportPage />
-                    // </ProtectedRoute>
-                  }
-                />
-                <Route
-                  path="my-reports"
-                  element={
-                    // <ProtectedRoute>
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="my-reports"
+                element={
+                  <ProtectedRoute>
                     <MyReportsPage />
-                    // </ProtectedRoute>
-                  }
-                />
-                <Route
-                  path="profile"
-                  element={
-                    // <ProtectedRoute>
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="profile"
+                element={
+                  <ProtectedRoute>
                     <ProfilePage />
-                    // </ProtectedRoute>
-                  }
-                />
+                  </ProtectedRoute>
+                }
+              />
 
-                {/* Admin only routes */}
-                <Route
-                  path="admin"
-                  element={
-                    // <ProtectedRoute requiredRole="RT_ADMIN">
+              {/* Admin only */}
+              <Route
+                path="admin"
+                element={
+                  <ProtectedRoute requiredRole="RT_ADMIN">
                     <AdminDashboard />
-                    // </ProtectedRoute>
-                  }
-                />
-              </Route>
+                  </ProtectedRoute>
+                }
+              />
+            </Route>
 
-              <Route path="*" element={<NotFoundPage />} />
-            </Routes>
-          </div>
-        </Router>
-        {/* </AuthProvider> */}
-        <ReactQueryDevtools initialIsOpen={false} />
-      </QueryClientProvider>
-    </>
+            <Route path="*" element={<NotFoundPage />} />
+          </Routes>
+        </div>
+      </Router>
+      <ReactQueryDevtools initialIsOpen={false} />
+    </QueryClientProvider>
   );
 }
 
