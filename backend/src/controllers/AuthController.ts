@@ -151,8 +151,7 @@ export class AuthController {
 
   static async validateToken(req: Request, res: Response) {
     try {
-      const { token, email } = req.body;
-      console.log(`token: ${token}, email: ${email}`);
+      const { token } = req.body;
       if (!token) {
         return res.status(400).json({
           success: false,
@@ -160,7 +159,7 @@ export class AuthController {
         });
       }
 
-      const result = await AuthService.validateToken(token, email);
+      const result = await AuthService.validateToken(token);
       console.log("result", result);
       res.status(200).json({
         success: true,

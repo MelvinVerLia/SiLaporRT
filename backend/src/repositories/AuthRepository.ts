@@ -27,14 +27,4 @@ export class AuthRepository {
     return prisma.user.update({ where: { id: userId }, data: { password } });
   }
 
-  static async updatePasswordResetToken(
-    userId: string,
-    token: string,
-    expiry: Date
-  ) {
-    return prisma.user.update({
-      where: { id: userId },
-      data: { resetToken: token, resetTokenExp: expiry },
-    });
-  }
 }

@@ -21,8 +21,6 @@ model User {
   email       String?  @unique
   password    String?  
   googleId    String?  @unique
-  resetToken  String?
-  resetTokenExp   DateTime?
   profile     String? 
 
   role        Role     @default(CITIZEN)
