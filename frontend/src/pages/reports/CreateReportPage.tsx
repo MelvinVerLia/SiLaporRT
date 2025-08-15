@@ -21,7 +21,6 @@ import Select from "../../components/ui/Select";
 import Badge from "../../components/ui/Badge";
 import LocationPicker from "../../components/features/maps/LocationPicker";
 import ImageUpload from "../../components/features/media/ImageUpload";
-import { useAuth } from "../../hooks/useAuth";
 import {
   CreateReportFormData,
   ReportCategory,
@@ -30,7 +29,6 @@ import {
 
 const CreateReportPage: React.FC = () => {
   const navigate = useNavigate();
-  const { user, isAuthenticated } = useAuth();
   const [currentStep, setCurrentStep] = useState(1);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -44,12 +42,6 @@ const CreateReportPage: React.FC = () => {
     location: null,
     attachments: [],
   });
-
-  // Redirect if not authenticated
-  if (!isAuthenticated) {
-    navigate("/login");
-    return null;
-  }
 
   const steps = [
     {

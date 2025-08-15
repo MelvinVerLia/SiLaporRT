@@ -33,6 +33,7 @@ model User {
   responses       Response[]
   reportComments  ReportComment[]
   reportUpvotes   ReportUpvote[]
+  announcements   Announcement[]
   
   @@map("users")
 }
@@ -81,9 +82,7 @@ enum ReportCategory {
   SECURITY       // Keamanan lingkungan
   UTILITIES      // Air, listrik
   ENVIRONMENT    // Pohon tumbang, banjir
-  ANNOUNCEMENT   // Pengumuman dari RT (sticky posts)
   SUGGESTION     // Saran untuk perbaikan lingkungan
-  EVENT          // Info kegiatan warga (gotong royong, dll)
   OTHER          // Lainnya
 }
 
@@ -165,14 +164,72 @@ model Attachment {
   filename String
   url      String
   fileType String // image, video, document
+
+  // Cloudinary (opsional)
+  provider     String?  // "cloudinary"
+  publicId     String?  @unique
+  resourceType String?  // "image" | "video" | "raw"
+  format       String?
+  bytes        Int?
+  width        Int?
+  height       Int?
   
   // Relations (bisa attach ke Report atau Response)
   report     Report?   @relation(fields: [reportId], references: [id], onDelete: Cascade)
   reportId   String?
   response   Response? @relation(fields: [responseId], references: [id], onDelete: Cascade)
   responseId String?
+  announcement   Announcement? @relation(fields: [announcementId], references: [id], onDelete: Cascade)
+  announcementId String?
   
   createdAt DateTime @default(now())
   
   @@map("attachments")
+}
+
+model Announcement {
+  id          String            @id @default(cuid())
+  title       String
+  content     String            @db.Text
+  type        AnnouncementType  @default(GENERAL)
+  priority    Priority          @default(NORMAL)
+  isActive    Boolean           @default(true)
+  
+  isPinned    Boolean           @default(false)      // TODO: Pin announcement
+  publishAt   DateTime?                              // TODO: Schedule publish
+  expireAt    DateTime?                              // TODO: Auto-hide
+  viewCount   Int               @default(0)          // TODO: Analytics
+  
+  // Author (only RT_ADMIN can create)
+  author      User              @relation(fields: [authorId], references: [id])
+  authorId    String
+  
+  // Media attachments
+  attachments Attachment[]
+  
+  createdAt   DateTime          @default(now())
+  updatedAt   DateTime          @updatedAt
+  
+  @@map("announcements")
+
+  @@index([isActive, publishAt, expireAt])
+  @@index([isPinned, publishAt, createdAt])
+  @@index([authorId, createdAt])
+  @@index([type])
+  @@index([priority])
+}
+
+enum AnnouncementType {
+  GENERAL     // Pengumuman umum
+  URGENT      // Mendesak  
+  EVENT       // Acara/kegiatan
+  MAINTENANCE // Pemeliharaan
+  REGULATION  // Peraturan baru
+}
+
+enum Priority {
+  LOW
+  NORMAL
+  HIGH
+  URGENT
 }

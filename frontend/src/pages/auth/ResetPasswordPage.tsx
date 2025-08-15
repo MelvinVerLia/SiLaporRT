@@ -180,10 +180,6 @@ const ResetPasswordPage: React.FC = () => {
               Password Anda telah berhasil diubah. Anda akan diarahkan ke
               halaman login dalam beberapa detik.
             </p>
-
-            <Link to="/login">
-              <Button className="w-full">Lanjut ke Login</Button>
-            </Link>
           </CardContent>
         </Card>
       </div>

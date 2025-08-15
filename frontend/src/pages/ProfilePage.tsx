@@ -1,5 +1,4 @@
-import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import React, { useState, useEffect } from "react";
 import { User, Shield, Edit2, Save, X, CheckCircle } from "lucide-react";
 import {
   Card,
@@ -13,27 +12,31 @@ import Badge from "../components/ui/Badge";
 import { useAuth } from "../hooks/useAuth";
 
 const ProfilePage: React.FC = () => {
-  const { user, isAuthenticated } = useAuth();
-  const navigate = useNavigate();
+  const { user } = useAuth();
 
   // Edit mode states
   const [isEditingProfile, setIsEditingProfile] = useState(false);
 
   // Form states
   const [profileForm, setProfileForm] = useState({
-    name: user?.name || "",
-    email: user?.email || "",
-    phone: user?.phone || "",
+    name: "",
+    email: "",
+    phone: "",
   });
+
+  useEffect(() => {
+    setProfileForm({
+      name: user?.name || "",
+      email: user?.email || "",
+      phone: user?.phone || "",
+    });
+  }, [user]);
 
   // Loading states
   const [isSavingProfile, setIsSavingProfile] = useState(false);
 
-  // Redirect if not authenticated
-  if (!isAuthenticated || !user) {
-    navigate("/login");
-    return null;
-  }
+  // Safety fallback (harusnya tidak kejadian karena ProtectedRoute sudah filter)
+  if (!user) return null;
 
   const formatJoinDate = (dateString: string) => {
     const date = new Date(dateString);
