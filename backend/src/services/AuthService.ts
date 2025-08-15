@@ -6,6 +6,7 @@ import { sendPasswordResetEmail } from "../email/EmailForm";
 import { RedisClient } from "../config/RedisClient";
 import otpGenerator from "otp-generator";
 import { sendOTPEmail } from "../email/OTP";
+import { log } from "console";
 
 export interface RegisterData {
   email: string;
@@ -22,49 +23,95 @@ export class AuthService {
     return await AuthRepository.getUserByEmail(email);
   }
 
-  static async register({ email, password, name }: RegisterData) {
+  // static async register({ email, password, name }: RegisterData) {
+  //   const exists = await AuthRepository.getUserByEmail(email);
+  //   if (exists) {
+  //     throw new Error("Email already in use");
+  //   }
+
+  //   const hashedPassword = await bcrypt.hash(password, 10);
+
+  //   const user = await AuthRepository.createUser({
+  //     email,
+  //     password: hashedPassword,
+  //     name: name || email.split("@")[0],
+  //   });
+
+  //   const token = this.generateToken(user.id);
+
+  //   const { password: _pw, googleId: _gi, ...safeUser } = user;
+
+  //   return { user: safeUser, token };
+  // }
+
+  static async sendOtp(
+    email: string,
+    password: string,
+    name: string,
+    phone: string
+  ) {
     const exists = await AuthRepository.getUserByEmail(email);
     if (exists) {
-      throw new Error("Email already in use");
+      throw new Error("Email sudah terdaftar");
     }
-
-    const hashedPassword = await bcrypt.hash(password, 10);
-
-    const user = await AuthRepository.createUser({
-      email,
-      password: hashedPassword,
-      name: name || email.split("@")[0],
-    });
-
-    const token = this.generateToken(user.id);
-
-    const { password: _pw, googleId: _gi, ...safeUser } = user;
-
-    return { user: safeUser, token };
-  }
-
-  static async sendOtp(email: string) {
     const otp = otpGenerator.generate(6, {
       digits: true,
       upperCaseAlphabets: false,
       lowerCaseAlphabets: false,
       specialChars: false,
     });
+    const rawToken = crypto.randomBytes(32).toString("hex");
+    const hashedToken = crypto
+      .createHash("sha256")
+      .update(rawToken)
+      .digest("hex");
+
+    const hashedOtp = crypto.createHash("sha256").update(otp).digest("hex");
+    const hashedPassword = await bcrypt.hash(password, 10);
+
     const redis = RedisClient.instance;
-    await redis.set(email, otp);
+    await redis.set(
+      hashedToken,
+      JSON.stringify({ hashedOtp, email, hashedPassword, name, phone }),
+      "EX",
+      300
+    );
     await sendOTPEmail(email, otp, 5);
+
+    return rawToken;
   }
 
-  static async validateOtp(email: string, otp: string) {
+  static async register(token: string, otp: string) {
+    console.log("hellowww")
     const redis = RedisClient.instance;
-    const storedOtp = await redis.get(email);
-    if (storedOtp === otp) {
-      this.register({ email, password: "password", name: "name" });
-      return true;
+    const hashedToken = crypto.createHash("sha256").update(token).digest("hex");
+    const payload = await redis.get(hashedToken);
+    if (!payload) {
+      throw new Error("Invalid token");
+    }
+    const payloadJSON = JSON.parse(payload);
+    const { hashedOtp, email, hashedPassword, name, phone } = payloadJSON;
+    
+    const inputOtp = crypto.createHash("sha256").update(otp).digest("hex");
+
+    if (hashedOtp === inputOtp) {
+      const user = await AuthRepository.createUser({
+        email,
+        password: hashedPassword,
+        name,
+        phone,
+      });
+      console.log("user", user);
+
+      const token = this.generateToken(user.id);
+      const { password: _pw, googleId: _gi, ...safeUser } = user;
+
+      return { user: safeUser, token };
     } else {
-      return false;
+      throw new Error("Invalid OTP");
     }
   }
+
   static async login({ email, password }: LoginData) {
     const user = await AuthRepository.getUserByEmail(email);
     if (!user) {

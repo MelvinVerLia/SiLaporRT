@@ -1,11 +1,12 @@
 import { Resend } from "resend";
+import { transporter } from "./mailer";
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
 export const sendOTPEmail = async (
   email: string,
-  expiryMinutes: any,
-  otpCode: any
+  otp: string,
+  expiryMinutes: number
 ) => {
   const emailHTML = `
 <!DOCTYPE html>
@@ -52,7 +53,7 @@ export const sendOTPEmail = async (
                                letter-spacing: 8px; 
                                margin: 0;
                                font-family: 'Courier New', monospace;">
-                        ${otpCode}
+                        ${otp}
                     </div>
                 </div>
             </div>
@@ -93,21 +94,14 @@ export const sendOTPEmail = async (
 </body>
 </html>
   `;
-
   try {
-    const { data, error } = await resend.emails.send({
-      from: "onboarding@resend.dev",
+    await transporter.sendMail({
+      from: process.env.MAIL_FROM,
       to: email,
       subject: "OTP Verification",
       html: emailHTML,
     });
 
-    if (error) {
-      console.error("Email error:", error);
-      return false;
-    }
-
-    console.log("Email sent successfully:", data);
     return true;
   } catch (error) {
     console.error("Failed to send email:", error);

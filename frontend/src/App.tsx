@@ -49,7 +49,7 @@ function App() {
                 path="reset/:token/:email"
                 element={<ResetPasswordPage />}
               />
-              <Route path="/verify-otp" element={<OTPVerificationForm />} />
+              <Route path="/verify-otp/:token" element={<OTPVerificationForm />} />
 
               {/* Routes with layout */}
               <Route path="/" element={<Layout />}>

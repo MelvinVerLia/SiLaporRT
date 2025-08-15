@@ -16,17 +16,17 @@ export async function request(path: string, config: AxiosRequestConfig = {}) {
       throw { message: data?.message || "Request failed" };
     }
     return data;
-  } catch (err: any) {
-    if (err.response) {
+  } catch (error: any) {
+    if (error.response) {
       const msg =
-        err.response?.data?.message ||
-        err.response?.statusText ||
+        error.response?.data?.message ||
+        error.response?.statusText ||
         "Request failed";
-      throw { message: msg, status: err.response.status };
+      throw { message: msg, status: error.response.status };
     }
-    if (err.request) {
+    if (error.request) {
       throw { message: "Network error" };
     }
-    throw { message: err?.message || "Request failed" };
+    throw { message: error?.message || "Request failed" };
   }
 }

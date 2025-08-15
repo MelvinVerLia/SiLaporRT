@@ -85,7 +85,7 @@ const RegisterPage: React.FC = () => {
 
     if (!formData.password) {
       newErrors.password = "Password wajib diisi";
-    } else if (formData.password.length < 6) {
+    } else if (formData.password.length < 6) {            
       newErrors.password = "Password minimal 6 karakter";
     }
 
