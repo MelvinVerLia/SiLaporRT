@@ -5,6 +5,7 @@ import {
   X,
   Home,
   FileText,
+  Megaphone,
   PlusCircle,
   User,
   LogIn,
@@ -70,6 +71,7 @@ const Header: React.FC = () => {
     const publicItems = [
       { path: "/", label: "Beranda", icon: Home },
       { path: "/reports", label: "Forum", icon: FileText },
+      { path: '/announcements', label: 'Pengumuman', icon: Megaphone }
     ];
 
     if (!isAuthenticated) {

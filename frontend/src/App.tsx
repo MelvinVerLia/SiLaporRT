@@ -18,6 +18,8 @@ import ReportDetailPage from "./pages/reports/ReportDetailPage";
 import MyReportsPage from "./pages/reports/MyReportsPage";
 import AdminDashboard from "./pages/dashboard/AdminDashboard";
 import ProfilePage from "./pages/ProfilePage";
+import AnnouncementsPage from "./pages/announcements/AnnouncementsPage";
+import AnnouncementDetailPage from "./pages/announcements/AnnouncementDetailPage";
 import NotFoundPage from "./pages/NotFoundPage";
 
 // Wrapper
@@ -86,7 +88,11 @@ function App() {
               <Route index element={<HomePage />} />
               <Route path="reports" element={<ReportsPage />} />
               <Route path="reports/:id" element={<ReportDetailPage />} />
-
+              <Route path="announcements" element={<AnnouncementsPage />} />
+              <Route
+                path="announcements/:id"
+                element={<AnnouncementDetailPage />}
+              />
               {/* Protected routes */}
               <Route
                 path="create-report"
@@ -112,7 +118,6 @@ function App() {
                   </ProtectedRoute>
                 }
               />
-
               {/* Admin only */}
               <Route
                 path="admin"
@@ -122,6 +127,15 @@ function App() {
                   </ProtectedRoute>
                 }
               />
+              {/* // TODO: Admin routes (next step)
+              <Route
+                path="admin/announcements"
+                element={
+                  <ProtectedRoute requiredRole="RT_ADMIN">
+                    <ManageAnnouncementsPage />
+                  </ProtectedRoute>
+                }
+              /> */}
             </Route>
 
             <Route path="*" element={<NotFoundPage />} />
