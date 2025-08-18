@@ -1,7 +1,4 @@
-import { Resend } from "resend";
 import { transporter } from "./mailer";
-
-const resend = new Resend(process.env.RESEND_API_KEY);
 
 export const sendPasswordResetEmail = async (
   email: string,
@@ -75,18 +72,6 @@ export const sendPasswordResetEmail = async (
   `;
 
   try {
-    // const { data, error } = await resend.emails.send({
-    //   from: "onboarding@resend.dev",
-    //   to: email,
-    //   subject: "Reset Your SiLaporRT Password",
-    //   html: emailHTML,
-    // });
-
-    // if (error) {
-    //   console.error("Email error:", error);
-    //   return false;
-    // }
-
     await transporter.sendMail({
       from: process.env.MAIL_FROM,
       to: email,

@@ -11,6 +11,8 @@ import {
   register as apiRegister,
   getProfile,
   logout as apiLogout,
+  sendOTP,
+  // verifyOTP as verifyOtp,
 } from "../services/authService";
 
 export const useAuth = () => {
@@ -39,7 +41,7 @@ export const useAuth = () => {
       setIsLoading(true);
       setError(null);
       try {
-        const { user } = await apiLogin(credentials); // { user, token } — token tidak dipakai di FE
+        const { user } = await apiLogin(credentials); 
         setUser(user);
         return true;
       } catch (e: any) {
@@ -53,26 +55,52 @@ export const useAuth = () => {
   );
 
   // REGISTER: validasi ringan → ikut hasil server; FE tidak menyimpan token
-  const register = useCallback(async (data: RegisterData): Promise<boolean> => {
+  // const register = useCallback(async (data: RegisterData): Promise<boolean> => {
+  //   setIsLoading(true);
+  //   setError(null);
+  //   try {
+  //     if (data.password !== data.confirmPassword) {
+  //       setError({ message: "Password tidak sama", field: "confirmPassword" });
+  //       return false;
+  //     }
+  //     if (data.password.length < 6) {
+  //       setError({ message: "Password minimal 6 karakter", field: "password" });
+  //       return false;
+  //     }
+
+  //     const { confirmPassword, ...body } = data;
+
+  //     const { user } = await apiRegister(body);
+  //     setUser(user);
+  //     return true;
+  //   } catch (e: any) {
+  //     setError({ message: e?.message || "Terjadi kesalahan saat registrasi" });
+  //     return false;
+  //   } finally {
+  //     setIsLoading(false);
+  //   }
+  // }, []);
+
+  const sendOtp = useCallback(async (data: RegisterData) => {
     setIsLoading(true);
     setError(null);
     try {
       if (data.password !== data.confirmPassword) {
         setError({ message: "Password tidak sama", field: "confirmPassword" });
-        return false;
+        return;
       }
       if (data.password.length < 6) {
         setError({ message: "Password minimal 6 karakter", field: "password" });
-        return false;
+        return;
       }
 
-      const { confirmPassword, ...body } = data as any;
-      const { user } = await apiRegister(body); // { user, token } — token tidak dipakai di FE
-      setUser(user);
-      return true;
+      const { confirmPassword, ...body } = data;
+
+      const response = await sendOTP(body);
+      return response.token;
     } catch (e: any) {
       setError({ message: e?.message || "Terjadi kesalahan saat registrasi" });
-      return false;
+      return;
     } finally {
       setIsLoading(false);
     }
@@ -100,21 +128,6 @@ export const useAuth = () => {
     []
   );
 
-  // OTP FLOW: TODO sambungkan ke BE (forgot/validate/change-password atau OTP khusus)
-  const sendOTP = useCallback(async (_email: string): Promise<boolean> => {
-    setIsLoading(true);
-    setError(null);
-    try {
-      // TODO: panggil endpoint BE, contoh: await apiSendOTP(email)
-      return true;
-    } catch (e: any) {
-      setError({ message: e?.message || "Gagal mengirim OTP" });
-      return false;
-    } finally {
-      setIsLoading(false);
-    }
-  }, []);
-
   const resendOTP = useCallback(async (_email: string): Promise<boolean> => {
     setIsLoading(true);
     setError(null);
@@ -129,19 +142,13 @@ export const useAuth = () => {
     }
   }, []);
 
-  const verifyOTP = useCallback(
-    async (
-      _email: string,
-      _otpCode: string,
-      _userData: RegisterData
-    ): Promise<boolean> => {
+  const register = useCallback(
+    async (token: string, otpCode: string): Promise<boolean> => {
       setIsLoading(true);
       setError(null);
       try {
-        // TODO: panggil endpoint BE verifikasi OTP
-        // sementara: belum didukung
-        setError({ message: "Verifikasi OTP belum didukung" });
-        return false;
+        await apiRegister(token, otpCode);
+        return true;
       } catch (e: any) {
         setError({ message: e?.message || "Gagal verifikasi OTP" });
         return false;
@@ -162,8 +169,8 @@ export const useAuth = () => {
     updateProfile, // TODO
     error,
     clearError: () => setError(null),
-    sendOTP, // TODO
+    sendOtp, // TODO
     resendOTP, // TODO
-    verifyOTP, // TODO
+    // verifyOTP, 
   };
 };

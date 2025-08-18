@@ -18,7 +18,7 @@ const RegisterForm: React.FC = () => {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [agreedToTerms, setAgreedToTerms] = useState(false);
   const navigate = useNavigate();
-  const { register, sendOTP, isLoading, error, clearError } = useAuth();
+  const { register, sendOtp, isLoading, error, clearError } = useAuth();
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -32,9 +32,10 @@ const RegisterForm: React.FC = () => {
 
     if (!agreedToTerms) return;
 
-    const success = await register(formData);
-    if (success) {
-      navigate("/", { replace: true });
+    const response = await sendOtp(formData);
+    console.log("responseee", response);
+    if (response) {
+      navigate(`/verify-otp/${response}`, { replace: true });
     }
   };
 

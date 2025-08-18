@@ -83,6 +83,14 @@ function App() {
                 </PublicOnlyRoute>
               }
             />
+            <Route
+              path="/verify-otp/:token"
+              element={
+                <PublicOnlyRoute>
+                  <OTPVerificationForm />
+                </PublicOnlyRoute>
+              }
+            />
 
             {/* Routes with layout */}
             <Route path="/" element={<Layout />}>

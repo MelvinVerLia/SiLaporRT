@@ -28,4 +28,7 @@ router.put("/change-password", AuthController.changePassword)
 
 router.get("/profile", authenticateJWT, AuthController.getProfile);
 
+router.post("/send-otp", AuthController.sendOtp);
+// router.post("/validate-otp-token", AuthController.validateOtpToken);
+
 export default router;

@@ -1,9 +1,10 @@
 import React, { useState, useEffect, useRef } from "react";
-import { Link, useNavigate, useLocation } from "react-router-dom";
+import { Link, useNavigate, useLocation, useParams } from "react-router-dom";
 import { ArrowLeft, Mail, RefreshCw, Check, AlertCircle } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "../ui/Card";
 import Button from "../ui/Button";
 import { useAuth } from "../../hooks/useAuth";
+import { AuthFinder } from "../../api/AuthFinder";
 
 interface LocationState {
   email: string;
@@ -13,12 +14,12 @@ interface LocationState {
 
 const OTPVerificationForm: React.FC = () => {
   const [otp, setOtp] = useState(["", "", "", "", "", ""]);
-  const [timeLeft, setTimeLeft] = useState(300); // 5 minutes in seconds
+  const [timeLeft, setTimeLeft] = useState(300);
   const [canResend, setCanResend] = useState(false);
   const [isResending, setIsResending] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
-  const { verifyOTP, resendOTP, isLoading, error, clearError } = useAuth();
+  const { register, resendOTP, isLoading, error, clearError } = useAuth();
   const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
 
   // Get data from register form
@@ -26,13 +27,14 @@ const OTPVerificationForm: React.FC = () => {
   const email = locationState?.email;
   const name = locationState?.name;
   const userData = locationState?.userData;
+  const { token } = useParams();
 
   // Redirect if no email provided
   useEffect(() => {
-    if (!email) {
+    if (!token) {
       navigate("/register", { replace: true });
     }
-  }, [email, navigate]);
+  }, [token]);
 
   // Countdown timer
   useEffect(() => {
@@ -94,27 +96,29 @@ const OTPVerificationForm: React.FC = () => {
   };
 
   // Handle paste
-  const handlePaste = (e: React.ClipboardEvent) => {
-    e.preventDefault();
-    const pastedData = e.clipboardData.getData("text");
+  // const handlePaste = (e: React.ClipboardEvent) => {
+  //   e.preventDefault();
+  //   const pastedData = e.clipboardData.getData("text");
 
-    // Only process if it's 6 digits
-    if (/^\d{6}$/.test(pastedData)) {
-      const newOtp = pastedData.split("");
-      setOtp(newOtp);
+  //   // Only process if it's 6 digits
+  //   if (/^\d{6}$/.test(pastedData)) {
+  //     const newOtp = pastedData.split("");
+  //     setOtp(newOtp);
 
-      // Focus last input
-      inputRefs.current[5]?.focus();
+  //     // Focus last input
+  //     inputRefs.current[5]?.focus();
 
-      // Auto-submit
-      handleVerifyOTP(pastedData);
-    }
-  };
+  //     // Auto-submit
+  //     handleVerifyOTP(pastedData);
+  //   }
+  // };
 
   const handleVerifyOTP = async (otpCode: string) => {
-    const success = await verifyOTP(email, otpCode, userData);
+    if(!token || !otpCode) return;
+    const success = await register(token, otpCode);
+    console.log("success", success);
     if (success) {
-      navigate("/", { replace: true });
+      navigate("/login", { replace: true });
     }
   };
 
@@ -123,20 +127,12 @@ const OTPVerificationForm: React.FC = () => {
     const success = await resendOTP(email);
 
     if (success) {
-      setTimeLeft(300); // Reset timer to 5 minutes
+      setTimeLeft(300); 
       setCanResend(false);
-      setOtp(["", "", "", "", "", ""]); // Clear OTP inputs
-      inputRefs.current[0]?.focus(); // Focus first input
+      setOtp(["", "", "", "", "", ""]); 
+      inputRefs.current[0]?.focus(); 
     }
     setIsResending(false);
-  };
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    const otpCode = otp.join("");
-    if (otpCode.length === 6) {
-      handleVerifyOTP(otpCode);
-    }
   };
 
   const formatTime = (seconds: number) => {
@@ -145,17 +141,7 @@ const OTPVerificationForm: React.FC = () => {
     return `${minutes}:${remainingSeconds.toString().padStart(2, "0")}`;
   };
 
-  const maskEmail = (email: string) => {
-    const [localPart, domain] = email.split("@");
-    const repeatCount = Math.max(localPart.length - 2, 0);
-    const maskedLocal =
-      localPart.charAt(0) +
-      "*".repeat(repeatCount) +
-      (localPart.length > 1 ? localPart.slice(-1) : "");
-    return `${maskedLocal}@${domain}`;
-  };
-
-  if (!email) return null;
+  // if (!email) return null;
 
   return (
     <div className="min-h-screen bg-gradient-to-l from-blue-200 to-white flex flex-col justify-center py-12 px-4 sm:px-6 lg:px-8">
@@ -200,7 +186,7 @@ const OTPVerificationForm: React.FC = () => {
                 Kami telah mengirim kode verifikasi ke
               </p>
               <p className="text-sm font-semibold text-gray-900">
-                {maskEmail(email)}
+                {/* {maskEmail(email)} */}
               </p>
               <p className="text-xs text-gray-500">
                 Masukkan 6 digit kode untuk melanjutkan
@@ -208,7 +194,7 @@ const OTPVerificationForm: React.FC = () => {
             </div>
           </div>
 
-          <form onSubmit={handleSubmit} className="space-y-6">
+          <form className="space-y-6">
             {/* OTP Input */}
             <div className="space-y-2">
               <label className="block text-sm font-medium text-gray-700 text-center">
@@ -217,7 +203,7 @@ const OTPVerificationForm: React.FC = () => {
 
               <div
                 className="flex justify-center space-x-2"
-                onPaste={handlePaste}
+                // onPaste={handlePaste}
               >
                 {otp.map((digit, index) => (
                   <input
@@ -247,7 +233,7 @@ const OTPVerificationForm: React.FC = () => {
             )}
 
             {/* Submit Button */}
-            <Button
+            {/* <Button
               type="submit"
               className="w-full bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 transform hover:scale-[1.02] transition-all duration-200 shadow-lg"
               loading={isLoading}
@@ -255,7 +241,7 @@ const OTPVerificationForm: React.FC = () => {
             >
               <Check className="mr-2 h-4 w-4" />
               {isLoading ? "Memverifikasi..." : "Verifikasi"}
-            </Button>
+            </Button> */}
 
             {/* Resend Section */}
             <div className="text-center space-y-3">

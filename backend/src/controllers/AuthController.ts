@@ -36,42 +36,42 @@ export class AuthController {
     }
   }
 
-  static async register(req: Request, res: Response) {
-    try {
-      const { email, password, name, phone } = req.body;
+  // static async register(req: Request, res: Response) {
+  //   try {
+  //     const { email, password, name } = req.body;
 
-      // Validation
-      if (!email || !password || !phone) {
-        return res.status(400).json({
-          success: false,
-          message: "Email, password, and phone are required",
-        });
-      }
+  //     // Validation
+  //     if (!email || !password) {
+  //       return res.status(400).json({
+  //         success: false,
+  //         message: "Email and password are required",
+  //       });
+  //     }
 
-      const result = await AuthService.register({ email, password, name, phone });
+  //     const result = await AuthService.register({ email, password, name });
 
-      // Auto-login: set HttpOnly cookie valid 7 hari
-      res.cookie("auth", result.token, {
-        httpOnly: true,
-        secure: process.env.NODE_ENV === "production",
-        sameSite: "lax",
-        path: "/",
-        maxAge: 7 * 24 * 60 * 60 * 1000, // 7 hari
-      });
+  //     // Auto-login: set HttpOnly cookie valid 7 hari
+  //     res.cookie("auth", result.token, {
+  //       httpOnly: true,
+  //       secure: process.env.NODE_ENV === "production",
+  //       sameSite: "lax",
+  //       path: "/",
+  //       maxAge: 7 * 24 * 60 * 60 * 1000, // 7 hari
+  //     });
 
-      res.status(201).json({
-        success: true,
-        message: "User registered successfully",
-        data: result,
-      });
-    } catch (error) {
-      res.status(400).json({
-        success: false,
-        message:
-          error instanceof Error ? error.message : "Failed to register user",
-      });
-    }
-  }
+  //     res.status(201).json({
+  //       success: true,
+  //       message: "User registered successfully",
+  //       data: result,
+  //     });
+  //   } catch (error) {
+  //     res.status(400).json({
+  //       success: false,
+  //       message:
+  //         error instanceof Error ? error.message : "Failed to register user",
+  //     });
+  //   }
+  // }
 
   static async logout(_req: Request, res: Response) {
     res.clearCookie("auth", { path: "/" });
@@ -198,6 +198,50 @@ export class AuthController {
         success: false,
         message:
           error instanceof Error ? error.message : "Failed to change password",
+      });
+    }
+  }
+
+  static async sendOtp(req: Request, res: Response) {
+    const { email, password, name, phone } = req.body;
+    try {
+      const response = await AuthService.sendOtp(email, password, name, phone);
+      res.json({
+        success: true,
+        message: "OTP sent successfully",
+        token: response,
+      });
+    } catch (error) {
+      res.status(400).json({
+        success: false,
+        message: error instanceof Error ? error.message : "Failed to send OTP",
+      });
+    }
+  }
+
+  static async register(req: Request, res: Response) {
+    console.log("masuk validate Token")
+    const { token, otp } = req.body;
+    try {
+      if (!token) {
+        return res.status(400).json({
+          success: false,
+          message: "Token is required",
+        });
+      }
+      const result = await AuthService.register(token, otp);
+      console.log("result", result);
+      res.status(200).json({
+        success: true,
+        message: "Token is valid",
+        data: result,
+      });
+    } catch (error) {
+      console.log("error", error);
+      res.status(400).json({
+        success: false,
+        message:
+          error instanceof Error ? error.message : "Failed to validate token",
       });
     }
   }
