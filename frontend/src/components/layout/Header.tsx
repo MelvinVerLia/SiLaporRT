@@ -12,7 +12,6 @@ import {
   LogOut,
   Shield,
   Bell,
-  MapPin,
   ChevronDown,
   UserCircle,
 } from "lucide-react";
@@ -71,7 +70,7 @@ const Header: React.FC = () => {
     const publicItems = [
       { path: "/", label: "Beranda", icon: Home },
       { path: "/reports", label: "Forum", icon: FileText },
-      { path: '/announcements', label: 'Pengumuman', icon: Megaphone }
+      { path: "/announcements", label: "Pengumuman", icon: Megaphone },
     ];
 
     if (!isAuthenticated) {
@@ -85,11 +84,18 @@ const Header: React.FC = () => {
 
     // Add admin-only items
     if (user?.role === Role.RT_ADMIN) {
-      authenticatedItems.push({
-        path: "/admin",
-        label: "Admin Panel",
-        icon: Shield,
-      });
+      authenticatedItems.push(
+        {
+          path: "/admin/announcements",
+          label: "Kelola Pengumuman",
+          icon: Shield,
+        },
+        {
+          path: "/admin",
+          label: "Admin Panel",
+          icon: Shield,
+        }
+      );
     }
 
     return authenticatedItems;

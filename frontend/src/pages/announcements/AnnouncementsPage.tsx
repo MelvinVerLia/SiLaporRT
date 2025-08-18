@@ -48,7 +48,6 @@ export default function AnnouncementsPage() {
         priority: priority as Priority | undefined,
         pinnedFirst: true,
       }),
-    keepPreviousData: true,
   });
 
   const items = data?.items ?? [];

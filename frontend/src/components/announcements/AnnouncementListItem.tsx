@@ -40,7 +40,10 @@ export default function AnnouncementListItem({ a }: { a: Announcement }) {
                 <Badge variant="info" size="sm">
                   {a.type}
                 </Badge>
-                <Badge variant={priorityVariant as any} size="sm">
+                <Badge
+                  variant={priorityVariant as "danger" | "warning" | "default"}
+                  size="sm"
+                >
                   {a.priority}
                 </Badge>
               </div>

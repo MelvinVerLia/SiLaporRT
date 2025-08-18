@@ -49,3 +49,14 @@ export interface Paged<T> {
   pageSize: number;
   total: number;
 }
+
+  export interface CloudinaryFile {
+    original_filename?: string;
+    secure_url: string;
+    resource_type: string;
+    public_id: string;
+    format?: string;
+    bytes?: number;
+    width?: number;
+    height?: number;
+  }

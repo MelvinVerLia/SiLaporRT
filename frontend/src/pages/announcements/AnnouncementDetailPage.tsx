@@ -1,4 +1,4 @@
-import { useParams, Link, useNavigate } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { getAnnouncement } from "../../services/announcementService";
 import {
@@ -74,7 +74,11 @@ export default function AnnouncementDetailPage() {
                   </span>
                 )}
                 <Badge variant="info">{a.type}</Badge>
-                <Badge variant={priorityVariant as any}>{a.priority}</Badge>
+                <Badge
+                  variant={priorityVariant as "danger" | "warning" | "default"}
+                >
+                  {a.priority}
+                </Badge>
               </div>
 
               <CardTitle className="text-2xl text-gray-900 mb-4">

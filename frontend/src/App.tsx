@@ -20,6 +20,7 @@ import AdminDashboard from "./pages/dashboard/AdminDashboard";
 import ProfilePage from "./pages/ProfilePage";
 import AnnouncementsPage from "./pages/announcements/AnnouncementsPage";
 import AnnouncementDetailPage from "./pages/announcements/AnnouncementDetailPage";
+import ManageAnnouncementsPage from "./pages/announcements/ManageAnnouncementsPage";
 import NotFoundPage from "./pages/NotFoundPage";
 
 // Wrapper
@@ -127,7 +128,6 @@ function App() {
                   </ProtectedRoute>
                 }
               />
-              {/* // TODO: Admin routes (next step)
               <Route
                 path="admin/announcements"
                 element={
@@ -135,7 +135,7 @@ function App() {
                     <ManageAnnouncementsPage />
                   </ProtectedRoute>
                 }
-              /> */}
+              />
             </Route>
 
             <Route path="*" element={<NotFoundPage />} />
