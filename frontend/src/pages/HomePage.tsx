@@ -10,7 +10,7 @@ import {
   ThumbsUp,
   Shield,
   BarChart3,
-  HelpCircle,
+  X,
 } from "lucide-react";
 import {
   Card,
@@ -19,15 +19,23 @@ import {
   CardTitle,
 } from "../components/ui/Card";
 import Button from "../components/ui/Button";
-import Badge from "../components/ui/Badge";
-import Accordion from "../components/ui/Accordion";
-import AccordionItem from "../components/ui/AccordionItem";
 import { useAuth } from "../hooks/useAuth";
+import { getRecentReports } from "../services/reportService";
+import { Report } from "../types/report.types";
+import LoadingSpinner from "../components/ui/LoadingSpinner";
+import { useQuery } from "@tanstack/react-query";
+import ReportListItem from "./reports/ReportListItem";
+import FaqItems from "../components/faq/FaqItems";
 
 const HomePage: React.FC = () => {
-  const { isAuthenticated, user } = useAuth();
+  const { isAuthenticated } = useAuth();
+  const { data, isLoading, isError } = useQuery({
+    queryKey: ["recent-reports"],
+    queryFn: getRecentReports,
+  });
 
-  // Mock statistics data
+  const items = data?.items ?? [];
+
   const stats = [
     {
       title: "Total Laporan",
@@ -59,41 +67,6 @@ const HomePage: React.FC = () => {
     },
   ];
 
-  // Mock recent reports
-  const recentReports = [
-    {
-      id: "1",
-      title: "Jalan berlubang di RT 05",
-      category: "INFRASTRUCTURE",
-      status: "PENDING",
-      upvotes: 12,
-      comments: 5,
-      timeAgo: "2 jam lalu",
-      location: "Jl. Mawar Blok A",
-    },
-    {
-      id: "2",
-      title: "Lampu jalan mati area taman",
-      category: "LIGHTING",
-      status: "IN_PROGRESS",
-      upvotes: 8,
-      comments: 3,
-      timeAgo: "5 jam lalu",
-      location: "Taman RT 05",
-    },
-    {
-      id: "3",
-      title: "Sampah menumpuk di tempat pembuangan",
-      category: "CLEANLINESS",
-      status: "RESOLVED",
-      upvotes: 15,
-      comments: 8,
-      timeAgo: "1 hari lalu",
-      location: "TPS RT 05",
-    },
-  ];
-
-  // Features data
   const features = [
     {
       icon: <MapPin className="w-8 h-8 text-blue-600" />,
@@ -132,56 +105,6 @@ const HomePage: React.FC = () => {
         "Data laporan dan analitik untuk mendukung pengambilan keputusan lingkungan",
     },
   ];
-
-  const faqItems = [
-    {
-      question: "Apa itu SiLaporRT?",
-      answer:
-        "SiLaporRT adalah aplikasi pelaporan masalah lingkungan di tingkat RT berbasis lokasi, yang memungkinkan warga menyampaikan keluhan seperti jalan rusak, sampah menumpuk, atau lampu mati kepada pengurus RT secara cepat, transparan, dan terdokumentasi.",
-    },
-    {
-      question: "Bagaimana cara membuat laporan di SiLaporRT?",
-      answer:
-        "Untuk membuat laporan, Anda perlu login terlebih dahulu. Setelah itu, Anda akan mengikuti 4 langkah mudah: (1) Detail Laporan – isi judul dan deskripsi masalah, (2) Lokasi – tentukan titik lokasi kejadian, (3) Lampiran – unggah foto pendukung (opsional), (4) Review – periksa kembali dan kirim laporan.",
-    },
-    {
-      question: "Apa perbedaan laporan publik dan privat?",
-      answer:
-        "Laporan publik akan ditampilkan di forum transparansi dan bisa dilihat oleh warga lain, sedangkan laporan privat hanya bisa diakses oleh pengurus RT. Anda dapat memilih jenis laporan saat mengisi formulir.",
-    },
-    {
-      question: "Apa itu opsi laporan anonim?",
-      answer:
-        "Opsi anonim menyembunyikan identitas Anda dari warga lain, namun laporan tetap tampil di forum publik. Pengurus RT tetap dapat melihat identitas pelapor untuk proses tindak lanjut.",
-    },
-    {
-      question: "Bagaimana tindak lanjut terhadap laporan saya?",
-      answer:
-        "Setelah laporan dikirim, pengurus RT akan mendapatkan notifikasi dan dapat memberikan respons resmi. Status laporan akan terus diperbarui mulai dari diterima, diproses, hingga selesai.",
-    },
-  ];
-
-  const getStatusBadge = (status: string) => {
-    const variants = {
-      PENDING: { variant: "warning" as const, label: "Menunggu" },
-      IN_PROGRESS: { variant: "info" as const, label: "Proses" },
-      RESOLVED: { variant: "success" as const, label: "Selesai" },
-      REJECTED: { variant: "danger" as const, label: "Ditolak" },
-    };
-    return variants[status as keyof typeof variants] || variants.PENDING;
-  };
-
-  const getCategoryLabel = (category: string) => {
-    const labels = {
-      INFRASTRUCTURE: "Infrastruktur",
-      LIGHTING: "Penerangan",
-      CLEANLINESS: "Kebersihan",
-      SECURITY: "Keamanan",
-      UTILITIES: "Utilitas",
-      ENVIRONMENT: "Lingkungan",
-    };
-    return labels[category as keyof typeof labels] || category;
-  };
 
   return (
     <div className="space-y-16">
@@ -322,56 +245,30 @@ const HomePage: React.FC = () => {
               </div>
               <Link to="/reports">
                 <Button variant="outline" size="sm">
-                  Lihat Semua →
+                  Lihat Semua
                 </Button>
               </Link>
             </div>
           </CardHeader>
           <CardContent>
-            <div className="space-y-6">
-              {recentReports.map((report) => {
-                const statusInfo = getStatusBadge(report.status);
-                return (
-                  <div
-                    key={report.id}
-                    className="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow cursor-pointer"
-                  >
-                    <div className="flex justify-between items-start mb-3">
-                      <Badge variant={statusInfo.variant} size="sm">
-                        {statusInfo.label}
-                      </Badge>
-                      <span className="text-sm text-gray-500">
-                        {report.timeAgo}
-                      </span>
-                    </div>
-
-                    <h4 className="font-semibold text-gray-900 mb-2">
-                      {report.title}
-                    </h4>
-
-                    <p className="text-sm text-gray-600 mb-3 flex items-center">
-                      <MapPin className="w-4 h-4 mr-1" />
-                      {report.location}
-                    </p>
-
-                    <div className="flex items-center justify-between">
-                      <Badge variant="default" size="sm">
-                        {getCategoryLabel(report.category)}
-                      </Badge>
-                      <div className="flex items-center space-x-4 text-sm text-gray-500">
-                        <div className="flex items-center">
-                          <ThumbsUp className="w-4 h-4 mr-1" />
-                          {report.upvotes}
-                        </div>
-                        <div className="flex items-center">
-                          <MessageSquare className="w-4 h-4 mr-1" />
-                          {report.comments}
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                );
-              })}
+            <div className="space-y-4">
+              {isLoading && (
+                <div className="flex items-center justify-center gap-2">
+                  <LoadingSpinner className="w-5 h-5" />
+                  <p className="text-sm text-gray-500">Memuat…</p>{" "}
+                </div>
+              )}
+              {isError && (
+                <div className="flex items-center justify-center gap-2">
+                  <X className="w-5 h-5" />
+                  <p className="text-sm text-gray-500">
+                    Terjadi kesalahan
+                  </p>{" "}
+                </div>
+              )}
+              {!isLoading &&
+                items &&
+                items.map((r: Report) => <ReportListItem key={r.id} r={r} />)}
             </div>
           </CardContent>
         </Card>
@@ -379,32 +276,7 @@ const HomePage: React.FC = () => {
 
       {/* FAQ Section */}
       <section>
-        <Card>
-          <CardHeader>
-            <div className="text-center">
-              <div className="text-sm font-semibold text-blue-600 uppercase tracking-wide mb-2">
-                PERTANYAAN UMUM
-              </div>
-              <CardTitle className="text-2xl lg:text-3xl font-bold leading-tight mb-3">
-                Pertanyaan yang Sering Diajukan
-              </CardTitle>
-              <p className="text-gray-600 leading-relaxed">
-                Temukan jawaban atas pertanyaan paling umum tentang SiLaporRT.
-              </p>
-            </div>
-          </CardHeader>
-          <CardContent>
-            <Accordion className="space-y-4">
-              {faqItems.map((item, index) => (
-                <AccordionItem
-                  key={index}
-                  question={item.question}
-                  answer={item.answer}
-                />
-              ))}
-            </Accordion>
-          </CardContent>
-        </Card>
+        <FaqItems />
       </section>
     </div>
   );

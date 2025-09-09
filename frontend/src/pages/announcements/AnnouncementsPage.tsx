@@ -12,6 +12,7 @@ import Button from "../../components/ui/Button";
 import Input from "../../components/ui/Input";
 import Select from "../../components/ui/Select";
 import { Search, FileText } from "lucide-react";
+import LoadingSpinner from "../../components/ui/LoadingSpinner";
 
 const typeOptions = [
   { value: "", label: "Semua Jenis" },
@@ -97,7 +98,7 @@ export default function AnnouncementsPage() {
             />
           </div>
 
-          <div className="mt-4">
+          {/* <div className="mt-4">
             <Button
               variant="outline"
               onClick={() => {
@@ -108,13 +109,18 @@ export default function AnnouncementsPage() {
             >
               Terapkan
             </Button>
-          </div>
+          </div> */}
         </CardContent>
       </Card>
 
       {/* List */}
       <div className="space-y-4">
-        {isLoading && <p className="text-sm text-gray-500">Memuat…</p>}
+        {isLoading && (
+          <div className="flex items-center justify-center gap-2">
+            <LoadingSpinner className="w-5 h-5" />
+            <p className="text-sm text-gray-500">Memuat…</p>{" "}
+          </div>
+        )}
         {isError && <p className="text-sm text-red-600">Gagal memuat data.</p>}
 
         {!isLoading &&

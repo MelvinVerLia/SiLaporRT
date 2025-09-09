@@ -37,10 +37,10 @@ class ReportController {
 
   static async getAllReports(req: Request, res: Response) {
     try {
-      const reports = await ReportService.getAllReports();
+      const reports = await ReportService.getAllReports(req.query);
       res.json({
         success: true,
-        message: `Retrieved ${reports.length} reports`,
+        message: `Retrieved ${reports.total} reports`,
         data: reports,
       });
     } catch (error: any) {
@@ -99,8 +99,11 @@ class ReportController {
   static async toggleUpvote(req: Request, res: Response) {
     try {
       const { reportId } = req.params;
+      console.log(req.user);
       const { userId } = req.body;
-
+      // const user = req.user;
+      // const userId = user!.id;
+      // console.log(user)
       if (!reportId || !userId) {
         throw new Error("Report ID and user ID are required");
       }
@@ -257,6 +260,25 @@ class ReportController {
           error instanceof Error
             ? error.message
             : "Failed to get upvote status",
+      });
+    }
+  }
+
+  static async getRecentReports(req: Request, res: Response) {
+    try {
+      const reports = await ReportService.getRecentReports();
+      res.json({
+        success: true,
+        data: reports,
+        message: "Recent reports retrieved successfully",
+      });
+    } catch (error) {
+      res.status(400).json({
+        success: false,
+        message:
+          error instanceof Error
+            ? error.message
+            : "Failed to get recent reports",
       });
     }
   }

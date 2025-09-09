@@ -2,6 +2,12 @@ import prisma from "../config/prisma";
 import { ReportStatus } from "@prisma/client";
 import { CreateReportData } from "../types/reportTypes";
 
+const visibleWhere = () => {
+  return {
+    isPublic: true,
+  };
+};
+
 class ReportRepository {
   static async createReport(data: CreateReportData) {
     try {
@@ -48,45 +54,76 @@ class ReportRepository {
     }
   }
 
-  static async getAllReports() {
+  static async getAllReports({ page, pageSize, q, category, status }: any) {
     try {
-      const data = await prisma.report.findMany({
-        where: { isPublic: true },
-        include: {
-          location: true,
-          user: {
-            select: {
-              id: true,
-              name: true,
-              role: true,
-            },
-          },
-          attachments: true,
-          responses: {
-            include: {
-              responder: { select: { name: true, role: true } },
-              attachments: true,
-            },
-            orderBy: { createdAt: "desc" },
-          },
-          _count: {
-            select: {
-              reportUpvotes: true,
-              reportComments: true,
-              responses: true,
-            },
-          },
-        },
-        orderBy: { createdAt: "desc" },
-      });
+      const where: any = { ...visibleWhere() };
+      if (q && q.trim()) {
+        where.OR = [
+          ...(where.OR || []),
+          { title: { contains: q, mode: "insensitive" } },
+          { description: { contains: q, mode: "insensitive" } },
+        ];
+      }
+      if (category) where.category = category;
+      if (status) where.priority = status;
 
-      return data.map((report) => ({
-        // report,
-        ...report,
-        upvoteCount: report._count.reportUpvotes,
-        commentCount: report._count.reportComments,
-        responseCount: report._count.responses,
-      }));
+      const skip = (page - 1) * pageSize;
+
+      const [total, items] = await Promise.all([
+        prisma.report.count({ where }),
+        prisma.report.findMany({
+          where,
+          skip,
+          take: pageSize,
+          include: {
+            location: true,
+            user: { select: { id: true, name: true, email: true } },
+            attachments: {
+              select: { id: true, filename: true, url: true, fileType: true },
+            },
+          },
+          orderBy: { createdAt: "desc" },
+        }),
+      ]);
+      return { total, items };
+
+      // const data = await prisma.report.findMany({
+      //   where: { isPublic: true },
+      //   include: {
+      //     location: true,
+      //     user: {
+      //       select: {
+      //         id: true,
+      //         name: true,
+      //         role: true,
+      //       },
+      //     },
+      //     attachments: true,
+      //     responses: {
+      //       include: {
+      //         responder: { select: { name: true, role: true } },
+      //         attachments: true,
+      //       },
+      //       orderBy: { createdAt: "desc" },
+      //     },
+      //     _count: {
+      //       select: {
+      //         reportUpvotes: true,
+      //         reportComments: true,
+      //         responses: true,
+      //       },
+      //     },
+      //   },
+      //   orderBy: { createdAt: "desc" },
+      // });
+
+      // return data.map((report) => ({
+      //   // report,
+      //   ...report,
+      //   upvoteCount: report._count.reportUpvotes,
+      //   commentCount: report._count.reportComments,
+      //   responseCount: report._count.responses,
+      // }));
     } catch (error) {
       throw error;
     }
@@ -356,8 +393,28 @@ class ReportRepository {
       });
       return !!upvote;
     } catch (error) {
-      throw (error);
+      throw error;
     }
+  }
+
+  static async getRecentReports() {
+    const where: any = { ...visibleWhere() };
+    const [total, items] = await Promise.all([
+      prisma.report.count({ where }),
+      prisma.report.findMany({
+        where,
+        include: {
+          location: true,
+          user: { select: { id: true, name: true, email: true } },
+          attachments: {
+            select: { id: true, filename: true, url: true, fileType: true },
+          },
+        },
+        orderBy: { createdAt: "desc" },
+        take: 3,
+      }),
+    ]);
+    return { total, items };
   }
 }
 
