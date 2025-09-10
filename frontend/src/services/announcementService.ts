@@ -10,6 +10,7 @@ export async function listAnnouncements(params: {
     method: "GET",
     params, // axios-friendly
   });
+  console.log(res)
   return res.data as Paged<Announcement>;
 }
 

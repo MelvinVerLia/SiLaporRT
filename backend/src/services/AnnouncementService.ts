@@ -30,7 +30,6 @@ export class AnnouncementService {
       Math.max(1, parseInt(params.pageSize ?? "10", 10) || 10)
     );
     const pinnedFirst = parseBool(params.pinnedFirst) ?? true;
-
     const { total, items } = await AnnouncementRepository.listVisible({
       page,
       pageSize,

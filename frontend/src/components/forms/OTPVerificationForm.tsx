@@ -25,8 +25,6 @@ const OTPVerificationForm: React.FC = () => {
   // Get data from register form
   const locationState = location.state as LocationState;
   const email = locationState?.email;
-  const name = locationState?.name;
-  const userData = locationState?.userData;
   const { token } = useParams();
 
   // Redirect if no email provided
@@ -96,22 +94,22 @@ const OTPVerificationForm: React.FC = () => {
   };
 
   // Handle paste
-  // const handlePaste = (e: React.ClipboardEvent) => {
-  //   e.preventDefault();
-  //   const pastedData = e.clipboardData.getData("text");
+  const handlePaste = (e: React.ClipboardEvent) => {
+    e.preventDefault();
+    const pastedData = e.clipboardData.getData("text");
 
-  //   // Only process if it's 6 digits
-  //   if (/^\d{6}$/.test(pastedData)) {
-  //     const newOtp = pastedData.split("");
-  //     setOtp(newOtp);
+    // Only process if it's 6 digits
+    if (/^\d{6}$/.test(pastedData)) {
+      const newOtp = pastedData.split("");
+      setOtp(newOtp);
 
-  //     // Focus last input
-  //     inputRefs.current[5]?.focus();
+      // Focus last input
+      inputRefs.current[5]?.focus();
 
-  //     // Auto-submit
-  //     handleVerifyOTP(pastedData);
-  //   }
-  // };
+      // Auto-submit
+      handleVerifyOTP(pastedData);
+    }
+  };
 
   const handleVerifyOTP = async (otpCode: string) => {
     if(!token || !otpCode) return;
@@ -203,7 +201,7 @@ const OTPVerificationForm: React.FC = () => {
 
               <div
                 className="flex justify-center space-x-2"
-                // onPaste={handlePaste}
+                onPaste={handlePaste}
               >
                 {otp.map((digit, index) => (
                   <input

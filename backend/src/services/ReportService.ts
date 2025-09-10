@@ -17,10 +17,28 @@ class ReportService {
     }
   }
 
-  static async getAllReports() {
+  static async getAllReports(params: {
+    page?: any;
+    pageSize?: any;
+    q?: string;
+    category?: string;
+    status?: string;
+  }) {
+    const page = Math.max(1, parseInt(params.page ?? "1", 10) || 1);
+    const pageSize = Math.min(
+      50,
+      Math.max(1, parseInt(params.pageSize ?? "10", 10) || 10)
+    );
+    console.log(params.status);
     try {
-      const reports = await ReportRepository.getAllReports();
-      return reports;
+      const { total, items } = await ReportRepository.getAllReports({
+        page,
+        pageSize,
+        q: params.q,
+        category: params.category,
+        status: params.status,
+      });
+      return { page, pageSize, total, items };
     } catch (error) {
       throw new Error(`Failed to fetch reports: ${error}`);
     }
@@ -58,10 +76,7 @@ class ReportService {
     }
   }
 
-  static async updateStatus(
-    reportId: string,
-    status: string,
-  ) {
+  static async updateStatus(reportId: string, status: string) {
     try {
       const updatedReport = await ReportRepository.updateStatus(
         reportId,
@@ -130,6 +145,11 @@ class ReportService {
     } catch (error) {
       throw new Error(`Failed to get upvote status: ${error}`);
     }
+  }
+
+  static async getRecentReports() {
+    const { items } = await ReportRepository.getRecentReports();
+    return { items };
   }
 }
 

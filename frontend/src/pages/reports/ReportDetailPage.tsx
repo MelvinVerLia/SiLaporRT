@@ -9,7 +9,6 @@ import {
   MessageCircle,
   Send,
   Paperclip,
-  Eye,
   EyeOff,
   AlertCircle,
 } from "lucide-react";
@@ -23,6 +22,10 @@ import Button from "../../components/ui/Button";
 import Badge from "../../components/ui/Badge";
 import Textarea from "../../components/ui/Textarea";
 import { useAuth } from "../../hooks/useAuth";
+import { getReportDetails, toggleUpvote } from "../../services/reportService";
+import { QueryClient, useMutation, useQuery } from "@tanstack/react-query";
+import LoadingSpinner from "../../components/ui/LoadingSpinner";
+import { Report } from "../../types/report.types";
 
 const ReportDetailPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -31,54 +34,15 @@ const ReportDetailPage: React.FC = () => {
   const [commentText, setCommentText] = useState("");
   const [isSubmittingComment, setIsSubmittingComment] = useState(false);
   const [hasUpvoted, setHasUpvoted] = useState(false);
+  const {
+    data: report,
+    isLoading,
+    isError,
+  } = useQuery({
+    queryKey: ["report", id],
+    queryFn: () => getReportDetails(id!),
+  });
 
-  // Mock report data - in real app, fetch by ID
-  const mockReport = {
-    id: id || "1",
-    title: "Jalan berlubang besar di RT 05 RW 02",
-    description: `Jalan di depan rumah nomor 45 terdapat lubang besar yang membahayakan pengendara motor dan mobil. Sudah beberapa kali ada kecelakaan kecil karena lubang ini.
-
-Lubang tersebut berukuran sekitar 50cm x 30cm dengan kedalaman sekitar 15cm. Sangat berbahaya terutama saat malam hari karena tidak terlihat jelas.
-
-Mohon segera diperbaiki karena ini adalah jalan utama yang dilalui banyak warga setiap hari.`,
-    category: "INFRASTRUCTURE",
-    status: "PENDING",
-    isPublic: true,
-    isAnonymous: false,
-    upvoteCount: 12,
-    commentCount: 5,
-    responseCount: 0,
-    location: {
-      address: "Jl. Mawar No. 45, RT 05 RW 02",
-      rt: "05",
-      rw: "02",
-      latitude: -6.2088,
-      longitude: 106.8456,
-    },
-    user: {
-      id: "user1",
-      name: "Budi Santoso",
-      role: "CITIZEN",
-    },
-    attachments: [
-      {
-        id: "1",
-        filename: "lubang-jalan-1.jpg",
-        url: "#",
-        fileType: "image",
-      },
-      {
-        id: "2",
-        filename: "lubang-jalan-2.jpg",
-        url: "#",
-        fileType: "image",
-      },
-    ],
-    createdAt: "2024-01-20T08:30:00Z",
-    updatedAt: "2024-01-20T08:30:00Z",
-  };
-
-  // Mock comments data
   const mockComments = [
     {
       id: "1",
@@ -115,7 +79,7 @@ Mohon segera diperbaiki karena ini adalah jalan utama yang dilalui banyak warga 
   ];
 
   // Mock responses (official responses from RT_ADMIN)
-  const mockResponses = [];
+  // const mockResponses = [];
 
   const getStatusBadge = (status: string) => {
     const variants = {
@@ -150,10 +114,16 @@ Mohon segera diperbaiki karena ini adalah jalan utama yang dilalui banyak warga 
     });
   };
 
-  const handleUpvote = () => {
-    setHasUpvoted(!hasUpvoted);
-    // In real app, call API to toggle upvote
-  };
+  const handleUpvote = useMutation({
+    mutationFn: () => toggleUpvote(report!.id),
+    // onSuccess: () => {
+    //   QueryClient.invalidateQueries({ queryKey: ["posts"] }); // refetch updated posts
+    // },
+  });
+  // const handleUpvote = () => {
+  //   setHasUpvoted(!hasUpvoted);
+  //   // In real app, call API to toggle upvote
+  // };
 
   const handleSubmitComment = async () => {
     if (!commentText.trim()) return;
@@ -167,7 +137,15 @@ Mohon segera diperbaiki karena ini adalah jalan utama yang dilalui banyak warga 
     }, 1000);
   };
 
-  if (!mockReport) {
+  if (isLoading)
+    return (
+      <div className="flex items-center justify-center gap-2">
+        <LoadingSpinner className="w-5 h-5" />
+        <p className="text-sm text-gray-500">Memuat…</p>{" "}
+      </div>
+    );
+
+  if (isError || !report) {
     return (
       <div className="text-center py-12">
         <AlertCircle className="mx-auto h-12 w-12 text-gray-400 mb-4" />
@@ -183,8 +161,7 @@ Mohon segera diperbaiki karena ini adalah jalan utama yang dilalui banyak warga 
       </div>
     );
   }
-
-  const statusInfo = getStatusBadge(mockReport.status);
+  const statusInfo = getStatusBadge(report.status);
 
   return (
     <div className="space-y-6">
@@ -208,13 +185,11 @@ Mohon segera diperbaiki karena ini adalah jalan utama yang dilalui banyak warga 
             <div className="flex-1">
               <div className="flex flex-wrap gap-2 mb-3">
                 <Badge variant="default">
-                  {getCategoryLabel(mockReport.category)}
+                  {getCategoryLabel(report.category)}
                 </Badge>
                 <Badge variant={statusInfo.variant}>{statusInfo.label}</Badge>
-                {mockReport.isAnonymous && (
-                  <Badge variant="default">Anonim</Badge>
-                )}
-                {!mockReport.isPublic && (
+                {report.isAnonymous && <Badge variant="default">Anonim</Badge>}
+                {!report.isPublic && (
                   <Badge variant="default">
                     <EyeOff className="mr-1 h-3 w-3" />
                     Privat
@@ -223,23 +198,23 @@ Mohon segera diperbaiki karena ini adalah jalan utama yang dilalui banyak warga 
               </div>
 
               <CardTitle className="text-2xl text-gray-900 mb-4">
-                {mockReport.title}
+                {report.title}
               </CardTitle>
 
               <div className="flex flex-col sm:flex-row sm:items-center gap-4 text-sm text-gray-600">
                 <div className="flex items-center">
                   <User className="mr-1 h-4 w-4" />
                   <span>
-                    {mockReport.isAnonymous ? "Anonim" : mockReport.user.name}
+                    {report.isAnonymous ? "Anonim" : report.user?.name}
                   </span>
                 </div>
                 <div className="flex items-center">
                   <Clock className="mr-1 h-4 w-4" />
-                  <span>{formatDateTime(mockReport.createdAt)}</span>
+                  <span>{formatDateTime(report.createdAt)}</span>
                 </div>
                 <div className="flex items-center">
                   <MapPin className="mr-1 h-4 w-4" />
-                  <span>{mockReport.location.address}</span>
+                  <span>{report.location.address}</span>
                 </div>
               </div>
             </div>
@@ -250,17 +225,17 @@ Mohon segera diperbaiki karena ini adalah jalan utama yang dilalui banyak warga 
                 <Button
                   variant={hasUpvoted ? "primary" : "outline"}
                   size="sm"
-                  onClick={handleUpvote}
+                  onClick={() => handleUpvote.mutate(report.id)}
                   className="flex items-center"
                 >
                   <ThumbsUp className="mr-1 h-4 w-4" />
-                  {mockReport.upvoteCount + (hasUpvoted ? 1 : 0)}
+                  {report.upvoteCount + (hasUpvoted ? 1 : 0)}
                 </Button>
               )}
 
               <div className="flex items-center text-sm text-gray-500">
                 <MessageCircle className="mr-1 h-4 w-4" />
-                <span>{mockReport.commentCount} komentar</span>
+                <span>{report.commentCount} komentar</span>
               </div>
             </div>
           </div>
@@ -278,31 +253,36 @@ Mohon segera diperbaiki karena ini adalah jalan utama yang dilalui banyak warga 
             </CardHeader>
             <CardContent>
               <div className="prose prose-sm max-w-none">
-                {mockReport.description.split("\n").map((paragraph, index) => (
-                  <p key={index} className="mb-4 text-gray-700 leading-relaxed">
-                    {paragraph}
-                  </p>
-                ))}
+                {report.description
+                  .split("\n")
+                  .map((paragraph: string, index: number) => (
+                    <p
+                      key={index}
+                      className="mb-4 text-gray-700 leading-relaxed"
+                    >
+                      {paragraph}
+                    </p>
+                  ))}
               </div>
             </CardContent>
           </Card>
 
           {/* Attachments */}
-          {mockReport.attachments.length > 0 && (
+          {report.attachments.length > 0 && (
             <Card>
               <CardHeader>
                 <CardTitle>Lampiran</CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  {mockReport.attachments.map((attachment) => (
-                    <div key={attachment.id} className="relative group">
-                      {attachment.fileType === "image" ? (
+                  {report.attachments.map((report: Report) => (
+                    <div key={report.id} className="relative group">
+                      {report.attachments === "image" ? (
                         <div className="aspect-video bg-gray-100 rounded-lg flex items-center justify-center border-2 border-dashed border-gray-300">
                           <div className="text-center">
                             <Paperclip className="mx-auto h-8 w-8 text-gray-400 mb-2" />
                             <p className="text-sm text-gray-600">
-                              {attachment.filename}
+                              {report.attachments}
                             </p>
                             <p className="text-xs text-gray-400">Gambar</p>
                           </div>
@@ -313,10 +293,10 @@ Mohon segera diperbaiki karena ini adalah jalan utama yang dilalui banyak warga 
                             <Paperclip className="h-5 w-5 text-gray-400 mr-2" />
                             <div>
                               <p className="text-sm font-medium text-gray-900">
-                                {attachment.filename}
+                                {report.filename}
                               </p>
                               <p className="text-xs text-gray-500">
-                                {attachment.fileType.toUpperCase()}
+                                {report.fileType.toUpperCase()}
                               </p>
                             </div>
                           </div>
@@ -330,14 +310,14 @@ Mohon segera diperbaiki karena ini adalah jalan utama yang dilalui banyak warga 
           )}
 
           {/* Official Responses */}
-          {mockResponses.length > 0 && (
+          {report.responseCount > 0 && (
             <Card>
               <CardHeader>
                 <CardTitle>Tanggapan Resmi RT</CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
-                  {mockResponses.map((response: any) => (
+                  {report.responses.map((response) => (
                     <div
                       key={response.id}
                       className="bg-blue-50 border border-blue-200 rounded-lg p-4"
@@ -480,7 +460,7 @@ Mohon segera diperbaiki karena ini adalah jalan utama yang dilalui banyak warga 
                   Kategori
                 </label>
                 <p className="mt-1 text-sm text-gray-900">
-                  {getCategoryLabel(mockReport.category)}
+                  {getCategoryLabel(report.category)}
                 </p>
               </div>
 
@@ -489,10 +469,10 @@ Mohon segera diperbaiki karena ini adalah jalan utama yang dilalui banyak warga 
                   Lokasi
                 </label>
                 <p className="mt-1 text-sm text-gray-900">
-                  {mockReport.location.address}
+                  {report.location.address}
                 </p>
                 <p className="text-xs text-gray-500">
-                  RT {mockReport.location.rt} RW {mockReport.location.rw}
+                  RT {report.location.rt} RW {report.location.rw}
                 </p>
               </div>
 
@@ -501,7 +481,7 @@ Mohon segera diperbaiki karena ini adalah jalan utama yang dilalui banyak warga 
                   Dilaporkan
                 </label>
                 <p className="mt-1 text-sm text-gray-900">
-                  {formatDateTime(mockReport.createdAt)}
+                  {formatDateTime(report.createdAt)}
                 </p>
               </div>
 
@@ -510,7 +490,7 @@ Mohon segera diperbaiki karena ini adalah jalan utama yang dilalui banyak warga 
                   Dukungan
                 </label>
                 <p className="mt-1 text-sm text-gray-900">
-                  {mockReport.upvoteCount + (hasUpvoted ? 1 : 0)} warga
+                  {report.upvoteCount + (hasUpvoted ? 1 : 0)} warga
                 </p>
               </div>
             </CardContent>

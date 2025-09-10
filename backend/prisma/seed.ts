@@ -2,20 +2,20 @@ import { PrismaClient } from "@prisma/client";
 const prisma = new PrismaClient();
 
 async function main() {
-  await prisma.user.deleteMany();
-  await prisma.location.deleteMany();
-  await prisma.report.deleteMany();
+  // await prisma.user.deleteMany();
+  // await prisma.location.deleteMany();
+  // await prisma.report.deleteMany();
 
-  const admin = await prisma.user.create({
-    data: {
-      id: "admin",
-      name: "Admin",
-      password: "admin",
-      email: "admin@email",
-      phone: "08123456788",
-      role: "RT_ADMIN",
-    },
-  });
+  // const admin = await prisma.user.create({
+  //   data: {
+  //     id: "admin",
+  //     name: "Admin",
+  //     password: "admin",
+  //     email: "admin@email",
+  //     phone: "08123456788",
+  //     role: "RT_ADMIN",
+  //   },
+  // });
 
   const user1 = await prisma.user.create({
     data: {

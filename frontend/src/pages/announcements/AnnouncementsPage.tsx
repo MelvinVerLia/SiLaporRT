@@ -5,6 +5,7 @@ import { Announcement } from "../../types/announcement.types";
 import AnnouncementListItem from "../../components/announcements/AnnouncementListItem";
 import { Card, CardContent } from "../../components/ui/Card";
 import Button from "../../components/ui/Button";
+import LoadingSpinner from "../../components/ui/LoadingSpinner";
 import { FileText, RefreshCw } from "lucide-react";
 
 export default function AnnouncementsPage() {
