@@ -1,5 +1,6 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useNavigate } from "react-router-dom";
 import {
   Plus,
   Pin,
@@ -24,24 +25,23 @@ import {
 } from "../../components/ui/Card";
 import Badge from "../../components/ui/Badge";
 import LoadingSpinner from "../../components/ui/LoadingSpinner";
+import Breadcrumb from "../../components/ui/Breadcrumb";
 import { Announcement } from "../../types/announcement.types";
-import AdminAnnouncementForm from "../../components/announcements/AdminAnnouncementForm";
 
 export default function ManageAnnouncementsPage() {
+  const navigate = useNavigate();
   const qc = useQueryClient();
   const [page, setPage] = useState(1);
-  const pageSize = 10;
-  const [includeInactive, setIncludeInactive] = useState(false);
-  const [editing, setEditing] = useState<Announcement | null>(null);
-  const [showCreateForm, setShowCreateForm] = useState(false);
+  const pageSize = 5;
+  const [showInactiveOnly, setShowInactiveOnly] = useState(false);
 
   const { data, isLoading, isError } = useQuery({
-    queryKey: ["admin-announcements", { page, pageSize, includeInactive }],
+    queryKey: ["admin-announcements", { page, pageSize, showInactiveOnly }],
     queryFn: () =>
       adminListAnnouncements({
         page,
         pageSize,
-        includeInactive,
+        showInactiveOnly,
         pinnedFirst: true,
       }),
     staleTime: 0,
@@ -50,20 +50,107 @@ export default function ManageAnnouncementsPage() {
   const mutPin = useMutation({
     mutationFn: ({ id, isPinned }: { id: string; isPinned: boolean }) =>
       setPinned(id, isPinned),
-    onSuccess: () =>
-      qc.invalidateQueries({ queryKey: ["admin-announcements"] }),
+    onMutate: async ({ id, isPinned }) => {
+      // Cancel outgoing refetches to prevent overwriting optimistic updates
+      await qc.cancelQueries({ queryKey: ["admin-announcements"] });
+
+      // Snapshot the previous value for rollback
+      const previousData = qc.getQueryData([
+        "admin-announcements",
+        { page, pageSize, showInactiveOnly },
+      ]);
+
+      // Optimistically update the cache
+      qc.setQueryData(
+        ["admin-announcements", { page, pageSize, showInactiveOnly }],
+        (old: unknown) => {
+          if (!old || typeof old !== "object") return old;
+          const data = old as { items: Announcement[]; total: number };
+          return {
+            ...data,
+            items: data.items.map((item: Announcement) =>
+              item.id === id ? { ...item, isPinned } : item
+            ),
+          };
+        }
+      );
+
+      return { previousData };
+    },
+    onError: (_err, _variables, context) => {
+      // Rollback on error
+      if (context?.previousData) {
+        qc.setQueryData(
+          ["admin-announcements", { page, pageSize, showInactiveOnly }],
+          context.previousData
+        );
+      }
+    },
+    onSettled: (_, __, variables) => {
+      // Always refetch to ensure data consistency
+      qc.invalidateQueries({ queryKey: ["admin-announcements"] });
+      qc.invalidateQueries({ queryKey: ["announcements"] });
+      qc.invalidateQueries({ queryKey: ["announcement", variables.id] });
+      qc.invalidateQueries({ queryKey: ["admin-announcement", variables.id] });
+    },
   });
 
   const mutActive = useMutation({
     mutationFn: ({ id, isActive }: { id: string; isActive: boolean }) =>
       setActive(id, isActive),
-    onSuccess: () =>
-      qc.invalidateQueries({ queryKey: ["admin-announcements"] }),
+    onMutate: async ({ id, isActive }) => {
+      // Cancel outgoing refetches to prevent overwriting optimistic updates
+      await qc.cancelQueries({ queryKey: ["admin-announcements"] });
+
+      // Snapshot the previous value for rollback
+      const previousData = qc.getQueryData([
+        "admin-announcements",
+        { page, pageSize, showInactiveOnly },
+      ]);
+
+      // Optimistically update the cache
+      qc.setQueryData(
+        ["admin-announcements", { page, pageSize, showInactiveOnly }],
+        (old: unknown) => {
+          if (!old || typeof old !== "object") return old;
+          const data = old as { items: Announcement[]; total: number };
+          return {
+            ...data,
+            items: data.items.map((item: Announcement) =>
+              item.id === id ? { ...item, isActive } : item
+            ),
+          };
+        }
+      );
+
+      return { previousData };
+    },
+    onError: (_err, _variables, context) => {
+      // Rollback on error
+      if (context?.previousData) {
+        qc.setQueryData(
+          ["admin-announcements", { page, pageSize, showInactiveOnly }],
+          context.previousData
+        );
+      }
+    },
+    onSettled: (_, __, variables) => {
+      // Always refetch to ensure data consistency
+      qc.invalidateQueries({ queryKey: ["admin-announcements"] });
+      qc.invalidateQueries({ queryKey: ["announcements"] });
+      qc.invalidateQueries({ queryKey: ["announcement", variables.id] });
+      qc.invalidateQueries({ queryKey: ["admin-announcement", variables.id] });
+    },
   });
 
   const items = data?.items ?? [];
   const total = data?.total ?? 0;
   const totalPages = Math.max(1, Math.ceil(total / pageSize));
+
+  const breadcrumbItems = [
+    { label: "Dashboard", href: "/admin" },
+    { label: "Kelola Pengumuman" },
+  ];
 
   const getTypeBadge = (type: string) => {
     const variants = {
@@ -96,22 +183,19 @@ export default function ManageAnnouncementsPage() {
     });
   };
 
-  const handleCreateSuccess = () => {
-    setShowCreateForm(false);
-    qc.invalidateQueries({ queryKey: ["admin-announcements"] });
+  const handleCreateClick = () => {
+    navigate("/admin/announcements/create");
   };
 
-  const handleEditSuccess = () => {
-    setEditing(null);
-    qc.invalidateQueries({ queryKey: ["admin-announcements"] });
-  };
-
-  const handleEditCancel = () => {
-    setEditing(null);
+  const handleEditClick = (announcement: Announcement) => {
+    navigate(`/admin/announcements/edit/${announcement.id}`);
   };
 
   return (
     <div className="space-y-6">
+      {/* Breadcrumb */}
+      <Breadcrumb items={breadcrumbItems} />
+
       {/* Page Header */}
       <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4">
         <div>
@@ -123,146 +207,52 @@ export default function ManageAnnouncementsPage() {
           </p>
         </div>
 
-        <Button
-          onClick={() => setShowCreateForm(!showCreateForm)}
-          className="w-full lg:w-auto"
-        >
+        <Button onClick={handleCreateClick} className="w-full lg:w-auto">
           <Plus className="mr-2 h-4 w-4" />
-          {showCreateForm ? "Tutup Form" : "Buat Pengumuman"}
+          Buat Pengumuman
         </Button>
       </div>
-
-      {/* Statistics Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <Card>
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-gray-600 mb-1">
-                  Total Pengumuman
-                </p>
-                <p className="text-3xl font-bold text-gray-900">{total}</p>
-              </div>
-              <div className="p-3 rounded-full bg-blue-100">
-                <Megaphone className="h-6 w-6 text-blue-600" />
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-gray-600 mb-1">
-                  Pengumuman Aktif
-                </p>
-                <p className="text-3xl font-bold text-gray-900">
-                  {items.filter((item) => item.isActive).length}
-                </p>
-              </div>
-              <div className="p-3 rounded-full bg-green-100">
-                <Eye className="h-6 w-6 text-green-600" />
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-gray-600 mb-1">
-                  Dipinned
-                </p>
-                <p className="text-3xl font-bold text-gray-900">
-                  {items.filter((item) => item.isPinned).length}
-                </p>
-              </div>
-              <div className="p-3 rounded-full bg-yellow-100">
-                <Pin className="h-6 w-6 text-yellow-600" />
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Create/Edit Forms */}
-      {(showCreateForm || editing) && (
-        <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
-          {showCreateForm && (
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center">
-                  <Plus className="mr-2 h-5 w-5" />
-                  Buat Pengumuman Baru
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <AdminAnnouncementForm onSuccess={handleCreateSuccess} />
-              </CardContent>
-            </Card>
-          )}
-
-          {editing && (
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center">
-                  <Edit3 className="mr-2 h-5 w-5" />
-                  Edit Pengumuman
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <AdminAnnouncementForm
-                  initial={editing}
-                  onCancel={handleEditCancel}
-                  onSuccess={handleEditSuccess}
-                />
-              </CardContent>
-            </Card>
-          )}
-        </div>
-      )}
 
       {/* Announcements List */}
       <Card>
         <CardHeader>
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-            <CardTitle>Daftar Pengumuman</CardTitle>
+            <div className="flex items-center gap-3">
+              <CardTitle>Daftar Pengumuman</CardTitle>
+              <Badge variant="default" size="sm">
+                {total} total
+              </Badge>
+            </div>
 
             {/* Filters */}
             <div className="flex items-center gap-4">
               <label className="flex items-center gap-2 text-sm font-medium text-gray-600">
                 <input
                   type="checkbox"
-                  checked={includeInactive}
+                  checked={showInactiveOnly}
                   onChange={(e) => {
-                    setIncludeInactive(e.target.checked);
+                    setShowInactiveOnly(e.target.checked);
                     setPage(1);
                   }}
                   className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
                 />
-                Tampilkan tidak aktif
+                Tampilkan tidak aktif saja
               </label>
             </div>
           </div>
         </CardHeader>
 
         <CardContent>
-          {isLoading && (
+          {isLoading ? (
             <div className="flex justify-center py-8">
               <LoadingSpinner />
             </div>
-          )}
-
-          {isError && (
+          ) : isError ? (
             <div className="text-center py-8">
               <AlertTriangle className="mx-auto h-8 w-8 text-red-400 mb-2" />
               <p className="text-red-600">Gagal memuat pengumuman</p>
             </div>
-          )}
-
-          {!isLoading && items.length === 0 ? (
+          ) : items.length === 0 ? (
             <div className="text-center py-12">
               <Megaphone className="mx-auto h-12 w-12 text-gray-400 mb-4" />
               <h3 className="text-lg font-semibold text-gray-900 mb-2">
@@ -271,7 +261,7 @@ export default function ManageAnnouncementsPage() {
               <p className="text-gray-600 mb-6">
                 Buat pengumuman pertama untuk warga RT
               </p>
-              <Button onClick={() => setShowCreateForm(true)}>
+              <Button onClick={handleCreateClick}>
                 <Plus className="mr-2 h-4 w-4" />
                 Buat Pengumuman
               </Button>
@@ -280,25 +270,33 @@ export default function ManageAnnouncementsPage() {
             <>
               {/* Desktop Table View */}
               <div className="hidden lg:block overflow-x-auto">
-                <table className="min-w-full">
+                <table className="min-w-full table-fixed">
+                  <colgroup>
+                    <col className="w-35/100" /> {/* Pengumuman - 35% */}
+                    <col className="w-1/10" /> {/* Jenis - 10% */}
+                    <col className="w-1/10" /> {/* Prioritas - 10% */}
+                    <col className="w-1/10" /> {/* Status - 10% */}
+                    <col className="w-2/10" /> {/* Tanggal - 20% */}
+                    <col className="w-15/100" /> {/* Aksi - 15% */}
+                  </colgroup>
                   <thead>
                     <tr className="border-b border-gray-200">
-                      <th className="text-left py-3 pr-6 text-sm font-medium text-gray-600">
+                      <th className="text-left py-4 pr-6 text-sm font-medium text-gray-600">
                         Pengumuman
                       </th>
-                      <th className="text-left py-3 pr-6 text-sm font-medium text-gray-600">
+                      <th className="text-left py-4 pr-4 text-sm font-medium text-gray-600">
                         Jenis
                       </th>
-                      <th className="text-left py-3 pr-6 text-sm font-medium text-gray-600">
+                      <th className="text-left py-4 pr-4 text-sm font-medium text-gray-600">
                         Prioritas
                       </th>
-                      <th className="text-left py-3 pr-6 text-sm font-medium text-gray-600">
+                      <th className="text-left py-4 pr-4 text-sm font-medium text-gray-600">
                         Status
                       </th>
-                      <th className="text-left py-3 pr-6 text-sm font-medium text-gray-600">
+                      <th className="text-left py-4 pr-4 text-sm font-medium text-gray-600">
                         Tanggal
                       </th>
-                      <th className="text-left py-3 text-sm font-medium text-gray-600">
+                      <th className="text-left py-4 text-sm font-medium text-gray-600">
                         Aksi
                       </th>
                     </tr>
@@ -313,69 +311,79 @@ export default function ManageAnnouncementsPage() {
                       return (
                         <tr
                           key={announcement.id}
-                          className="border-b border-gray-100 hover:bg-gray-50"
+                          className="border-b border-gray-100 hover:bg-gray-50 transition-colors"
                         >
-                          <td className="py-4 pr-6">
+                          <td className="py-5 pr-6">
                             <div className="flex items-start space-x-3">
                               {announcement.isPinned && (
-                                <Pin className="h-4 w-4 text-yellow-500 mt-0.5 flex-shrink-0" />
+                                <Pin className="h-4 w-4 text-yellow-500 mt-1 flex-shrink-0" />
                               )}
                               <div className="min-w-0 flex-1">
-                                <p className="text-sm font-medium text-gray-900 line-clamp-1">
+                                <p className="text-sm font-medium text-gray-900 line-clamp-1 leading-5">
                                   {announcement.title}
                                 </p>
-                                <p className="text-sm text-gray-500 line-clamp-2">
+                                <p className="text-sm text-gray-500 line-clamp-2 leading-5 mt-1">
                                   {announcement.content}
                                 </p>
                               </div>
                             </div>
                           </td>
-                          <td className="py-4 pr-6">
+                          <td className="py-5 pr-4">
                             <Badge variant={typeBadge.variant} size="sm">
-                              <span className="flex items-center">
-                                <span className="ml-1">{typeBadge.label}</span>
+                              <span className="block truncate text-xs">
+                                {typeBadge.label}
                               </span>
                             </Badge>
                           </td>
-                          <td className="py-4 pr-6">
+                          <td className="py-5 pr-4">
                             <Badge variant={priorityBadge.variant} size="sm">
-                              {priorityBadge.label}
+                              <span className="block truncate text-xs">
+                                {priorityBadge.label}
+                              </span>
                             </Badge>
                           </td>
-                          <td className="py-4 pr-6">
-                            <div className="flex flex-col space-y-1">
-                              <Badge
-                                variant={
-                                  announcement.isActive ? "success" : "default"
-                                }
-                                size="sm"
-                              >
+                          <td className="py-5 pr-4">
+                            <Badge
+                              variant={
+                                announcement.isActive ? "success" : "default"
+                              }
+                              size="sm"
+                            >
+                              <span className="block truncate text-xs">
                                 {announcement.isActive ? "Aktif" : "Nonaktif"}
-                              </Badge>
-                            </div>
+                              </span>
+                            </Badge>
                           </td>
-                          <td className="py-4 pr-6">
-                            <div className="text-sm text-gray-600">
-                              <p>{formatDate(announcement.createdAt)}</p>
+                          <td className="py-5 pr-4">
+                            <div className="text-xs text-gray-600 space-y-1">
+                              <p className="font-medium">
+                                {formatDate(announcement.createdAt)}
+                              </p>
                               {announcement.publishAt && (
-                                <p className="text-xs text-gray-500">
+                                <p className="text-gray-500 truncate">
                                   Tayang: {formatDate(announcement.publishAt)}
+                                </p>
+                              )}
+                              {announcement.expireAt && (
+                                <p className="text-gray-500 truncate">
+                                  Berakhir: {formatDate(announcement.expireAt)}
                                 </p>
                               )}
                             </div>
                           </td>
-                          <td className="py-4">
-                            <div className="flex items-center space-x-2">
+                          <td className="py-5">
+                            <div className="flex items-center space-x-1">
                               <Button
                                 size="sm"
                                 variant="ghost"
+                                className="p-2"
                                 onClick={() =>
                                   mutPin.mutate({
                                     id: announcement.id,
                                     isPinned: !announcement.isPinned,
                                   })
                                 }
-                                loading={mutPin.isPending}
+                                title={announcement.isPinned ? "Unpin" : "Pin"}
                               >
                                 {announcement.isPinned ? (
                                   <PinOff className="h-4 w-4" />
@@ -387,13 +395,18 @@ export default function ManageAnnouncementsPage() {
                               <Button
                                 size="sm"
                                 variant="ghost"
+                                className="p-2"
                                 onClick={() =>
                                   mutActive.mutate({
                                     id: announcement.id,
                                     isActive: !announcement.isActive,
                                   })
                                 }
-                                loading={mutActive.isPending}
+                                title={
+                                  announcement.isActive
+                                    ? "Nonaktifkan"
+                                    : "Aktifkan"
+                                }
                               >
                                 {announcement.isActive ? (
                                   <EyeOff className="h-4 w-4" />
@@ -405,7 +418,9 @@ export default function ManageAnnouncementsPage() {
                               <Button
                                 size="sm"
                                 variant="ghost"
-                                onClick={() => setEditing(announcement)}
+                                className="p-2"
+                                onClick={() => handleEditClick(announcement)}
+                                title="Edit"
                               >
                                 <Edit3 className="h-4 w-4" />
                               </Button>
@@ -476,6 +491,11 @@ export default function ManageAnnouncementsPage() {
                                 Tayang: {formatDate(announcement.publishAt)}
                               </p>
                             )}
+                            {announcement.expireAt && (
+                              <p>
+                                Berakhir: {formatDate(announcement.expireAt)}
+                              </p>
+                            )}
                           </div>
 
                           {/* Actions */}
@@ -490,7 +510,6 @@ export default function ManageAnnouncementsPage() {
                                     isPinned: !announcement.isPinned,
                                   })
                                 }
-                                loading={mutPin.isPending}
                               >
                                 {announcement.isPinned ? "Unpin" : "Pin"}
                               </Button>
@@ -506,7 +525,6 @@ export default function ManageAnnouncementsPage() {
                                     isActive: !announcement.isActive,
                                   })
                                 }
-                                loading={mutActive.isPending}
                               >
                                 {announcement.isActive
                                   ? "Nonaktifkan"
@@ -517,7 +535,7 @@ export default function ManageAnnouncementsPage() {
                             <Button
                               size="sm"
                               variant="outline"
-                              onClick={() => setEditing(announcement)}
+                              onClick={() => handleEditClick(announcement)}
                             >
                               <Edit3 className="h-4 w-4" />
                             </Button>

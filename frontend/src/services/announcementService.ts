@@ -1,17 +1,9 @@
 import { request } from "./api";
-import {
-  Announcement,
-  Paged,
-  AnnouncementType,
-  Priority,
-} from "../types/announcement.types";
+import { Announcement, Paged } from "../types/announcement.types";
 
 export async function listAnnouncements(params: {
   page?: number;
   pageSize?: number;
-  type?: AnnouncementType;
-  priority?: Priority;
-  q?: string;
   pinnedFirst?: boolean;
 }) {
   const res = await request("/announcements", {

@@ -33,6 +33,7 @@ export async function adminListAnnouncements(params: {
   page?: number;
   pageSize?: number;
   includeInactive?: boolean;
+  showInactiveOnly?: boolean;
   q?: string;
   type?: AnnouncementType;
   priority?: Priority;

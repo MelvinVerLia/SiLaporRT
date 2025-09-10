@@ -55,6 +55,7 @@ export class AnnouncementService {
     priority?: string;
     pinnedFirst?: any;
     includeInactive?: any;
+    showInactiveOnly?: any;
   }) {
     const page = Math.max(1, parseInt(params.page ?? "1", 10) || 1);
     const pageSize = Math.min(
@@ -63,6 +64,7 @@ export class AnnouncementService {
     );
     const pinnedFirst = parseBool(params.pinnedFirst) ?? true;
     const includeInactive = parseBool(params.includeInactive) ?? false;
+    const showInactiveOnly = parseBool(params.showInactiveOnly) ?? false;
 
     const { total, items } = await AnnouncementRepository.listAdmin({
       page,
@@ -72,6 +74,7 @@ export class AnnouncementService {
       priority: params.priority,
       pinnedFirst,
       includeInactive,
+      showInactiveOnly,
     });
     return { page, pageSize, total, items };
   }
@@ -132,8 +135,18 @@ export class AnnouncementService {
     if (body.isPinned !== undefined) patch.isPinned = parseBool(body.isPinned);
     if (body.isActive !== undefined) patch.isActive = parseBool(body.isActive);
 
-    // NOTE: pengelolaan attachments (tambah/hapus) bisa dibuat endpoint khusus.
-    return AnnouncementRepository.update(id, patch);
+    // Handle attachments update
+    const attachments = Array.isArray(body.attachments)
+      ? body.attachments
+          .filter((a: any) => a?.url && a?.filename && a?.fileType)
+          .map((a: any) => ({
+            filename: a.filename,
+            url: a.url,
+            fileType: a.fileType,
+          }))
+      : undefined;
+
+    return AnnouncementRepository.updateWithAttachments(id, patch, attachments);
   }
 
   static async softDelete(id: string) {

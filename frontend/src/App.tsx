@@ -1,4 +1,3 @@
-import React from "react";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
@@ -21,6 +20,8 @@ import ProfilePage from "./pages/ProfilePage";
 import AnnouncementsPage from "./pages/announcements/AnnouncementsPage";
 import AnnouncementDetailPage from "./pages/announcements/AnnouncementDetailPage";
 import ManageAnnouncementsPage from "./pages/announcements/ManageAnnouncementsPage";
+import CreateAnnouncementPage from "./pages/announcements/CreateAnnouncementPage";
+import EditAnnouncementPage from "./pages/announcements/EditAnnouncementPage";
 import NotFoundPage from "./pages/NotFoundPage";
 
 // Wrapper
@@ -141,6 +142,22 @@ function App() {
                 element={
                   <ProtectedRoute requiredRole="RT_ADMIN">
                     <ManageAnnouncementsPage />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="admin/announcements/create"
+                element={
+                  <ProtectedRoute requiredRole="RT_ADMIN">
+                    <CreateAnnouncementPage />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="admin/announcements/edit/:id"
+                element={
+                  <ProtectedRoute requiredRole="RT_ADMIN">
+                    <EditAnnouncementPage />
                   </ProtectedRoute>
                 }
               />

@@ -17,7 +17,7 @@ import {
   Announcement,
   AnnouncementType,
   Priority,
-  CloudinaryFile
+  CloudinaryFile,
 } from "../../types/announcement.types";
 import {
   createAnnouncement,
@@ -80,10 +80,23 @@ export default function AdminAnnouncementForm({
     toLocalInput(initial?.expireAt)
   );
 
+  // Extended type for form attachments (supports both DB and new uploads)
+  type FormAttachment = {
+    id?: string; // Database ID for existing attachments
+    filename: string;
+    url: string;
+    fileType: "image" | "video" | "document";
+    provider?: "cloudinary";
+    publicId?: string;
+    resourceType?: string;
+    format?: string;
+    bytes?: number;
+    width?: number;
+    height?: number;
+  };
+
   // Attachments
-  const [attachments, setAttachments] = useState<
-    UpsertAnnouncementPayload["attachments"]
-  >(initial?.attachments ?? []);
+  const [attachments, setAttachments] = useState<FormAttachment[]>([]);
 
   // Sync state when initial changes
   useEffect(() => {
@@ -95,7 +108,42 @@ export default function AdminAnnouncementForm({
     setIsActive(initial?.isActive ?? true);
     setPublishAt(toLocalInput(initial?.publishAt));
     setExpireAt(toLocalInput(initial?.expireAt));
-    setAttachments(initial?.attachments ?? []);
+
+    // Only reset attachments if this is a new form (create mode) or a different announcement
+    if (!initial || !initial.id) {
+      // Create mode - reset to empty
+      setAttachments([]);
+    } else {
+      // Edit mode - only set initial attachments on first load of this announcement
+      setAttachments((prev) => {
+        // If we don't have any attachments yet, or if it's a different announcement, use initial data
+        if (!prev || prev.length === 0) {
+          // Convert database Attachment[] to form's expected format
+          const convertedAttachments = (initial?.attachments ?? []).map(
+            (att) => {
+              console.log("Converting attachment:", att);
+              return {
+                id: att.id, // Keep database ID
+                filename: att.filename,
+                url: att.url,
+                fileType: att.fileType as "image" | "video" | "document",
+                provider: "cloudinary" as const,
+                publicId: att.id, // Still use ID as publicId for compatibility
+                resourceType: "",
+                format: "",
+                bytes: 0,
+                width: undefined,
+                height: undefined,
+              };
+            }
+          );
+          console.log("Converted attachments:", convertedAttachments);
+          return convertedAttachments;
+        }
+        // Otherwise, keep current attachments to preserve user edits
+        return prev;
+      });
+    }
   }, [initial]);
 
   const scheduleError = useMemo(() => {
@@ -122,7 +170,18 @@ export default function AdminAnnouncementForm({
       isActive,
       publishAt: publishAt ? new Date(publishAt).toISOString() : null,
       expireAt: expireAt ? new Date(expireAt).toISOString() : null,
-      attachments,
+      attachments: attachments.map((att) => ({
+        filename: att.filename,
+        url: att.url,
+        fileType: att.fileType,
+        provider: att.provider,
+        publicId: att.publicId,
+        resourceType: att.resourceType,
+        format: att.format,
+        bytes: att.bytes,
+        width: att.width,
+        height: att.height,
+      })),
     }),
     [
       title,
@@ -141,6 +200,7 @@ export default function AdminAnnouncementForm({
     mutationFn: () => createAnnouncement(payload),
     onSuccess: (res) => {
       qc.invalidateQueries({ queryKey: ["admin-announcements"] });
+      qc.invalidateQueries({ queryKey: ["announcements"] });
       onSuccess?.(res);
       // Reset form for new creation
       setTitle("");
@@ -159,6 +219,9 @@ export default function AdminAnnouncementForm({
     mutationFn: () => updateAnnouncement(initial!.id, payload),
     onSuccess: (res) => {
       qc.invalidateQueries({ queryKey: ["admin-announcements"] });
+      qc.invalidateQueries({ queryKey: ["announcements"] });
+      qc.invalidateQueries({ queryKey: ["announcement", initial!.id] });
+      qc.invalidateQueries({ queryKey: ["admin-announcement", initial!.id] });
       onSuccess?.(res);
     },
   });
@@ -184,30 +247,74 @@ export default function AdminAnnouncementForm({
     setAttachments([]);
   };
 
+  function classifyFile(f: CloudinaryFile): "image" | "video" | "document" {
+    const fmt = (f.format || "").toLowerCase();
+    const docFormats = [
+      "pdf",
+      "doc",
+      "docx",
+      "xls",
+      "xlsx",
+      "ppt",
+      "pptx",
+      "txt",
+    ];
+
+    if (docFormats.includes(fmt)) return "document";
+    if (f.resource_type === "raw") return "document";
+    if (f.resource_type === "image") return "image";
+    if (f.resource_type === "video") return "video";
+    return "document"; // fallback teraman
+  }
+
   function onUploaded(files: CloudinaryFile[]) {
-    const mapped = files.map((f) => ({
-      filename: f.original_filename || "file",
-      url: f.secure_url,
-      fileType:
-        f.resource_type === "image"
-          ? "image"
-          : f.resource_type === "video"
-          ? "video"
-          : "document",
-      provider: "cloudinary" as const,
-      publicId: f.public_id,
-      resourceType: f.resource_type,
-      format: f.format,
-      bytes: f.bytes,
-      width: f.width,
-      height: f.height,
-    }));
+    const mapped = files.map((f) => {
+      const fileType = classifyFile(f);
+      return {
+        filename: f.original_filename || "file",
+        url: f.secure_url,
+        fileType, // <- hasil klasifikasi yang benar
+        provider: "cloudinary" as const,
+        publicId: f.public_id || "",
+        resourceType: f.resource_type || "",
+        format: f.format || "",
+        bytes: f.bytes || 0,
+        width: f.width,
+        height: f.height,
+        // optional kalau skema DB-mu sudah siap:
+        // mimeType: mimeOf(f),
+      };
+    });
     setAttachments((prev) => [...(prev || []), ...mapped]);
   }
-  const removeAttachment = (publicId: string) => {
-    setAttachments((prev) =>
-      (prev || []).filter((a) => a.publicId !== publicId)
-    );
+
+  const removeAttachment = (identifier: string) => {
+    console.log("=== REMOVE ATTACHMENT ===");
+    console.log("Removing attachment with identifier:", identifier);
+    console.log("Current attachments before removal:", attachments);
+
+    setAttachments((prev) => {
+      const currentAttachments = prev || [];
+      console.log("Previous attachments in setter:", currentAttachments);
+
+      const filtered = currentAttachments.filter((a) => {
+        // Check both id (for database attachments) and publicId (for new uploads)
+        const shouldKeep = a.id !== identifier && a.publicId !== identifier;
+        console.log(
+          `Attachment "${a.filename}" (id: "${a.id}", publicId: "${a.publicId}") - Keep: ${shouldKeep}`
+        );
+        return shouldKeep;
+      });
+
+      console.log(
+        "Before filter:",
+        currentAttachments.length,
+        "After filter:",
+        filtered.length
+      );
+      console.log("Filtered result:", filtered);
+      return filtered;
+    });
   };
 
   const urgentBanner =
@@ -283,7 +390,7 @@ export default function AdminAnnouncementForm({
           options={priorityOptions}
           value={priority}
           onChange={(e) => setPriority(e.target.value as Priority)}
-          helperText="Prioritas menentukan urutan tampil"
+          helperText="Prioritaskan sesuai urgensi pengumuman"
         />
       </div>
 
@@ -370,10 +477,10 @@ export default function AdminAnnouncementForm({
         </CardContent>
       </Card>
 
-      {/* Attachments */}
+      {/* Attachments - Updated Section */}
       <Card className="border-gray-200">
-        <CardContent className="p-4 space-y-3">
-          <div className="flex items-center">
+        <CardContent className="p-4">
+          <div className="flex items-center mb-3">
             <Paperclip className="h-4 w-4 text-gray-600 mr-2" />
             <h3 className="text-sm font-medium text-gray-900">Lampiran</h3>
           </div>
@@ -381,36 +488,15 @@ export default function AdminAnnouncementForm({
           <CloudinaryUpload
             folder="announcements"
             multiple
-            accept="image/*,.pdf"
+            accept="image/*,video/*,.pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt"
             maxFiles={5}
+            attachments={attachments}
             onUploaded={onUploaded}
+            onRemove={removeAttachment}
             onError={(m) => console.error(m)}
           />
 
-          {attachments && attachments.length > 0 && (
-            <ul className="space-y-2">
-              {attachments.map((a) => (
-                <li
-                  key={a.publicId}
-                  className="flex items-center justify-between rounded-md border border-gray-200 p-2"
-                >
-                  <div className="min-w-0">
-                    <p className="truncate text-sm font-medium text-gray-900">
-                      {a.filename}
-                    </p>
-                    <p className="truncate text-xs text-gray-500">{a.url}</p>
-                  </div>
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    onClick={() => removeAttachment(a.publicId!)}
-                  >
-                    <X className="h-4 w-4" />
-                  </Button>
-                </li>
-              ))}
-            </ul>
-          )}
+          {/* Hapus bagian list attachments yang lama karena sudah terintegrasi di CloudinaryUpload */}
         </CardContent>
       </Card>
 
@@ -442,8 +528,8 @@ export default function AdminAnnouncementForm({
       {/* Error messages from mutations */}
       {(mutCreate.isError || mutUpdate.isError) && (
         <div className="text-sm text-red-600">
-          {(mutCreate.error as any)?.message ||
-            (mutUpdate.error as any)?.message ||
+          {mutCreate.error?.message ||
+            mutUpdate.error?.message ||
             "Terjadi kesalahan saat menyimpan."}
         </div>
       )}

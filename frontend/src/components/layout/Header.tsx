@@ -82,22 +82,6 @@ const Header: React.FC = () => {
       { path: "/create-report", label: "Buat Laporan", icon: PlusCircle },
     ];
 
-    // Add admin-only items
-    if (user?.role === Role.RT_ADMIN) {
-      authenticatedItems.push(
-        {
-          path: "/admin/announcements",
-          label: "Kelola Pengumuman",
-          icon: Shield,
-        },
-        {
-          path: "/admin",
-          label: "Admin Panel",
-          icon: Shield,
-        }
-      );
-    }
-
     return authenticatedItems;
   };
 
@@ -106,8 +90,20 @@ const Header: React.FC = () => {
   // User dropdown menu items
   const userDropdownItems = [
     { path: "/profile", label: "Profil Saya", icon: UserCircle },
-    ...(user?.role === Role.CITIZEN
-      ? [{ path: "/my-reports", label: "Laporan Saya", icon: User }]
+    { path: "/my-reports", label: "Laporan Saya", icon: User },
+    ...(user?.role === Role.RT_ADMIN
+      ? [
+          {
+            path: "/admin/announcements",
+            label: "Kelola Pengumuman",
+            icon: Megaphone,
+          },
+          {
+            path: "/admin",
+            label: "Admin Panel",
+            icon: Shield,
+          },
+        ]
       : []),
   ];
 

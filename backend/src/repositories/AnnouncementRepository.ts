@@ -40,13 +40,18 @@ export class AnnouncementRepository {
     if (priority) where.priority = priority;
 
     const skip = (page - 1) * pageSize;
+
+    // Consistent ordering with admin view:
+    // 1. Pinned announcements first
+    // 2. Most recently updated first (same as admin)
+    // 3. Creation date as fallback
     const orderBy = pinnedFirst
       ? [
           { isPinned: "desc" as const },
-          { publishAt: "desc" as const },
+          { updatedAt: "desc" as const },
           { createdAt: "desc" as const },
         ]
-      : [{ publishAt: "desc" as const }, { createdAt: "desc" as const }];
+      : [{ updatedAt: "desc" as const }, { createdAt: "desc" as const }];
 
     const [total, items] = await Promise.all([
       prisma.announcement.count({ where }),
@@ -88,9 +93,18 @@ export class AnnouncementRepository {
     priority,
     pinnedFirst,
     includeInactive,
-  }: ListParams & { includeInactive?: boolean }) {
+    showInactiveOnly,
+  }: ListParams & { includeInactive?: boolean; showInactiveOnly?: boolean }) {
     const where: any = {};
-    if (!includeInactive) where.isActive = true;
+
+    // Logika untuk status active/inactive
+    if (showInactiveOnly) {
+      where.isActive = false;
+    } else if (!includeInactive) {
+      where.isActive = true;
+    }
+    // Jika includeInactive = true dan showInactiveOnly = false, tampilkan semua
+
     if (q && q.trim()) {
       where.OR = [
         { title: { contains: q, mode: "insensitive" } },
@@ -101,14 +115,18 @@ export class AnnouncementRepository {
     if (priority) where.priority = priority;
 
     const skip = (page - 1) * pageSize;
+
+    // New ordering logic for better UX:
+    // 1. Pinned announcements first
+    // 2. Most recently updated first (when create/edit, it goes to top)
+    // 3. Creation date as fallback
     const orderBy = pinnedFirst
       ? [
           { isPinned: "desc" as const },
-          { publishAt: "desc" as const },
+          { updatedAt: "desc" as const },
           { createdAt: "desc" as const },
         ]
-      : [{ publishAt: "desc" as const }, { createdAt: "desc" as const }];
-
+      : [{ updatedAt: "desc" as const }, { createdAt: "desc" as const }];
     const [total, items] = await Promise.all([
       prisma.announcement.count({ where }),
       prisma.announcement.findMany({
@@ -208,6 +226,76 @@ export class AnnouncementRepository {
     if (data.priority) {
       updateData.priority = data.priority as any; // Replace 'as any' with your actual enum type if available
     }
+    return prisma.announcement.update({
+      where: { id },
+      data: updateData,
+      include: {
+        author: { select: { id: true, name: true, email: true } },
+        attachments: {
+          select: { id: true, filename: true, url: true, fileType: true },
+        },
+      },
+    });
+  }
+
+  static async updateWithAttachments(
+    id: string,
+    data: Partial<{
+      title: string;
+      content: string;
+      type: string;
+      priority: string;
+      isPinned: boolean;
+      publishAt: Date | null;
+      expireAt: Date | null;
+      isActive: boolean;
+    }>,
+    attachments?: { filename: string; url: string; fileType: string }[]
+  ) {
+    // Map string values to enums if provided
+    const updateData: any = { ...data };
+    if (data.type) {
+      updateData.type = data.type as any;
+    }
+    if (data.priority) {
+      updateData.priority = data.priority as any;
+    }
+
+    // Handle attachments replacement: delete all existing, then create new ones
+    if (attachments !== undefined) {
+      // Use transaction to ensure atomicity
+      return prisma.$transaction(async (tx) => {
+        // First, delete all existing attachments
+        await tx.attachment.deleteMany({
+          where: { announcementId: id },
+        });
+
+        // Then update the announcement with new attachments
+        return tx.announcement.update({
+          where: { id },
+          data: {
+            ...updateData,
+            attachments: attachments.length
+              ? {
+                  create: attachments.map((a) => ({
+                    filename: a.filename,
+                    url: a.url,
+                    fileType: a.fileType,
+                  })),
+                }
+              : undefined,
+          },
+          include: {
+            author: { select: { id: true, name: true, email: true } },
+            attachments: {
+              select: { id: true, filename: true, url: true, fileType: true },
+            },
+          },
+        });
+      });
+    }
+
+    // If no attachments update needed, just update the announcement
     return prisma.announcement.update({
       where: { id },
       data: updateData,

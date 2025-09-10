@@ -33,10 +33,30 @@ export const UPLOAD_POLICY = {
     ],
   },
   announcement: {
-    // umumnya image/pdf
+    // diseragamkan dengan report untuk mendukung lebih banyak file types
     maxBytes: 10 * 1024 * 1024, // 10 MB
-    resourceTypes: ["image", "raw"] as const,
-    formats: ["jpg", "jpeg", "png", "webp", "gif", "pdf"],
+    resourceTypes: ["image", "video", "raw"] as const,
+    formats: [
+      // image
+      "jpg",
+      "jpeg",
+      "png",
+      "webp",
+      "gif",
+      // video (umum)
+      "mp4",
+      "mov",
+      "webm",
+      // dokumen
+      "pdf",
+      "doc",
+      "docx",
+      "xls",
+      "xlsx",
+      "ppt",
+      "pptx",
+      "txt",
+    ],
   },
 } as const;
 

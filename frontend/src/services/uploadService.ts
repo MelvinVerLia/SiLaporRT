@@ -33,20 +33,19 @@ export async function uploadToCloudinary(file: File, sign: SignUploadResponse) {
   form.append("signature", sign.signature);
   form.append("folder", sign.folder);
 
-  const resource = sign.resourceType || "auto";
-  const url = `https://api.cloudinary.com/v1_1/${sign.cloudName}/${resource}/upload`;
+  const isPdf =
+    file.type === "application/pdf" || /\.pdf$/i.test(file.name || "");
 
+  // Default "auto", tapi untuk PDF paksa "raw"
+  let uploadEndpoint = "auto";
+  if (isPdf) uploadEndpoint = "raw";
+  else if (sign.resourceType && sign.resourceType !== "auto") {
+    uploadEndpoint = sign.resourceType;
+  }
+
+  const url = `https://api.cloudinary.com/v1_1/${sign.cloudName}/${uploadEndpoint}/upload`;
   const { data } = await axios.post(url, form);
-  return data as {
-    public_id: string;
-    secure_url: string;
-    resource_type: string; // "image" | "video" | "raw"
-    format?: string;
-    bytes?: number;
-    width?: number;
-    height?: number;
-    original_filename?: string;
-  };
+  return data;
 }
 
 // ---- Optional: save attachment record to your BE ----
