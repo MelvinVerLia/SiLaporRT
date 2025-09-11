@@ -9,6 +9,7 @@ import {
 } from "../../components/ui/Card";
 import Badge from "../../components/ui/Badge";
 import Button from "../../components/ui/Button";
+import Breadcrumb from "../../components/ui/Breadcrumb";
 import AnnouncementDetailSkeleton from "../../components/announcements/AnnouncementDetailSkeleton";
 import { ArrowLeft, Pin, Calendar, Bell, Paperclip } from "lucide-react";
 
@@ -48,8 +49,15 @@ export default function AnnouncementDetailPage() {
       ? "warning"
       : "default";
 
+  const breadcrumbItems = [
+    { label: "Pengumuman", href: "/announcements" },
+    { label: a.title },
+  ];
+
   return (
     <div className="space-y-6">
+      {/* Breadcrumb */}
+      <Breadcrumb items={breadcrumbItems} />
       {/* Back */}
       <div className="flex items-center">
         <Button

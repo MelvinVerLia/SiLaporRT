@@ -26,7 +26,7 @@ import {
 import Badge from "../../components/ui/Badge";
 import LoadingSpinner from "../../components/ui/LoadingSpinner";
 import Breadcrumb from "../../components/ui/Breadcrumb";
-import Select from "../../components/ui/Select";
+import Pagination from "../../components/ui/Pagination";
 import { Announcement } from "../../types/announcement.types";
 
 export default function ManageAnnouncementsPage() {
@@ -192,18 +192,14 @@ export default function ManageAnnouncementsPage() {
     navigate(`/admin/announcements/edit/${announcement.id}`);
   };
 
-  const handlePageSizeChange = (newPageSize: string) => {
-    setPageSize(Number(newPageSize));
+  const handlePageSizeChange = (newPageSize: number) => {
+    setPageSize(newPageSize);
     setPage(1); // Reset to first page when changing page size
   };
 
-  const pageSizeOptions = [
-    { value: "5", label: "Tampilkan 5" },
-    { value: "10", label: "Tampilkan 10" },
-    { value: "20", label: "Tampilkan 20" },
-    { value: "50", label: "Tampilkan 50" },
-    { value: "100", label: "Tampilkan 100" },
-  ];
+  const handlePageChange = (newPage: number) => {
+    setPage(newPage);
+  };
 
   return (
     <div className="space-y-6">
@@ -561,42 +557,24 @@ export default function ManageAnnouncementsPage() {
                 })}
               </div>
 
-              {/* Pagination */}
-              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between pt-6 border-t border-gray-200 gap-4">
-                {/* Page Size Selector */}
-                  <Select
-                    value={pageSize.toString()}
-                    onChange={(e) => handlePageSizeChange(e.target.value)}
-                    options={pageSizeOptions}
-                    className="w-auto min-w-[140px]"
-                  />
-
-                {/* Navigation */}
-                {totalPages > 1 && (
-                  <div className="flex items-center space-x-2">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      disabled={page <= 1}
-                      onClick={() => setPage(page - 1)}
-                    >
-                      Sebelumnya
-                    </Button>
-
-                    <span className="px-3 py-2 text-sm text-gray-600">
-                      Halaman {page} dari {totalPages}
-                    </span>
-
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      disabled={page >= totalPages}
-                      onClick={() => setPage(page + 1)}
-                    >
-                      Selanjutnya
-                    </Button>
-                  </div>
-                )}
+              {/* Enhanced Pagination */}
+              <div className="pt-6 border-t border-gray-200">
+                <Pagination
+                  currentPage={page}
+                  totalPages={totalPages}
+                  pageSize={pageSize}
+                  totalItems={data?.total ?? 0}
+                  onPageChange={handlePageChange}
+                  onPageSizeChange={handlePageSizeChange}
+                  showPageSizeSelector={true}
+                  pageSizeOptions={[
+                    { value: "5", label: "5 per halaman" },
+                    { value: "10", label: "10 per halaman" },
+                    { value: "20", label: "20 per halaman" },
+                    { value: "50", label: "50 per halaman" },
+                    { value: "100", label: "100 per halaman" },
+                  ]}
+                />
               </div>
             </>
           )}

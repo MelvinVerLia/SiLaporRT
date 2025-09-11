@@ -6,11 +6,12 @@ import AnnouncementListItem from "../../components/announcements/AnnouncementLis
 import AnnouncementListItemSkeleton from "../../components/announcements/AnnouncementListItemSkeleton";
 import { Card, CardContent } from "../../components/ui/Card";
 import Button from "../../components/ui/Button";
+import Pagination from "../../components/ui/Pagination";
 import { FileText, RefreshCw } from "lucide-react";
 
 export default function AnnouncementsPage() {
   const [page, setPage] = useState(1);
-  const pageSize = 5; // Show more per page since no filtering
+  const [pageSize, setPageSize] = useState(5);
 
   const { data, isLoading, isError, refetch, isFetching } = useQuery({
     queryKey: ["announcements", { page, pageSize }],
@@ -25,6 +26,15 @@ export default function AnnouncementsPage() {
   const items = data?.items ?? [];
   const total = data?.total ?? 0;
   const totalPages = Math.max(1, Math.ceil(total / pageSize));
+
+  const handlePageChange = (newPage: number) => {
+    setPage(newPage);
+  };
+
+  const handlePageSizeChange = (newPageSize: number) => {
+    setPageSize(newPageSize);
+    setPage(1); // Reset to first page when changing page size
+  };
 
   return (
     <div className="space-y-6">
@@ -99,30 +109,23 @@ export default function AnnouncementsPage() {
         </Card>
       )}
 
-      {/* Simple Pagination */}
+      {/* Enhanced Pagination */}
       {totalPages > 1 && (
-        <div className="flex items-center justify-center gap-3 pt-6">
-          <Button
-            variant="outline"
-            size="sm"
-            disabled={page <= 1}
-            onClick={() => setPage((p) => p - 1)}
-          >
-            Sebelumnya
-          </Button>
-
-          <span className="text-sm text-gray-600 px-4">
-            Halaman {page} dari {totalPages}
-          </span>
-
-          <Button
-            variant="outline"
-            size="sm"
-            disabled={page >= totalPages}
-            onClick={() => setPage((p) => p + 1)}
-          >
-            Selanjutnya
-          </Button>
+        <div className="pt-6">
+          <Pagination
+            currentPage={page}
+            totalPages={totalPages}
+            pageSize={pageSize}
+            totalItems={data?.total ?? 0}
+            onPageChange={handlePageChange}
+            onPageSizeChange={handlePageSizeChange}
+            showPageSizeSelector={true}
+            pageSizeOptions={[
+              { value: "5", label: "5 per halaman" },
+              { value: "10", label: "10 per halaman" },
+              { value: "20", label: "20 per halaman" },
+            ]}
+          />
         </div>
       )}
     </div>
