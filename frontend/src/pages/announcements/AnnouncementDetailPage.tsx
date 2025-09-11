@@ -9,6 +9,7 @@ import {
 } from "../../components/ui/Card";
 import Badge from "../../components/ui/Badge";
 import Button from "../../components/ui/Button";
+import AnnouncementDetailSkeleton from "../../components/announcements/AnnouncementDetailSkeleton";
 import { ArrowLeft, Pin, Calendar, Bell, Paperclip } from "lucide-react";
 
 function formatDateTime(s?: string | null) {
@@ -36,7 +37,7 @@ export default function AnnouncementDetailPage() {
     enabled: !!id,
   });
 
-  if (isLoading) return <p className="text-sm text-gray-500">Memuat…</p>;
+  if (isLoading) return <AnnouncementDetailSkeleton />;
   if (isError || !a)
     return <p className="text-sm text-red-600">Pengumuman tidak ditemukan.</p>;
 
@@ -124,7 +125,7 @@ export default function AnnouncementDetailPage() {
                   {a.attachments.map((att) => (
                     <div
                       key={att.id}
-                      className="p-4 bg-gray-50 rounded-lg border"
+                      className="p-4 bg-gray-50 rounded-lg border border-gray-200"
                     >
                       <div className="flex items-center">
                         <Paperclip className="h-5 w-5 text-gray-400 mr-2" />

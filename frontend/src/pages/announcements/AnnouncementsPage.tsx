@@ -3,9 +3,9 @@ import { useQuery } from "@tanstack/react-query";
 import { listAnnouncements } from "../../services/announcementService";
 import { Announcement } from "../../types/announcement.types";
 import AnnouncementListItem from "../../components/announcements/AnnouncementListItem";
+import AnnouncementListItemSkeleton from "../../components/announcements/AnnouncementListItemSkeleton";
 import { Card, CardContent } from "../../components/ui/Card";
 import Button from "../../components/ui/Button";
-import LoadingSpinner from "../../components/ui/LoadingSpinner";
 import { FileText, RefreshCw } from "lucide-react";
 
 export default function AnnouncementsPage() {
@@ -52,15 +52,12 @@ export default function AnnouncementsPage() {
       {/* Announcement Feed */}
       <div className="space-y-4">
         {isLoading && (
-          <Card>
-            <CardContent className="p-8 text-center">
-              <div className="animate-pulse space-y-3">
-                <div className="h-4 bg-gray-200 rounded w-3/4 mx-auto"></div>
-                <div className="h-3 bg-gray-200 rounded w-1/2 mx-auto"></div>
-              </div>
-              <p className="text-sm text-gray-500 mt-4">Memuat pengumuman...</p>
-            </CardContent>
-          </Card>
+          <>
+            {/* Show 3 skeleton items while loading */}
+            {Array.from({ length: 3 }).map((_, index) => (
+              <AnnouncementListItemSkeleton key={`skeleton-${index}`} />
+            ))}
+          </>
         )}
 
         {isError && (

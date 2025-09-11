@@ -118,7 +118,7 @@ const Header: React.FC = () => {
               className="flex items-center space-x-2 text-xl font-bold text-blue-600 hover:text-blue-700 transition-colors"
             >
               <img src="/assets/logo.png" alt="Logo" className="h-8 w-8" />
-              <span className="hidden sm:block">
+              <span>
                 SiLapor<span className="text-blue-950">RT</span>
               </span>
             </Link>

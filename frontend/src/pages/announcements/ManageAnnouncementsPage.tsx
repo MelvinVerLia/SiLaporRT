@@ -26,13 +26,14 @@ import {
 import Badge from "../../components/ui/Badge";
 import LoadingSpinner from "../../components/ui/LoadingSpinner";
 import Breadcrumb from "../../components/ui/Breadcrumb";
+import Select from "../../components/ui/Select";
 import { Announcement } from "../../types/announcement.types";
 
 export default function ManageAnnouncementsPage() {
   const navigate = useNavigate();
   const qc = useQueryClient();
   const [page, setPage] = useState(1);
-  const pageSize = 5;
+  const [pageSize, setPageSize] = useState(5);
   const [showInactiveOnly, setShowInactiveOnly] = useState(false);
 
   const { data, isLoading, isError } = useQuery({
@@ -190,6 +191,19 @@ export default function ManageAnnouncementsPage() {
   const handleEditClick = (announcement: Announcement) => {
     navigate(`/admin/announcements/edit/${announcement.id}`);
   };
+
+  const handlePageSizeChange = (newPageSize: string) => {
+    setPageSize(Number(newPageSize));
+    setPage(1); // Reset to first page when changing page size
+  };
+
+  const pageSizeOptions = [
+    { value: "5", label: "Tampilkan 5" },
+    { value: "10", label: "Tampilkan 10" },
+    { value: "20", label: "Tampilkan 20" },
+    { value: "50", label: "Tampilkan 50" },
+    { value: "100", label: "Tampilkan 100" },
+  ];
 
   return (
     <div className="space-y-6">
@@ -548,12 +562,17 @@ export default function ManageAnnouncementsPage() {
               </div>
 
               {/* Pagination */}
-              {totalPages > 1 && (
-                <div className="flex items-center justify-between pt-6 border-t border-gray-200">
-                  <div className="text-sm text-gray-600">
-                    Menampilkan {items.length} dari {total} pengumuman
-                  </div>
+              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between pt-6 border-t border-gray-200 gap-4">
+                {/* Page Size Selector */}
+                  <Select
+                    value={pageSize.toString()}
+                    onChange={(e) => handlePageSizeChange(e.target.value)}
+                    options={pageSizeOptions}
+                    className="w-auto min-w-[140px]"
+                  />
 
+                {/* Navigation */}
+                {totalPages > 1 && (
                   <div className="flex items-center space-x-2">
                     <Button
                       variant="outline"
@@ -577,8 +596,8 @@ export default function ManageAnnouncementsPage() {
                       Selanjutnya
                     </Button>
                   </div>
-                </div>
-              )}
+                )}
+              </div>
             </>
           )}
         </CardContent>
