@@ -65,7 +65,7 @@ class ReportRepository {
         ];
       }
       if (category) where.category = category;
-      if (status) where.priority = status;
+      if (status) where.status = status;
 
       const skip = (page - 1) * pageSize;
 

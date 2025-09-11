@@ -1,7 +1,6 @@
 import React, { useState } from "react";
-import { useParams, Link, useNavigate } from "react-router-dom";
+import { useParams, Link } from "react-router-dom";
 import {
-  ArrowLeft,
   MapPin,
   Clock,
   User,
@@ -21,6 +20,7 @@ import {
 import Button from "../../components/ui/Button";
 import Badge from "../../components/ui/Badge";
 import Textarea from "../../components/ui/Textarea";
+import Breadcrumb from "../../components/ui/Breadcrumb";
 import { useAuth } from "../../hooks/useAuth";
 import { getReportDetails, toggleUpvote } from "../../services/reportService";
 import { QueryClient, useMutation, useQuery } from "@tanstack/react-query";
@@ -29,7 +29,6 @@ import { Report } from "../../types/report.types";
 
 const ReportDetailPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
-  const navigate = useNavigate();
   const { user, isAuthenticated } = useAuth();
   const [commentText, setCommentText] = useState("");
   const [isSubmittingComment, setIsSubmittingComment] = useState(false);
@@ -77,9 +76,6 @@ const ReportDetailPage: React.FC = () => {
       createdAt: "2024-01-20T12:45:00Z",
     },
   ];
-
-  // Mock responses (official responses from RT_ADMIN)
-  // const mockResponses = [];
 
   const getStatusBadge = (status: string) => {
     const variants = {
@@ -163,20 +159,21 @@ const ReportDetailPage: React.FC = () => {
   }
   const statusInfo = getStatusBadge(report.status);
 
+  const breadcrumbItems = [
+    { label: "Beranda", href: "/" },
+    { label: "Laporan", href: "/reports" },
+    {
+      label:
+        report.title.length > 50
+          ? report.title.substring(0, 50) + "..."
+          : report.title,
+    },
+  ];
+
   return (
     <div className="space-y-6">
-      {/* Back Button */}
-      <div className="flex items-center">
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={() => navigate(-1)}
-          className="mr-4"
-        >
-          <ArrowLeft className="mr-2 h-4 w-4" />
-          Kembali
-        </Button>
-      </div>
+      {/* Breadcrumb */}
+      <Breadcrumb items={breadcrumbItems} />
 
       {/* Report Header */}
       <Card>
