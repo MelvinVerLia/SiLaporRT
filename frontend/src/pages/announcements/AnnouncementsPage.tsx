@@ -110,24 +110,17 @@ export default function AnnouncementsPage() {
       )}
 
       {/* Enhanced Pagination */}
-      {totalPages > 1 && (
-        <div className="pt-6">
-          <Pagination
-            currentPage={page}
-            totalPages={totalPages}
-            pageSize={pageSize}
-            totalItems={data?.total ?? 0}
-            onPageChange={handlePageChange}
-            onPageSizeChange={handlePageSizeChange}
-            showPageSizeSelector={true}
-            pageSizeOptions={[
-              { value: "5", label: "5 per halaman" },
-              { value: "10", label: "10 per halaman" },
-              { value: "20", label: "20 per halaman" },
-            ]}
-          />
-        </div>
-      )}
+      <div className="pt-6">
+        <Pagination
+          currentPage={page}
+          totalPages={totalPages}
+          pageSize={pageSize}
+          totalItems={data?.total ?? 0}
+          onPageChange={handlePageChange}
+          onPageSizeChange={handlePageSizeChange}
+          showPageSizeSelector={true}
+        />
+      </div>
     </div>
   );
 }

@@ -1,4 +1,4 @@
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { getAnnouncement } from "../../services/announcementService";
 import {
@@ -8,10 +8,9 @@ import {
   CardContent,
 } from "../../components/ui/Card";
 import Badge from "../../components/ui/Badge";
-import Button from "../../components/ui/Button";
 import Breadcrumb from "../../components/ui/Breadcrumb";
 import AnnouncementDetailSkeleton from "../../components/announcements/AnnouncementDetailSkeleton";
-import { ArrowLeft, Pin, Calendar, Bell, Paperclip } from "lucide-react";
+import { Pin, Calendar, Bell, Paperclip } from "lucide-react";
 
 function formatDateTime(s?: string | null) {
   if (!s) return "-";
@@ -26,7 +25,6 @@ function formatDateTime(s?: string | null) {
 
 export default function AnnouncementDetailPage() {
   const { id } = useParams<{ id: string }>();
-  const navigate = useNavigate();
 
   const {
     data: a,
@@ -58,18 +56,6 @@ export default function AnnouncementDetailPage() {
     <div className="space-y-6">
       {/* Breadcrumb */}
       <Breadcrumb items={breadcrumbItems} />
-      {/* Back */}
-      <div className="flex items-center">
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={() => navigate(-1)}
-          className="mr-4"
-        >
-          <ArrowLeft className="mr-2 h-4 w-4" />
-          Kembali
-        </Button>
-      </div>
 
       {/* Header */}
       <Card>

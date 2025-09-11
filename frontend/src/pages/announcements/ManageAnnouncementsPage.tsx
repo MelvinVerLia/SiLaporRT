@@ -558,7 +558,7 @@ export default function ManageAnnouncementsPage() {
               </div>
 
               {/* Enhanced Pagination */}
-              <div className="pt-6 border-t border-gray-200">
+              <div className="pt-6">
                 <Pagination
                   currentPage={page}
                   totalPages={totalPages}
@@ -567,13 +567,6 @@ export default function ManageAnnouncementsPage() {
                   onPageChange={handlePageChange}
                   onPageSizeChange={handlePageSizeChange}
                   showPageSizeSelector={true}
-                  pageSizeOptions={[
-                    { value: "5", label: "5 per halaman" },
-                    { value: "10", label: "10 per halaman" },
-                    { value: "20", label: "20 per halaman" },
-                    { value: "50", label: "50 per halaman" },
-                    { value: "100", label: "100 per halaman" },
-                  ]}
                 />
               </div>
             </>
