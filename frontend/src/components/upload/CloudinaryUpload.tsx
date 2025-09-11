@@ -2,6 +2,7 @@ import React, { useRef, useState } from "react";
 import { UploadCloud, X, FileText, FileImage, FileVideo } from "lucide-react";
 import { signUpload, uploadToCloudinary } from "../../services/uploadService";
 import { CloudinaryFile } from "../../types/announcement.types";
+import { useToast } from "../../hooks/useToast";
 
 // Extended type untuk internal processing (sesuai dengan yang ada di AdminAnnouncementForm)
 type AttachmentFile = {
@@ -43,13 +44,14 @@ const CloudinaryUpload: React.FC<Props> = ({
 }) => {
   const inputRef = useRef<HTMLInputElement | null>(null);
   const [uploading, setUploading] = useState(false);
+  const toast = useToast();
 
   async function handleFiles(files: FileList | null) {
     if (!files || files.length === 0) return;
     const list = Array.from(files);
 
     if (attachments.length + list.length > maxFiles) {
-      onError?.(`Maksimal ${maxFiles} file`);
+      toast.error(`Maksimal ${maxFiles} file`, "Upload Gagal");
       return;
     }
 
@@ -78,8 +80,17 @@ const CloudinaryUpload: React.FC<Props> = ({
       }
 
       onUploaded?.(uploaded);
+
+      // Show success toast
+      const fileCount = uploaded.length;
+      const fileText = fileCount === 1 ? "file" : "file";
+      toast.success(
+        `${fileCount} ${fileText} berhasil diunggah`,
+        "Upload Berhasil"
+      );
     } catch (e: unknown) {
       const error = e as Error;
+      toast.error(error?.message || "Gagal mengunggah file", "Upload Gagal");
       onError?.(error?.message || "Gagal upload");
     } finally {
       setUploading(false);

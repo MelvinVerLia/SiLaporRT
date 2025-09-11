@@ -25,6 +25,7 @@ import {
   UpsertAnnouncementPayload,
 } from "../../services/announcementAdminService";
 import CloudinaryUpload from "../upload/CloudinaryUpload";
+import { useToast } from "../../hooks/useToast";
 
 type Props = {
   initial?: Announcement | null;
@@ -62,6 +63,7 @@ export default function AdminAnnouncementForm({
 }: Props) {
   const isEdit = !!initial?.id;
   const qc = useQueryClient();
+  const toast = useToast();
 
   const [title, setTitle] = useState(initial?.title ?? "");
   const [content, setContent] = useState(initial?.content ?? "");
@@ -201,6 +203,7 @@ export default function AdminAnnouncementForm({
     onSuccess: (res) => {
       qc.invalidateQueries({ queryKey: ["admin-announcements"] });
       qc.invalidateQueries({ queryKey: ["announcements"] });
+      toast.success("Pengumuman berhasil dibuat", "Berhasil");
       onSuccess?.(res);
       // Reset form for new creation
       setTitle("");
@@ -213,6 +216,9 @@ export default function AdminAnnouncementForm({
       setExpireAt("");
       setAttachments([]);
     },
+    onError: (error) => {
+      toast.error(error?.message || "Gagal membuat pengumuman", "Error");
+    },
   });
 
   const mutUpdate = useMutation({
@@ -222,7 +228,11 @@ export default function AdminAnnouncementForm({
       qc.invalidateQueries({ queryKey: ["announcements"] });
       qc.invalidateQueries({ queryKey: ["announcement", initial!.id] });
       qc.invalidateQueries({ queryKey: ["admin-announcement", initial!.id] });
+      toast.success("Pengumuman berhasil diperbarui", "Berhasil");
       onSuccess?.(res);
+    },
+    onError: (error) => {
+      toast.error(error?.message || "Gagal memperbarui pengumuman", "Error");
     },
   });
 
@@ -493,7 +503,7 @@ export default function AdminAnnouncementForm({
             attachments={attachments}
             onUploaded={onUploaded}
             onRemove={removeAttachment}
-            onError={(m) => console.error(m)}
+            onError={(m) => toast.error(m, "Upload Error")}
           />
 
           {/* Hapus bagian list attachments yang lama karena sudah terintegrasi di CloudinaryUpload */}
