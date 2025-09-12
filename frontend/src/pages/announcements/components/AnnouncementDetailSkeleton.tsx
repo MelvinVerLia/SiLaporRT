@@ -1,6 +1,6 @@
-import { Card, CardHeader, CardTitle, CardContent } from "../ui/Card";
-import Skeleton from "../ui/Skeleton";
-import Button from "../ui/Button";
+import { Card, CardHeader, CardTitle, CardContent } from "../../../components/ui/Card";
+import Skeleton from "../../../components/ui/Skeleton";
+import Button from "../../../components/ui/Button";
 import { ArrowLeft } from "lucide-react";
 
 export default function AnnouncementDetailSkeleton() {

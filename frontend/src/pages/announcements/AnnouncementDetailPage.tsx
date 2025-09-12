@@ -9,7 +9,7 @@ import {
 } from "../../components/ui/Card";
 import Badge from "../../components/ui/Badge";
 import Breadcrumb from "../../components/ui/Breadcrumb";
-import AnnouncementDetailSkeleton from "../../components/announcements/AnnouncementDetailSkeleton";
+import AnnouncementDetailSkeleton from "./components/AnnouncementDetailSkeleton";
 import { Pin, Calendar, Bell, Paperclip } from "lucide-react";
 
 function formatDateTime(s?: string | null) {

@@ -10,7 +10,7 @@ import {
 } from "../../components/ui/Card";
 import Breadcrumb from "../../components/ui/Breadcrumb";
 import LoadingSpinner from "../../components/ui/LoadingSpinner";
-import AdminAnnouncementForm from "../../components/announcements/AdminAnnouncementForm";
+import AdminAnnouncementForm from "./components/AdminAnnouncementForm";
 import { adminGetAnnouncement } from "../../services/announcementAdminService";
 
 export default function EditAnnouncementPage() {

@@ -8,24 +8,24 @@ import {
   AlertTriangle,
   Paperclip,
 } from "lucide-react";
-import Input from "../ui/Input";
-import Textarea from "../ui/Textarea";
-import Select from "../ui/Select";
-import Button from "../ui/Button";
-import { Card, CardContent } from "../ui/Card";
+import Input from "../../../components/ui/Input";
+import Textarea from "../../../components/ui/Textarea";
+import Select from "../../../components/ui/Select";
+import Button from "../../../components/ui/Button";
+import { Card, CardContent } from "../../../components/ui/Card";
 import {
   Announcement,
   AnnouncementType,
   Priority,
   CloudinaryFile,
-} from "../../types/announcement.types";
+} from "../../../types/announcement.types";
 import {
   createAnnouncement,
   updateAnnouncement,
   UpsertAnnouncementPayload,
-} from "../../services/announcementAdminService";
-import CloudinaryUpload from "../upload/CloudinaryUpload";
-import { useToast } from "../../hooks/useToast";
+} from "../../../services/announcementAdminService";
+import CloudinaryUpload from "../../../components/upload/CloudinaryUpload";
+import { useToast } from "../../../hooks/useToast";
 
 type Props = {
   initial?: Announcement | null;

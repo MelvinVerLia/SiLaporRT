@@ -1,8 +1,8 @@
 import { Link } from "react-router-dom";
-import { Card, CardContent } from "../ui/Card";
-import Badge from "../ui/Badge";
+import { Card, CardContent } from "../../../components/ui/Card";
+import Badge from "../../../components/ui/Badge";
 import { Calendar, Pin, Paperclip, Bell } from "lucide-react";
-import { Announcement } from "../../types/announcement.types";
+import { Announcement } from "../../../types/announcement.types";
 
 function formatTime(s?: string | null) {
   if (!s) return "-";

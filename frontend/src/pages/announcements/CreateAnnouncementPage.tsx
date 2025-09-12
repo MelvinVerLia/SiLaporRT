@@ -8,7 +8,7 @@ import {
   CardTitle,
 } from "../../components/ui/Card";
 import Breadcrumb from "../../components/ui/Breadcrumb";
-import AdminAnnouncementForm from "../../components/announcements/AdminAnnouncementForm";
+import AdminAnnouncementForm from "./components/AdminAnnouncementForm";
 
 export default function CreateAnnouncementPage() {
   const navigate = useNavigate();
