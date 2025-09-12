@@ -24,9 +24,9 @@ import {
   CardTitle,
 } from "../../components/ui/Card";
 import Badge from "../../components/ui/Badge";
-import LoadingSpinner from "../../components/ui/LoadingSpinner";
 import Breadcrumb from "../../components/ui/Breadcrumb";
 import Pagination from "../../components/ui/Pagination";
+import AnnouncementManageTableSkeleton from "./components/AnnouncementManageTableSkeleton";
 import { Announcement } from "../../types/announcement.types";
 
 export default function ManageAnnouncementsPage() {
@@ -254,9 +254,7 @@ export default function ManageAnnouncementsPage() {
 
         <CardContent>
           {isLoading ? (
-            <div className="flex justify-center py-8">
-              <LoadingSpinner />
-            </div>
+            <AnnouncementManageTableSkeleton />
           ) : isError ? (
             <div className="text-center py-8">
               <AlertTriangle className="mx-auto h-8 w-8 text-red-400 mb-2" />
