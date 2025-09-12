@@ -1,19 +1,9 @@
 import { Card, CardHeader, CardTitle, CardContent } from "../../../components/ui/Card";
 import Skeleton from "../../../components/ui/Skeleton";
-import Button from "../../../components/ui/Button";
-import { ArrowLeft } from "lucide-react";
 
 export default function AnnouncementDetailSkeleton() {
   return (
     <div className="space-y-6">
-      {/* Back Button */}
-      <div className="flex items-center">
-        <Button variant="ghost" size="sm" disabled className="mr-4">
-          <ArrowLeft className="mr-2 h-4 w-4" />
-          Kembali
-        </Button>
-      </div>
-
       {/* Header Card */}
       <Card>
         <CardHeader>

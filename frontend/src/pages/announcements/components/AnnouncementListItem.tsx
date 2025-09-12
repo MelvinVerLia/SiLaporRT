@@ -35,7 +35,7 @@ export default function AnnouncementListItem({ a }: { a: Announcement }) {
                 </h3>
                 <div className="flex flex-wrap gap-2">
                   {a.isPinned && (
-                    <span className="inline-flex items-center gap-1 text-amber-600 text-xs font-medium">
+                    <span className="inline-flex items-center gap-1 text-amber-600 text-sm font-medium">
                       <Pin className="h-3 w-3" /> Pinned
                     </span>
                   )}
