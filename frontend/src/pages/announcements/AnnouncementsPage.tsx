@@ -7,7 +7,7 @@ import AnnouncementListItemSkeleton from "./components/AnnouncementListItemSkele
 import { Card, CardContent } from "../../components/ui/Card";
 import Button from "../../components/ui/Button";
 import Pagination from "../../components/ui/Pagination";
-import { FileText, RefreshCw } from "lucide-react";
+import { FileText, RefreshCw, AlertCircle } from "lucide-react";
 
 export default function AnnouncementsPage() {
   const [page, setPage] = useState(1);
@@ -63,8 +63,8 @@ export default function AnnouncementsPage() {
       <div className="space-y-4">
         {isLoading && (
           <>
-            {/* Show 3 skeleton items while loading */}
-            {Array.from({ length: 3 }).map((_, index) => (
+            {/* Show 5 skeleton items while loading */}
+            {Array.from({ length: 5 }).map((_, index) => (
               <AnnouncementListItemSkeleton key={`skeleton-${index}`} />
             ))}
           </>
@@ -72,15 +72,22 @@ export default function AnnouncementsPage() {
 
         {isError && (
           <Card>
-            <CardContent className="p-8 text-center">
-              <div className="text-red-500 mb-2">⚠️</div>
-              <p className="text-sm text-red-600">Gagal memuat pengumuman.</p>
+            <CardContent className="p-12 text-center">
+              <AlertCircle className="mx-auto h-12 w-12 text-red-500 mb-4" />
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                Gagal Memuat Pengumuman
+              </h3>
+              <p className="text-gray-600 mb-6">
+                Terjadi kesalahan saat memuat data pengumuman. Silakan coba
+                lagi.
+              </p>
               <Button
                 variant="outline"
-                size="sm"
                 onClick={() => refetch()}
-                className="mt-3"
+                loading={isFetching}
+                className="w-full sm:w-auto"
               >
+                <RefreshCw className="mr-2 h-4 w-4" />
                 Coba Lagi
               </Button>
             </CardContent>

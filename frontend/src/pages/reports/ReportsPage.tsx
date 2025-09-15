@@ -1,25 +1,26 @@
 import React, { useState } from "react";
-import { Search, FileText, X } from "lucide-react";
+import { Search, FileText, AlertCircle, RefreshCw } from "lucide-react";
 import { Card, CardContent } from "../../components/ui/Card";
 import Input from "../../components/ui/Input";
 import Select from "../../components/ui/Select";
 // import { useAuth } from "../../hooks/useAuth";
 import { getReportList } from "../../services/reportService";
 import { Report } from "../../types/report.types";
-import LoadingSpinner from "../../components/ui/LoadingSpinner";
 import { useQuery } from "@tanstack/react-query";
 import Button from "../../components/ui/Button";
+import Pagination from "../../components/ui/Pagination";
 import ReportListItem from "./ReportListItem";
+import ReportListItemSkeleton from "./components/ReportListItemSkeleton";
 
 const ReportsPage: React.FC = () => {
   // const { isAuthenticated } = useAuth();
   const [page, setPage] = useState(1);
   const [q, setQ] = useState("");
-  const pageSize = 10;
+  const [pageSize, setPageSize] = useState(5);
   const [selectedCategory, setSelectedCategory] = useState("");
   const [selectedStatus, setSelectedStatus] = useState("");
 
-  const { data, isLoading, isError } = useQuery({
+  const { data, isLoading, isError, refetch, isFetching } = useQuery({
     queryKey: [
       "reports",
       { page, pageSize, q, selectedCategory, selectedStatus },
@@ -37,6 +38,15 @@ const ReportsPage: React.FC = () => {
   const items = data?.items ?? [];
   const total = data?.total ?? 0;
   const totalPages = Math.max(1, Math.ceil(total / pageSize));
+
+  const handlePageChange = (newPage: number) => {
+    setPage(newPage);
+  };
+
+  const handlePageSizeChange = (newPageSize: number) => {
+    setPageSize(newPageSize);
+    setPage(1); // Reset to first page when changing page size
+  };
 
   const categoryOptions = [
     { value: "", label: "Semua Kategori" },
@@ -105,20 +115,38 @@ const ReportsPage: React.FC = () => {
 
       <div className="space-y-4">
         {isLoading && (
-          <div className="flex items-center justify-center gap-2">
-            <LoadingSpinner className="w-5 h-5" />
-            <p className="text-sm text-gray-500">Memuat…</p>{" "}
-          </div>
+          <>
+            {/* Show 5 skeleton items while loading */}
+            {Array.from({ length: 5 }).map((_, index) => (
+              <ReportListItemSkeleton key={`skeleton-${index}`} />
+            ))}
+          </>
         )}
         {isError && (
-          <div className="flex items-center justify-center gap-2">
-            <X className="w-5 h-5" />
-            <p className="text-sm text-gray-500">Terjadi kesalahan</p>{" "}
-          </div>
+          <Card>
+            <CardContent className="p-12 text-center">
+              <AlertCircle className="mx-auto h-12 w-12 text-red-500 mb-4" />
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                Gagal Memuat Laporan
+              </h3>
+              <p className="text-gray-600 mb-6">
+                Terjadi kesalahan saat memuat data laporan. Silakan coba lagi.
+              </p>
+              <Button
+                variant="outline"
+                onClick={() => refetch()}
+                loading={isFetching}
+                className="w-full sm:w-auto"
+              >
+                <RefreshCw className="mr-2 h-4 w-4" />
+                Coba Lagi
+              </Button>
+            </CardContent>
+          </Card>
         )}
         {!isLoading &&
           items &&
-          items.map((r: Report) => (<ReportListItem key={r.id} r={r} />))}
+          items.map((r: Report) => <ReportListItem key={r.id} r={r} />)}
       </div>
       {/* <Card>
         <CardContent className="p-12 text-center">
@@ -139,7 +167,7 @@ const ReportsPage: React.FC = () => {
           )}
         </CardContent>
       </Card> */}
-      {!isLoading && items.length === 0 ? (
+      {!isLoading && !isError && items.length === 0 && (
         <Card>
           <CardContent className="p-12 text-center">
             <FileText className="mx-auto h-12 w-12 text-gray-400 mb-4" />
@@ -151,31 +179,20 @@ const ReportsPage: React.FC = () => {
             </p>
           </CardContent>
         </Card>
-      ) : totalPages > 1 ? (
-        <div className="text-center">
-          <div className="inline-flex gap-2">
-            <Button
-              variant="outline"
-              size="sm"
-              disabled={page <= 1}
-              onClick={() => setPage((p) => p - 1)}
-            >
-              Sebelumnya
-            </Button>
-            <span className="text-sm text-gray-600 self-center">
-              Hal {page} / {totalPages}
-            </span>
-            <Button
-              variant="outline"
-              size="sm"
-              disabled={page >= totalPages}
-              onClick={() => setPage((p) => p + 1)}
-            >
-              Berikutnya
-            </Button>
-          </div>
-        </div>
-      ) : null}
+      )}
+
+      {/* Enhanced Pagination */}
+      <div className="pt-6">
+        <Pagination
+          currentPage={page}
+          totalPages={totalPages}
+          pageSize={pageSize}
+          totalItems={data?.total ?? 0}
+          onPageChange={handlePageChange}
+          onPageSizeChange={handlePageSizeChange}
+          showPageSizeSelector={true}
+        />
+      </div>
     </div>
   );
 };

@@ -160,7 +160,6 @@ const ReportDetailPage: React.FC = () => {
   const statusInfo = getStatusBadge(report.status);
 
   const breadcrumbItems = [
-    { label: "Beranda", href: "/" },
     { label: "Laporan", href: "/reports" },
     {
       label:
