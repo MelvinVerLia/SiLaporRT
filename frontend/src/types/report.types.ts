@@ -1,3 +1,5 @@
+import { CloudinaryFile } from "./announcement.types";
+
 export enum ReportCategory {
   INFRASTRUCTURE = "INFRASTRUCTURE",
   CLEANLINESS = "CLEANLINESS",
@@ -5,9 +7,7 @@ export enum ReportCategory {
   SECURITY = "SECURITY",
   UTILITIES = "UTILITIES",
   ENVIRONMENT = "ENVIRONMENT",
-  ANNOUNCEMENT = "ANNOUNCEMENT",
   SUGGESTION = "SUGGESTION",
-  EVENT = "EVENT",
   OTHER = "OTHER",
 }
 
@@ -110,5 +110,5 @@ export interface CreateReportFormData {
   isAnonymous: boolean;
   isPublic: boolean;
   location: Location | null;
-  attachments: File[];
+  attachments: CloudinaryFile[];
 }

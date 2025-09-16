@@ -32,6 +32,23 @@ class ReportRepository {
           isPublic: data.isPublic ?? true,
           userId: data.userId,
           locationId: location.id,
+          // Create attachments if provided
+          attachments: data.attachments
+            ? {
+                create: data.attachments.map((att) => ({
+                  filename: att.filename,
+                  url: att.url,
+                  fileType: att.fileType,
+                  provider: att.provider,
+                  publicId: att.publicId,
+                  resourceType: att.resourceType,
+                  format: att.format,
+                  bytes: att.bytes,
+                  width: att.width,
+                  height: att.height,
+                })),
+              }
+            : undefined,
         },
         include: {
           location: true,
