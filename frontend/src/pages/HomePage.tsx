@@ -10,7 +10,8 @@ import {
   ThumbsUp,
   Shield,
   BarChart3,
-  X,
+  AlertCircle,
+  RefreshCw,
 } from "lucide-react";
 import {
   Card,
@@ -22,14 +23,14 @@ import Button from "../components/ui/Button";
 import { useAuth } from "../hooks/useAuth";
 import { getRecentReports } from "../services/reportService";
 import { Report } from "../types/report.types";
-import LoadingSpinner from "../components/ui/LoadingSpinner";
 import { useQuery } from "@tanstack/react-query";
 import ReportListItem from "./reports/ReportListItem";
 import FaqItems from "../components/faq/FaqItems";
+import ReportListItemSkeleton from "./reports/components/ReportListItemSkeleton";
 
 const HomePage: React.FC = () => {
   const { isAuthenticated } = useAuth();
-  const { data, isLoading, isError } = useQuery({
+  const { data, isLoading, isError, refetch, isFetching } = useQuery({
     queryKey: ["recent-reports"],
     queryFn: getRecentReports,
   });
@@ -110,84 +111,82 @@ const HomePage: React.FC = () => {
     <div className="space-y-16">
       {/* Hero Section */}
       <section>
-        <div className="max-w-7xl mx-auto">
-          <div className="grid lg:grid-cols-2 gap-12 lg:gap-16 items-center">
-            {/* Left Content */}
-            <div className="text-center lg:text-left">
-              <h1 className="text-4xl lg:text-5xl xl:text-6xl font-bold text-gray-900 mb-6 leading-tight">
-                Laporkan Masalah
-                <span className="block text-blue-600">Lingkungan Anda</span>
-              </h1>
-              <p className="text-lg lg:text-xl text-gray-600 mb-8 leading-relaxed">
-                Platform digital untuk warga RT melaporkan masalah
-                infrastruktur, kebersihan, dan keamanan lingkungan secara cepat,
-                transparan, dan terorganisir.
-              </p>
+        <div className="grid lg:grid-cols-2 gap-12 lg:gap-16 items-center">
+          {/* Left Content */}
+          <div className="text-center lg:text-left">
+            <h1 className="text-4xl lg:text-5xl xl:text-6xl font-bold text-gray-900 mb-6 leading-tight">
+              Laporkan Masalah
+              <span className="block text-blue-600">Lingkungan Anda</span>
+            </h1>
+            <p className="text-lg lg:text-xl text-gray-600 mb-8 leading-relaxed">
+              Platform digital untuk warga RT melaporkan masalah infrastruktur,
+              kebersihan, dan keamanan lingkungan secara cepat, transparan, dan
+              terorganisir.
+            </p>
 
-              {/* Integrated Statistics */}
-              <div className="flex flex-wrap justify-center lg:justify-start gap-6 lg:gap-8 mb-8">
-                {stats.map((stat, index) => (
-                  <div key={index} className="text-center lg:text-left">
-                    <div
-                      className={`text-2xl lg:text-3xl font-bold ${stat.color} mb-1`}
-                    >
-                      {stat.value}
-                    </div>
-                    <div className="text-xs lg:text-sm text-gray-600 font-medium">
-                      {stat.title}
-                    </div>
+            {/* Integrated Statistics */}
+            <div className="flex flex-wrap justify-center lg:justify-start gap-6 lg:gap-8 mb-8">
+              {stats.map((stat, index) => (
+                <div key={index} className="text-center lg:text-left">
+                  <div
+                    className={`text-2xl lg:text-3xl font-bold ${stat.color} mb-1`}
+                  >
+                    {stat.value}
                   </div>
-                ))}
-              </div>
-
-              {/* Action Buttons */}
-              {isAuthenticated ? (
-                <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
-                  <Link to="/create-report">
-                    <Button size="lg" className="w-full sm:w-auto">
-                      <FileText className="mr-2 h-5 w-5" />
-                      Buat Laporan Baru
-                    </Button>
-                  </Link>
-                  <Link to="/reports">
-                    <Button
-                      variant="outline"
-                      size="lg"
-                      className="w-full sm:w-auto"
-                    >
-                      Lihat Semua Laporan
-                    </Button>
-                  </Link>
+                  <div className="text-xs lg:text-sm text-gray-600 font-medium">
+                    {stat.title}
+                  </div>
                 </div>
-              ) : (
-                <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
-                  <Link to="/reports">
-                    <Button size="lg" className="w-full sm:w-auto">
-                      Lihat Laporan Publik
-                    </Button>
-                  </Link>
-                  <Link to="/login">
-                    <Button
-                      variant="outline"
-                      size="lg"
-                      className="w-full sm:w-auto"
-                    >
-                      Masuk untuk Melaporkan
-                    </Button>
-                  </Link>
-                </div>
-              )}
+              ))}
             </div>
 
-            {/* Right Image */}
-            <div className="flex justify-center lg:justify-end">
-              <div className="relative">
-                <img
-                  src="/assets/hero.png"
-                  alt="Platform Pelaporan RT"
-                  className="w-full max-w-lg h-auto object-contain drop-shadow-2xl"
-                />
+            {/* Action Buttons */}
+            {isAuthenticated ? (
+              <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
+                <Link to="/create-report">
+                  <Button size="lg" className="w-full sm:w-auto">
+                    <FileText className="mr-2 h-5 w-5" />
+                    Buat Laporan Baru
+                  </Button>
+                </Link>
+                <Link to="/reports">
+                  <Button
+                    variant="outline"
+                    size="lg"
+                    className="w-full sm:w-auto"
+                  >
+                    Lihat Semua Laporan
+                  </Button>
+                </Link>
               </div>
+            ) : (
+              <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
+                <Link to="/reports">
+                  <Button size="lg" className="w-full sm:w-auto">
+                    Lihat Laporan Publik
+                  </Button>
+                </Link>
+                <Link to="/login">
+                  <Button
+                    variant="outline"
+                    size="lg"
+                    className="w-full sm:w-auto"
+                  >
+                    Masuk untuk Melaporkan
+                  </Button>
+                </Link>
+              </div>
+            )}
+          </div>
+
+          {/* Right Image */}
+          <div className="flex justify-center lg:justify-end">
+            <div className="relative">
+              <img
+                src="/assets/hero.png"
+                alt="Platform Pelaporan RT"
+                className="w-full max-w-lg h-auto object-contain drop-shadow-2xl"
+              />
             </div>
           </div>
         </div>
@@ -253,18 +252,35 @@ const HomePage: React.FC = () => {
           <CardContent>
             <div className="space-y-4">
               {isLoading && (
-                <div className="flex items-center justify-center gap-2">
-                  <LoadingSpinner className="w-5 h-5" />
-                  <p className="text-sm text-gray-500">Memuat…</p>{" "}
-                </div>
+                <>
+                  {/* Show 3 skeleton items while loading */}
+                  {Array.from({ length: 3 }).map((_, index) => (
+                    <ReportListItemSkeleton key={`skeleton-${index}`} />
+                  ))}
+                </>
               )}
               {isError && (
-                <div className="flex items-center justify-center gap-2">
-                  <X className="w-5 h-5" />
-                  <p className="text-sm text-gray-500">
-                    Terjadi kesalahan
-                  </p>{" "}
-                </div>
+                <Card>
+                  <CardContent className="p-12 text-center">
+                    <AlertCircle className="mx-auto h-12 w-12 text-red-500 mb-4" />
+                    <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                      Gagal Memuat Laporan Terbaru
+                    </h3>
+                    <p className="text-gray-600 mb-6">
+                      Terjadi kesalahan saat memuat data laporan terbaru.
+                      Silakan coba lagi.
+                    </p>
+                    <Button
+                      variant="outline"
+                      onClick={() => refetch()}
+                      loading={isFetching}
+                      className="w-full sm:w-auto"
+                    >
+                      <RefreshCw className="mr-2 h-4 w-4" />
+                      Coba Lagi
+                    </Button>
+                  </CardContent>
+                </Card>
               )}
               {!isLoading &&
                 items &&
