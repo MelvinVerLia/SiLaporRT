@@ -1,6 +1,5 @@
 import { request } from "./api";
 import { CreateReportFormData, Report } from "../types/report.types";
-import { CloudinaryFile } from "../types/announcement.types";
 
 export interface CreateReportPayload {
   title: string;
@@ -113,6 +112,21 @@ export async function getRecentReports() {
 export async function toggleUpvote(id: string) {
   console.log("help");
   const res = await request(`/reports/${id}/upvote`, { method: "PUT" });
+  return res.data;
+}
+
+export async function addComment(reportId: string, content: string) {
+  const res = await request(`/reports/${reportId}/comment`, {
+    method: "POST",
+    data: { content },
+  });
+  return res.data;
+}
+
+export async function getUserUpvoteStatus(reportId: string) {
+  const res = await request(`/reports/${reportId}/upvote-status`, {
+    method: "GET",
+  });
   return res.data;
 }
 

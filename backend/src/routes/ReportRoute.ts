@@ -8,16 +8,20 @@ const router = Router();
 
 // === CORE REPORT ROUTES ===
 router.get("/", ReportController.getAllReports);
-router.get("/get-recent", ReportController.getRecentReports)
+router.get("/get-recent", ReportController.getRecentReports);
 router.get("/:reportId", ReportController.getReportById);
 // router.get("/:userId", ReportController.getReportById);
 
-router.post("/add", ReportController.createReport);
+router.post("/add", authenticateJWT, ReportController.createReport);
 
 // === COMMUNITY INTERACTION ROUTES ===
-router.post("/:reportId/comment", ReportController.addComment);
+router.post("/:reportId/comment", authenticateJWT, ReportController.addComment);
 router.put("/:reportId/upvote", authenticateJWT, ReportController.toggleUpvote);
-router.get("/:reportId/upvote-status", ReportController.getUserUpvoteStatus);
+router.get(
+  "/:reportId/upvote-status",
+  authenticateJWT,
+  ReportController.getUserUpvoteStatus
+);
 
 // === ADMIN/RT ROUTES ===
 router.put("/:reportId/status", ReportController.updateStatus);

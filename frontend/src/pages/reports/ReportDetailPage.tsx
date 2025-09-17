@@ -22,19 +22,28 @@ import Button from "../../components/ui/Button";
 import Badge from "../../components/ui/Badge";
 import Textarea from "../../components/ui/Textarea";
 import Breadcrumb from "../../components/ui/Breadcrumb";
-import { getReportDetails, toggleUpvote } from "../../services/reportService";
-import { useMutation, useQuery } from "@tanstack/react-query";
-import LoadingSpinner from "../../components/ui/LoadingSpinner";
-import { Report } from "../../types/report.types";
+import {
+  getReportDetails,
+  toggleUpvote,
+  addComment,
+  getUserUpvoteStatus,
+} from "../../services/reportService";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import {
+  Attachment,
+  Response,
+  ReportComment,
+  Report,
+} from "../../types/report.types";
 import ReportDetailSkeleton from "./components/ReportDetailSkeleton";
 import { useAuthContext } from "../../contexts/AuthContext";
 
 const ReportDetailPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const { user, isAuthenticated } = useAuthContext();
+  const queryClient = useQueryClient();
   const [commentText, setCommentText] = useState("");
-  const [isSubmittingComment, setIsSubmittingComment] = useState(false);
-  const [hasUpvoted, setHasUpvoted] = useState(false);
+
   const {
     data: report,
     isLoading,
@@ -46,40 +55,14 @@ const ReportDetailPage: React.FC = () => {
     queryFn: () => getReportDetails(id!),
   });
 
-  const mockComments = [
-    {
-      id: "1",
-      content:
-        "Betul sekali, saya juga hampir terjatuh kemarin karena lubang ini. Tolong segera diperbaiki.",
-      user: {
-        id: "user2",
-        name: "Siti Aminah",
-        role: "CITIZEN",
-      },
-      createdAt: "2024-01-20T10:15:00Z",
-    },
-    {
-      id: "2",
-      content:
-        "Sudah saya laporkan ke ketua RW, akan segera dikomunikasikan ke dinas terkait.",
-      user: {
-        id: "admin1",
-        name: "Pak RT",
-        role: "RT_ADMIN",
-      },
-      createdAt: "2024-01-20T11:30:00Z",
-    },
-    {
-      id: "3",
-      content: "Terima kasih pak RT. Semoga cepat ditindaklanjuti.",
-      user: {
-        id: "user3",
-        name: "Ahmad Wijaya",
-        role: "CITIZEN",
-      },
-      createdAt: "2024-01-20T12:45:00Z",
-    },
-  ];
+  // Get user's upvote status
+  const { data: upvoteStatus } = useQuery({
+    queryKey: ["upvote-status", id],
+    queryFn: () => getUserUpvoteStatus(id!),
+    enabled: !!id && isAuthenticated,
+  });
+
+  const hasUpvoted = upvoteStatus?.result || false;
 
   const getStatusBadge = (status: string) => {
     const variants = {
@@ -116,25 +99,91 @@ const ReportDetailPage: React.FC = () => {
 
   const handleUpvote = useMutation({
     mutationFn: () => toggleUpvote(report!.id),
-    // onSuccess: () => {
-    //   QueryClient.invalidateQueries({ queryKey: ["posts"] }); // refetch updated posts
-    // },
+    onMutate: async () => {
+      // Cancel outgoing refetches to prevent overwriting optimistic updates
+      await queryClient.cancelQueries({ queryKey: ["report", id] });
+      await queryClient.cancelQueries({ queryKey: ["upvote-status", id] });
+
+      // Snapshot the previous values for rollback
+      const previousReport = queryClient.getQueryData(["report", id]);
+      const previousUpvoteStatus = queryClient.getQueryData([
+        "upvote-status",
+        id,
+      ]);
+
+      // Get current upvote status to calculate the change correctly
+      const currentHasUpvoted = upvoteStatus?.result || false;
+
+      // Optimistically update the upvote status and count
+      queryClient.setQueryData(["upvote-status", id], () => ({
+        result: !currentHasUpvoted,
+      }));
+
+      queryClient.setQueryData(["report", id], (old: unknown) => {
+        if (!old || typeof old !== "object") return old;
+        const reportData = old as Report;
+        return {
+          ...reportData,
+          upvoteCount: currentHasUpvoted
+            ? reportData.upvoteCount - 1
+            : reportData.upvoteCount + 1,
+        };
+      });
+
+      return { previousReport, previousUpvoteStatus };
+    },
+    onError: (_err, _variables, context) => {
+      // Rollback on error
+      if (context?.previousReport) {
+        queryClient.setQueryData(["report", id], context.previousReport);
+      }
+      if (context?.previousUpvoteStatus) {
+        queryClient.setQueryData(
+          ["upvote-status", id],
+          context.previousUpvoteStatus
+        );
+      }
+    },
+    onSuccess: () => {
+      // Only invalidate list queries to sync them with the updated data
+      queryClient.invalidateQueries({ queryKey: ["reports"] });
+      queryClient.invalidateQueries({ queryKey: ["recent-reports"] });
+    },
+    onSettled: () => {
+      // Minimal invalidation - just mark as stale without refetching
+      queryClient.invalidateQueries({
+        queryKey: ["report", id],
+        refetchType: "none",
+      });
+      queryClient.invalidateQueries({
+        queryKey: ["upvote-status", id],
+        refetchType: "none",
+      });
+    },
   });
   // const handleUpvote = () => {
   //   setHasUpvoted(!hasUpvoted);
   //   // In real app, call API to toggle upvote
   // };
 
+  // Comment submission mutation
+  const addCommentMutation = useMutation({
+    mutationFn: (content: string) => addComment(report!.id, content),
+    onSuccess: () => {
+      // Invalidate all report-related queries to keep data in sync across all pages
+      queryClient.invalidateQueries({ queryKey: ["report"] });
+      queryClient.invalidateQueries({ queryKey: ["reports"] });
+      queryClient.invalidateQueries({ queryKey: ["recent-reports"] });
+      setCommentText("");
+    },
+    onError: (error) => {
+      console.error("Error adding comment:", error);
+    },
+  });
+
   const handleSubmitComment = async () => {
     if (!commentText.trim()) return;
-
-    setIsSubmittingComment(true);
-    // Simulate API call
-    setTimeout(() => {
-      setCommentText("");
-      setIsSubmittingComment(false);
-      // In real app, refresh comments data
-    }, 1000);
+    addCommentMutation.mutate(commentText);
   };
 
   if (isLoading) return <ReportDetailSkeleton />;
@@ -235,11 +284,18 @@ const ReportDetailPage: React.FC = () => {
                 <Button
                   variant={hasUpvoted ? "primary" : "outline"}
                   size="sm"
-                  onClick={() => handleUpvote.mutate(report.id)}
-                  className="flex items-center"
+                  onClick={() => handleUpvote.mutate()}
+                  className={`flex items-center transition-colors ${
+                    hasUpvoted ? "bg-blue-600 text-white hover:bg-blue-700" : ""
+                  }`}
+                  disabled={handleUpvote.isPending}
                 >
-                  <ThumbsUp className="mr-1 h-4 w-4" />
-                  {report.upvoteCount + (hasUpvoted ? 1 : 0)}
+                  <ThumbsUp
+                    className={`mr-1 h-4 w-4 ${
+                      hasUpvoted ? "fill-current" : ""
+                    }`}
+                  />
+                  {report.upvoteCount}
                 </Button>
               )}
 
@@ -285,33 +341,27 @@ const ReportDetailPage: React.FC = () => {
               </CardHeader>
               <CardContent>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  {report.attachments.map((report: Report) => (
-                    <div key={report.id} className="relative group">
-                      {report.attachments === "image" ? (
-                        <div className="aspect-video bg-gray-100 rounded-lg flex items-center justify-center border-2 border-dashed border-gray-300">
-                          <div className="text-center">
-                            <Paperclip className="mx-auto h-8 w-8 text-gray-400 mb-2" />
-                            <p className="text-sm text-gray-600">
-                              {report.attachments}
-                            </p>
-                            <p className="text-xs text-gray-400">Gambar</p>
-                          </div>
+                  {report.attachments.map((attachment: Attachment) => (
+                    <div
+                      key={attachment.id}
+                      className="p-4 bg-gray-50 rounded-lg border border-gray-200"
+                    >
+                      <div className="flex items-center">
+                        <Paperclip className="h-5 w-5 text-gray-400 mr-2" />
+                        <div>
+                          <a
+                            href={attachment.url}
+                            target="_blank"
+                            rel="noreferrer"
+                            className="text-sm font-medium text-blue-600 hover:underline"
+                          >
+                            {attachment.filename}
+                          </a>
+                          <p className="text-xs text-gray-500">
+                            {attachment.fileType.toUpperCase()}
+                          </p>
                         </div>
-                      ) : (
-                        <div className="p-4 bg-gray-50 rounded-lg border">
-                          <div className="flex items-center">
-                            <Paperclip className="h-5 w-5 text-gray-400 mr-2" />
-                            <div>
-                              <p className="text-sm font-medium text-gray-900">
-                                {report.filename}
-                              </p>
-                              <p className="text-xs text-gray-500">
-                                {report.fileType.toUpperCase()}
-                              </p>
-                            </div>
-                          </div>
-                        </div>
-                      )}
+                      </div>
                     </div>
                   ))}
                 </div>
@@ -327,7 +377,7 @@ const ReportDetailPage: React.FC = () => {
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
-                  {report.responses.map((response) => (
+                  {report.responses.map((response: Response) => (
                     <div
                       key={response.id}
                       className="bg-blue-50 border border-blue-200 rounded-lg p-4"
@@ -382,8 +432,10 @@ const ReportDetailPage: React.FC = () => {
                         <Button
                           size="sm"
                           onClick={handleSubmitComment}
-                          disabled={!commentText.trim() || isSubmittingComment}
-                          loading={isSubmittingComment}
+                          disabled={
+                            !commentText.trim() || addCommentMutation.isPending
+                          }
+                          loading={addCommentMutation.isPending}
                         >
                           <Send className="mr-1 h-4 w-4" />
                           Kirim
@@ -405,7 +457,7 @@ const ReportDetailPage: React.FC = () => {
 
               {/* Comments List */}
               <div className="space-y-4">
-                {mockComments.map((comment) => (
+                {report.reportComments.map((comment: ReportComment) => (
                   <div key={comment.id} className="flex items-start space-x-3">
                     <div className="flex-shrink-0">
                       <div
@@ -438,7 +490,7 @@ const ReportDetailPage: React.FC = () => {
                 ))}
               </div>
 
-              {mockComments.length === 0 && (
+              {report.reportComments.length === 0 && (
                 <div className="text-center py-8">
                   <MessageCircle className="mx-auto h-8 w-8 text-gray-400 mb-2" />
                   <p className="text-gray-500">Belum ada komentar</p>
@@ -500,7 +552,7 @@ const ReportDetailPage: React.FC = () => {
                   Dukungan
                 </label>
                 <p className="mt-1 text-sm text-gray-900">
-                  {report.upvoteCount + (hasUpvoted ? 1 : 0)} warga
+                  {report.upvoteCount} warga
                 </p>
               </div>
             </CardContent>

@@ -13,7 +13,15 @@ import { Role } from "@prisma/client";
 class ReportController {
   static async createReport(req: Request, res: Response) {
     try {
+      const user = req.user as { id: string };
       const data = req.body;
+
+      console.log("Creating report - User ID:", user?.id); // Debug log
+      console.log(
+        "Creating report - Request body:",
+        JSON.stringify(data, null, 2)
+      ); // Debug log
+
       if (!data.title || !data.description || !data.category) {
         throw new Error("Title, description, and category are required");
       }
@@ -21,13 +29,23 @@ class ReportController {
       if (!data.location.latitude || !data.location.longitude) {
         throw new Error("Location coordinates are required");
       }
-      const result = await ReportService.createReport(data);
+
+      // Add user ID to the data
+      const dataWithUser = { ...data, userId: user.id };
+
+      console.log(
+        "Final data with user ID:",
+        JSON.stringify(dataWithUser, null, 2)
+      ); // Debug log
+
+      const result = await ReportService.createReport(dataWithUser);
       res.status(201).json({
         success: true,
         message: "Report created successfully",
         data: result,
       });
     } catch (error: any) {
+      console.error("Error in createReport controller:", error); // Debug log
       res.status(400).json({
         success: false,
         message: error.message,
@@ -75,14 +93,19 @@ class ReportController {
   static async addComment(req: Request, res: Response) {
     try {
       const { reportId } = req.params;
-      const { userId, content } = req.body;
+      const { content } = req.body;
+      const user = req.user as { id: string };
 
-      console.log(reportId, userId, content);
-      if (!reportId || !userId || !content?.trim()) {
+      console.log(reportId, user.id, content);
+      if (!reportId || !user.id || !content?.trim()) {
         throw new Error("Report ID, user ID, and content are required");
       }
 
-      const comment = await ReportService.addComment(reportId, userId, content);
+      const comment = await ReportService.addComment(
+        reportId,
+        user.id,
+        content
+      );
       res.json({
         success: true,
         message: "Comment added successfully",
@@ -99,16 +122,14 @@ class ReportController {
   static async toggleUpvote(req: Request, res: Response) {
     try {
       const { reportId } = req.params;
-      console.log(req.user);
-      const { userId } = req.body;
-      // const user = req.user;
-      // const userId = user!.id;
-      // console.log(user)
-      if (!reportId || !userId) {
+      const user = req.user as { id: string };
+      console.log("User:", user);
+
+      if (!reportId || !user.id) {
         throw new Error("Report ID and user ID are required");
       }
 
-      const result = await ReportService.toggleUpvote(reportId, userId);
+      const result = await ReportService.toggleUpvote(reportId, user.id);
       res.json({
         success: true,
         message: result.message,
@@ -239,15 +260,18 @@ class ReportController {
 
   static async getUserUpvoteStatus(req: Request, res: Response) {
     const { reportId } = req.params;
-    const { userId } = req.body;
+    const user = req.user as { id: string };
 
-    if (!reportId || !userId)
+    if (!reportId || !user.id)
       return res
         .status(400)
-        .json({ success: false, message: "Report ID is required" });
+        .json({
+          success: false,
+          message: "Report ID and user authentication required",
+        });
 
     try {
-      const result = await ReportService.getUserUpvoteStatus(reportId, userId);
+      const result = await ReportService.getUserUpvoteStatus(reportId, user.id);
       res.json({
         success: true,
         data: { result },
