@@ -1,10 +1,10 @@
 import React, { useState } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
-import { Eye, EyeOff, LogIn, MapPin } from "lucide-react";
-import { Card, CardContent, CardHeader, CardTitle } from "../ui/Card";
+import { Eye, EyeOff, LogIn } from "lucide-react";
+import { Card, CardContent, CardTitle } from "../ui/Card";
 import Button from "../ui/Button";
 import Input from "../ui/Input";
-import { useAuth } from "../../hooks/useAuth";
+import { useAuthContext } from "../../contexts/AuthContext";
 
 const LoginForm: React.FC = () => {
   const [email, setEmail] = useState("");
@@ -13,7 +13,7 @@ const LoginForm: React.FC = () => {
   const [rememberMe, setRememberMe] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
-  const { login, isLoading, error, clearError } = useAuth();
+  const { login, isLoading, error, clearError } = useAuthContext();
 
   const from = (location.state as any)?.from?.pathname || "/";
 

@@ -43,10 +43,43 @@ export async function sendOTP(
   return res;
 }
 
+export async function resendOTP(token: string) {
+  console.log("regID", token);
+  const res = await request(`/auth/resend-otp`, {
+    method: "POST",
+    data: { token },
+  });
+  console.log("meowmeow");
+  return res;
+}
+
 export async function register(token: string, otp: string) {
   const res = await request(`/auth/register`, {
     method: "POST",
     data: { token, otp },
+  });
+  return res;
+}
+
+export async function deleteAccount() {
+  const res = await request(`/auth/delete-account`, {
+    method: "DELETE",
+  });
+  return res;
+}
+
+export async function updateProfile(data: User) {
+  const res = await request(`/auth/update/profile`, {
+    method: "PUT",
+    data,
+  });
+  return res;
+}
+
+export async function changePassword(password: string) {
+  const res = await request(`/auth/change-password`, {
+    method: "put",
+    data: { password },
   });
   return res;
 }

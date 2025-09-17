@@ -7,6 +7,7 @@ import { RedisClient } from "../config/RedisClient";
 import otpGenerator from "otp-generator";
 import { sendOTPEmail } from "../email/OTP";
 import { log } from "console";
+import { User } from "@prisma/client";
 
 export interface RegisterData {
   email: string;
@@ -24,27 +25,6 @@ export class AuthService {
     return await AuthRepository.getUserByEmail(email);
   }
 
-  // static async register({ email, password, name }: RegisterData) {
-  //   const exists = await AuthRepository.getUserByEmail(email);
-  //   if (exists) {
-  //     throw new Error("Email already in use");
-  //   }
-
-  //   const hashedPassword = await bcrypt.hash(password, 10);
-
-  //   const user = await AuthRepository.createUser({
-  //     email,
-  //     password: hashedPassword,
-  //     name: name || email.split("@")[0],
-  //   });
-
-  //   const token = this.generateToken(user.id);
-
-  //   const { password: _pw, googleId: _gi, ...safeUser } = user;
-
-  //   return { user: safeUser, token };
-  // }
-
   static async sendOtp(
     email: string,
     password: string,
@@ -55,44 +35,65 @@ export class AuthService {
     if (exists) {
       throw new Error("Email sudah terdaftar");
     }
+
+    const redis = RedisClient.instance;
+    const regId = crypto.randomBytes(32).toString("hex");
+    const hashedPassword = await bcrypt.hash(password, 10);
+    await redis.set(
+      `reg:${regId}`,
+      JSON.stringify({ email, hashedPassword, name, phone, status: "pending" }),
+      "EX",
+      600
+    );
+
     const otp = otpGenerator.generate(6, {
       digits: true,
       upperCaseAlphabets: false,
       lowerCaseAlphabets: false,
       specialChars: false,
     });
-    const rawToken = crypto.randomBytes(32).toString("hex");
-    const hashedToken = crypto
-      .createHash("sha256")
-      .update(rawToken)
-      .digest("hex");
-
     const hashedOtp = crypto.createHash("sha256").update(otp).digest("hex");
-    const hashedPassword = await bcrypt.hash(password, 10);
 
-    const redis = RedisClient.instance;
-    await redis.set(
-      hashedToken,
-      JSON.stringify({ hashedOtp, email, hashedPassword, name, phone }),
-      "EX",
-      300
-    );
+    await redis.set(`otp:${regId}`, JSON.stringify({ hashedOtp }), "EX", 300);
     await sendOTPEmail(email, otp, 5);
 
-    return rawToken;
+    return regId;
   }
 
-  static async register(token: string, otp: string) {
-    console.log("hellowww")
+  static async resendOtp(regId: string) {
     const redis = RedisClient.instance;
-    const hashedToken = crypto.createHash("sha256").update(token).digest("hex");
-    const payload = await redis.get(hashedToken);
+    const payload = await redis.get(`reg:${regId}`);
     if (!payload) {
       throw new Error("Invalid token");
     }
     const payloadJSON = JSON.parse(payload);
-    const { hashedOtp, email, hashedPassword, name, phone } = payloadJSON;
-    
+    const { email } = payloadJSON;
+    const otp = otpGenerator.generate(6, {
+      digits: true,
+      upperCaseAlphabets: false,
+      lowerCaseAlphabets: false,
+      specialChars: false,
+    });
+    const hashedOtp = crypto.createHash("sha256").update(otp).digest("hex");
+    await redis.set(`otp:${regId}`, JSON.stringify({ hashedOtp }), "EX", 300);
+    await sendOTPEmail(email, otp, 5);
+
+    return true;
+  }
+
+  static async register(regId: string, otp: string) {
+    const redis = RedisClient.instance;
+    const [userPayload, otpPayload] = await Promise.all([
+      redis.get(`reg:${regId}`),
+      redis.get(`otp:${regId}`),
+    ]);
+    if (!userPayload || !otpPayload) {
+      throw new Error("Invalid token");
+    }
+
+    const { email, hashedPassword, name, phone } = JSON.parse(userPayload);
+    const { hashedOtp } = JSON.parse(otpPayload);
+
     const inputOtp = crypto.createHash("sha256").update(otp).digest("hex");
 
     if (hashedOtp === inputOtp) {
@@ -102,11 +103,11 @@ export class AuthService {
         name,
         phone,
       });
-      console.log("user", user);
 
       const token = this.generateToken(user.id);
       const { password: _pw, googleId: _gi, ...safeUser } = user;
-
+      await redis.del(`reg:${regId}`);
+      await redis.del(`otp:${regId}`);
       return { user: safeUser, token };
     } else {
       throw new Error("Invalid OTP");
@@ -142,14 +143,13 @@ export class AuthService {
     const googleId = profile.id;
     const email = profile.emails?.[0]?.value;
     const name = profile.displayName;
+    const avatar = profile.photos?.[0]?.value;
 
     if (!email) {
       throw new Error("No email found in Google profile");
     }
 
-    // Try to find user by Google ID first
     let user = await AuthRepository.getUserByGoogleId(googleId);
-
     if (!user) {
       user = await AuthRepository.getUserByEmail(email);
 
@@ -158,9 +158,14 @@ export class AuthService {
           email,
           name,
           googleId,
+          profile: avatar,
         });
       } else {
-        user = await AuthRepository.updateUserGoogleID(user.id, googleId);
+        user = await AuthRepository.updateUserGoogleID(
+          user.id,
+          googleId,
+          avatar
+        );
       }
     }
 
@@ -202,23 +207,6 @@ export class AuthService {
     return jwt.sign(payload, jwtSecret, options);
   }
 
-  // static async forgotPassword(email: string) {
-  //   const user = await AuthRepository.getUserByEmail(email);
-  //   if (!user) {
-  //     throw new Error("User not found");
-  //   }
-
-  //   const rawToken = crypto.randomBytes(20).toString("hex");
-  //   const hashedToken = await hash(rawToken, 10);
-  //   const expiry = new Date(Date.now() + 5 * 60 * 1000);
-
-  //   console.log(`NOW ${Date.now()} expiry ${expiry}`);
-  //   await AuthRepository.updatePasswordResetToken(user.id, hashedToken, expiry);
-  //   const resetPasswordUrl = `${process.env.FRONTEND_URL}/reset/${rawToken}/${user.email}`;
-
-  //   await sendPasswordResetEmail(email, resetPasswordUrl, 5);
-  // }
-
   static async validateToken(token: string) {
     const redis = RedisClient.instance;
     const hashedToken = crypto.createHash("sha256").update(token).digest("hex");
@@ -253,16 +241,22 @@ export class AuthService {
     await sendPasswordResetEmail(email, resetPasswordUrl, 5);
   }
 
-  static async changePassword(email: string, password: string) {
-    const user = await AuthRepository.getUserByEmail(email);
-    if (!user) {
-      throw new Error("User not found");
-    }
+  static async changePassword(userId: string, password: string) {
     const hashedPassword = await bcrypt.hash(password, 10);
     const response = await AuthRepository.changePassword(
-      user.id,
+      userId,
       hashedPassword
     );
     return response;
+  }
+
+  static async deleteAccount(userId: string) {
+    await AuthRepository.deleteUser(userId);
+    return true;
+  }
+
+  static async updateProfile(userId: string, data: User) {
+    const user = await AuthRepository.updateProfile(userId, data);
+    return user;
   }
 }

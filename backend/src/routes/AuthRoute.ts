@@ -23,12 +23,18 @@ router.get(
 );
 
 router.post("/forgot-password", AuthController.forgotPassword);
-router.post("/validate-token", AuthController.validateToken)
-router.put("/change-password", AuthController.changePassword)
+router.post("/validate-token", AuthController.validateToken);
+router.put("/change-password", authenticateJWT, AuthController.changePassword);
 
 router.get("/profile", authenticateJWT, AuthController.getProfile);
 
 router.post("/send-otp", AuthController.sendOtp);
+router.post("/resend-otp", AuthController.resendOtp);
+
+router.delete("/delete-account", authenticateJWT, AuthController.deleteAccount);
+
+router.put("/update/profile", authenticateJWT, AuthController.updateProfile);
+
 // router.post("/validate-otp-token", AuthController.validateOtpToken);
 
 export default router;

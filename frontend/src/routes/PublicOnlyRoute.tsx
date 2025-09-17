@@ -1,9 +1,9 @@
 import { Navigate } from "react-router-dom";
-import { useAuth } from "../hooks/useAuth";
 import { ReactNode } from "react";
+import { useAuthContext } from "../contexts/AuthContext";
 
 export default function PublicOnlyRoute({ children }: { children: ReactNode }) {
-  const { isAuthenticated, isLoading } = useAuth();
+  const { isAuthenticated, isLoading } = useAuthContext();
 
   // Saat status sesi belum pasti, jangan render apa-apa (hindari flicker)
   if (isLoading) return null;

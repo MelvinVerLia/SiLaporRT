@@ -1,10 +1,10 @@
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { Eye, EyeOff, UserPlus, MapPin, Check } from "lucide-react";
-import { Card, CardContent, CardHeader, CardTitle } from "../ui/Card";
+import { Eye, EyeOff, UserPlus, Check } from "lucide-react";
+import { Card, CardContent, CardTitle } from "../ui/Card";
 import Button from "../ui/Button";
 import Input from "../ui/Input";
-import { useAuth } from "../../hooks/useAuth";
+import { useAuthContext } from "../../contexts/AuthContext";
 
 const RegisterForm: React.FC = () => {
   const [formData, setFormData] = useState({
@@ -18,7 +18,7 @@ const RegisterForm: React.FC = () => {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [agreedToTerms, setAgreedToTerms] = useState(false);
   const navigate = useNavigate();
-  const { register, sendOtp, isLoading, error, clearError } = useAuth();
+  const { sendOtp, isLoading, error, clearError } = useAuthContext();
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;

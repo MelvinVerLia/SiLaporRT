@@ -21,15 +21,15 @@ import Button from "../../components/ui/Button";
 import Badge from "../../components/ui/Badge";
 import Textarea from "../../components/ui/Textarea";
 import Breadcrumb from "../../components/ui/Breadcrumb";
-import { useAuth } from "../../hooks/useAuth";
 import { getReportDetails, toggleUpvote } from "../../services/reportService";
-import { QueryClient, useMutation, useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import LoadingSpinner from "../../components/ui/LoadingSpinner";
 import { Report } from "../../types/report.types";
+import { useAuthContext } from "../../contexts/AuthContext";
 
 const ReportDetailPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
-  const { user, isAuthenticated } = useAuth();
+  const { user, isAuthenticated } = useAuthContext();
   const [commentText, setCommentText] = useState("");
   const [isSubmittingComment, setIsSubmittingComment] = useState(false);
   const [hasUpvoted, setHasUpvoted] = useState(false);

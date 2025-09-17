@@ -5,13 +5,16 @@ import {
   RegisterData,
   AuthError,
 } from "../types/auth.types";
-import { useNavigate } from "react-router-dom";
 import {
   login as apiLogin,
   register as apiRegister,
   getProfile,
   logout as apiLogout,
   sendOTP,
+  resendOTP as resend,
+  deleteAccount as apiDelete,
+  updateProfile as apiUpdateProfile,
+  changePassword as apiChangePassword,
   // verifyOTP as verifyOtp,
 } from "../services/authService";
 
@@ -19,7 +22,6 @@ export const useAuth = () => {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<AuthError | null>(null);
-  const navigate = useNavigate();
 
   const initializeAuth = async () => {
     setIsLoading(true);
@@ -41,11 +43,12 @@ export const useAuth = () => {
       setIsLoading(true);
       setError(null);
       try {
-        const { user } = await apiLogin(credentials); 
+        const { user } = await apiLogin(credentials);
         setUser(user);
         return true;
-      } catch (e: any) {
-        setError({ message: e?.message || "Terjadi kesalahan saat login" });
+      } catch (e: unknown) {
+        console.log(e);
+        setError({ message: "Terjadi kesalahan saat login" });
         return false;
       } finally {
         setIsLoading(false);
@@ -53,33 +56,6 @@ export const useAuth = () => {
     },
     []
   );
-
-  // REGISTER: validasi ringan → ikut hasil server; FE tidak menyimpan token
-  // const register = useCallback(async (data: RegisterData): Promise<boolean> => {
-  //   setIsLoading(true);
-  //   setError(null);
-  //   try {
-  //     if (data.password !== data.confirmPassword) {
-  //       setError({ message: "Password tidak sama", field: "confirmPassword" });
-  //       return false;
-  //     }
-  //     if (data.password.length < 6) {
-  //       setError({ message: "Password minimal 6 karakter", field: "password" });
-  //       return false;
-  //     }
-
-  //     const { confirmPassword, ...body } = data;
-
-  //     const { user } = await apiRegister(body);
-  //     setUser(user);
-  //     return true;
-  //   } catch (e: any) {
-  //     setError({ message: e?.message || "Terjadi kesalahan saat registrasi" });
-  //     return false;
-  //   } finally {
-  //     setIsLoading(false);
-  //   }
-  // }, []);
 
   const sendOtp = useCallback(async (data: RegisterData) => {
     setIsLoading(true);
@@ -98,8 +74,9 @@ export const useAuth = () => {
 
       const response = await sendOTP(body);
       return response.token;
-    } catch (e: any) {
-      setError({ message: e?.message || "Terjadi kesalahan saat registrasi" });
+    } catch (e: unknown) {
+      console.log(e);
+      setError({ message: "Terjadi kesalahan saat registrasi" });
       return;
     } finally {
       setIsLoading(false);
@@ -115,27 +92,18 @@ export const useAuth = () => {
     }
     setUser(null);
     setError(null);
-    navigate("/login");
-  }, [navigate]);
+  }, []);
 
-  // UPDATE PROFILE: TODO sambungkan ke endpoint BE (mis. PATCH /api/users/me)
-  const updateProfile = useCallback(
-    async (_updates: Partial<User>): Promise<boolean> => {
-      // TODO: implement ke backend. Untuk sekarang kembalikan false agar UI tahu belum didukung.
-      setError({ message: "Update profil belum didukung" });
-      return false;
-    },
-    []
-  );
-
-  const resendOTP = useCallback(async (_email: string): Promise<boolean> => {
+  const resendOTP = useCallback(async (token: string): Promise<boolean> => {
     setIsLoading(true);
     setError(null);
     try {
       // TODO: panggil endpoint BE, contoh: await apiResendOTP(email)
+      await resend(token);
       return true;
-    } catch (e: any) {
-      setError({ message: e?.message || "Gagal mengirim ulang OTP" });
+    } catch (e: unknown) {
+      console.log(e);
+      setError({ message: "Gagal mengirim ulang OTP" });
       return false;
     } finally {
       setIsLoading(false);
@@ -149,8 +117,9 @@ export const useAuth = () => {
       try {
         await apiRegister(token, otpCode);
         return true;
-      } catch (e: any) {
-        setError({ message: e?.message || "Gagal verifikasi OTP" });
+      } catch (e: unknown) {
+        console.log(e);
+        setError({ message: "Gagal verifikasi OTP" });
         return false;
       } finally {
         setIsLoading(false);
@@ -158,6 +127,53 @@ export const useAuth = () => {
     },
     []
   );
+
+  const updateProfile = useCallback(async (data: User) => {
+    setIsLoading(true);
+    setError(null);
+    try {
+      const newUser = await apiUpdateProfile(data);
+      console.log("old user", user);
+      console.log("udpated user", newUser.data);
+      setUser(newUser.data);
+      return true;
+    } catch (e: unknown) {
+      console.log(e);
+      setError({ message: "Gagal memperbarui profil" });
+      return false;
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
+
+  const deleteAccount = useCallback(async () => {
+    setIsLoading(true);
+    setError(null);
+    try {
+      await apiDelete();
+      setUser(null);
+      setError(null);
+      return true;
+    } catch (e: unknown) {
+      console.log(e);
+      setError({ message: "Gagal menghapus akun" });
+      return false;
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
+
+  const changePassword = useCallback(async (password: string) => {
+    setIsLoading(true);
+    setError(null);
+    try {
+      await apiChangePassword(password);
+    } catch (error) {
+      console.log(error);
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
 
   return {
     user,
@@ -171,6 +187,8 @@ export const useAuth = () => {
     clearError: () => setError(null),
     sendOtp, // TODO
     resendOTP, // TODO
-    // verifyOTP, 
+    deleteAccount,
+    changePassword,
+    // verifyOTP,
   };
 };

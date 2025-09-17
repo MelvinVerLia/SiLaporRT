@@ -49,31 +49,31 @@ export async function uploadToCloudinary(file: File, sign: SignUploadResponse) {
 }
 
 // ---- Optional: save attachment record to your BE ----
-export type SaveAttachmentPayload = {
-  filename: string;
-  url: string;
-  fileType: "image" | "video" | "document";
-  provider?: "cloudinary";
-  publicId?: string;
-  resourceType?: string;
-  format?: string;
-  bytes?: number;
-  width?: number;
-  height?: number;
-  linkTo?: { type: "announcement" | "report" | "profile"; id?: string };
-};
+// export type SaveAttachmentPayload = {
+//   filename: string;
+//   url: string;
+//   fileType: "image" | "video" | "document";
+//   provider?: "cloudinary";
+//   publicId?: string;
+//   resourceType?: string;
+//   format?: string;
+//   bytes?: number;
+//   width?: number;
+//   height?: number;
+//   linkTo?: { type: "announcement" | "report" | "profile"; id?: string };
+// };
 
-export async function saveAttachment(payload: SaveAttachmentPayload) {
-  const res = await request("/uploads/attachments", {
-    method: "POST",
-    data: payload,
-  });
-  return res.data; // e.g. Attachment
-}
+// export async function saveAttachment(payload: SaveAttachmentPayload) {
+//   const res = await request("/uploads/attachments", {
+//     method: "POST",
+//     data: payload,
+//   });
+//   return res.data; // e.g. Attachment
+// }
 
-export async function deleteAttachment(id: string) {
-  const res = await request(`/uploads/attachments/${id}`, {
-    method: "DELETE",
-  });
-  return res.data;
-}
+// export async function deleteAttachment(id: string) {
+//   const res = await request(`/uploads/attachments/${id}`, {
+//     method: "DELETE",
+//   });
+//   return res.data;
+// }

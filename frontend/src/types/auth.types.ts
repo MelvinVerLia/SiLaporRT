@@ -4,14 +4,15 @@ export enum Role {
 }
 
 export interface User {
-  id: string;
+  id?: string;
   name: string;
-  phone?: string;
+  phone: string;
   email?: string;
-  role: Role;
-  isActive: boolean;
-  createdAt: string;
-  updatedAt: string;
+  role?: Role;
+  isActive?: boolean;
+  createdAt?: string;
+  updatedAt?: string;
+  profile?: string;
 }
 
 export interface AuthUser {

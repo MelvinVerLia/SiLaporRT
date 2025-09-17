@@ -1,30 +1,21 @@
 import React, { useState, useEffect, useRef } from "react";
-import { Link, useNavigate, useLocation, useParams } from "react-router-dom";
-import { ArrowLeft, Mail, RefreshCw, Check, AlertCircle } from "lucide-react";
-import { Card, CardContent, CardHeader, CardTitle } from "../ui/Card";
+import { Link, useNavigate, useParams } from "react-router-dom";
+import { ArrowLeft, Mail, RefreshCw, AlertCircle } from "lucide-react";
+import { Card, CardContent, CardTitle } from "../ui/Card";
 import Button from "../ui/Button";
-import { useAuth } from "../../hooks/useAuth";
-import { AuthFinder } from "../../api/AuthFinder";
-
-interface LocationState {
-  email: string;
-  name: string;
-  userData?: any;
-}
+import { useToast } from "../../hooks/useToast";
+import { useAuthContext } from "../../contexts/AuthContext";
 
 const OTPVerificationForm: React.FC = () => {
   const [otp, setOtp] = useState(["", "", "", "", "", ""]);
-  const [timeLeft, setTimeLeft] = useState(300);
+  const [timeLeft, setTimeLeft] = useState(5);
   const [canResend, setCanResend] = useState(false);
   const [isResending, setIsResending] = useState(false);
   const navigate = useNavigate();
-  const location = useLocation();
-  const { register, resendOTP, isLoading, error, clearError } = useAuth();
+  const { register, resendOTP, isLoading, error, clearError } = useAuthContext();
   const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
+  const toast = useToast();
 
-  // Get data from register form
-  const locationState = location.state as LocationState;
-  const email = locationState?.email;
   const { token } = useParams();
 
   // Redirect if no email provided
@@ -112,23 +103,25 @@ const OTPVerificationForm: React.FC = () => {
   };
 
   const handleVerifyOTP = async (otpCode: string) => {
-    if(!token || !otpCode) return;
+    if (!token || !otpCode) return;
     const success = await register(token, otpCode);
     console.log("success", success);
     if (success) {
       navigate("/login", { replace: true });
+      toast.success("Akun berhasil dibuat", "Berhasil");
     }
   };
 
   const handleResendOTP = async () => {
     setIsResending(true);
-    const success = await resendOTP(email);
-
+    console.log("token", token);
+    const success = await resendOTP(token!);
+    console.log(success);
     if (success) {
-      setTimeLeft(300); 
+      setTimeLeft(5);
       setCanResend(false);
-      setOtp(["", "", "", "", "", ""]); 
-      inputRefs.current[0]?.focus(); 
+      setOtp(["", "", "", "", "", ""]);
+      inputRefs.current[0]?.focus();
     }
     setIsResending(false);
   };

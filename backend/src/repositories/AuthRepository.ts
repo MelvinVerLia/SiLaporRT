@@ -1,3 +1,4 @@
+import { User } from "@prisma/client";
 import prisma from "../config/prisma";
 
 export class AuthRepository {
@@ -19,12 +20,30 @@ export class AuthRepository {
     return prisma.user.findUnique({ where: { googleId } });
   }
 
-  static async updateUserGoogleID(userId: string, googleId: string) {
-    return prisma.user.update({ where: { id: userId }, data: { googleId } });
+  static async updateUserGoogleID(
+    userId: string,
+    googleId: string,
+    profile: string
+  ) {
+    return prisma.user.update({
+      where: { id: userId },
+      data: { googleId, profile },
+    });
   }
 
   static async changePassword(userId: string, password: string) {
     return prisma.user.update({ where: { id: userId }, data: { password } });
+  }
+
+  static async deleteUser(userId: string) {
+    return prisma.user.deleteMany({ where: { id: userId } });
+  }
+
+  static async updateProfile(userId: string, data: User) {
+    return prisma.user.update({
+      where: { id: userId },
+      data: { ...data, updatedAt: new Date() },
+    });
   }
 
 }

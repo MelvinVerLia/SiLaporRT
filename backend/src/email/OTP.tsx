@@ -1,7 +1,4 @@
-import { Resend } from "resend";
 import { transporter } from "./mailer";
-
-const resend = new Resend(process.env.RESEND_API_KEY);
 
 export const sendOTPEmail = async (
   email: string,
@@ -11,94 +8,169 @@ export const sendOTPEmail = async (
   const emailHTML = `
 <!DOCTYPE html>
 <html>
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SiLaporRT - Verification Code</title>
-</head>
-<body style="font-family: Arial, sans-serif; margin: 0; padding: 0; background-color: #f8fafc;">
-    
-    <div style="max-width: 600px; margin: 0 auto; background-color: white;">
-        
-        <!-- Header -->
-        <div style="background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%); padding: 30px; text-align: center;">
-            <div style="width: 60px; height: 60px; background-color: white; border-radius: 12px; display: inline-flex; align-items: center; justify-content: center; margin-bottom: 15px; font-size: 24px; font-weight: bold; color: #3b82f6;">
-                SL
-            </div>
-            <h1 style="color: white; font-size: 28px; margin: 0;">SiLaporRT</h1>
-        </div>
-        
-        <!-- Content -->
-        <div style="padding: 40px;">
-            <h2 style="color: #1e293b; font-size: 24px; margin-bottom: 20px; text-align: center;">Verification Code</h2>
-            
-            <p style="color: #475569; font-size: 16px; line-height: 1.6; margin-bottom: 30px; text-align: center;">
-                Please use the verification code below to complete your account verification on SiLaporRT.
-            </p>
-            
-            <!-- OTP Code Box -->
-            <div style="text-align: center; margin: 40px 0;">
-                <div style="background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%); 
-                           border: 2px solid #3b82f6; 
-                           border-radius: 16px; 
-                           padding: 30px; 
-                           display: inline-block;
-                           box-shadow: 0 4px 12px rgba(59, 130, 246, 0.1);">
-                    <p style="color: #64748b; font-size: 14px; margin: 0 0 10px 0; text-transform: uppercase; letter-spacing: 1px;">
-                        Your Verification Code
-                    </p>
-                    <div style="font-size: 36px; 
-                               font-weight: bold; 
-                               color: #3b82f6; 
-                               letter-spacing: 8px; 
-                               margin: 0;
-                               font-family: 'Courier New', monospace;">
-                        ${otp}
-                    </div>
-                </div>
-            </div>
-            
-            <div style="background-color: #fef3c7; border: 1px solid #f59e0b; border-radius: 12px; padding: 20px; margin: 30px 0;">
-                <p style="color: #92400e; font-size: 14px; margin: 0; text-align: center;">
-                    ⚠️ This code will expire in <strong>${expiryMinutes} minutes</strong>
+  <head>
+    <meta charset="UTF-8" />
+    <title>SiLaporRT - Kode Verifikasi</title>
+  </head>
+  <body
+    style="margin:0; padding:0; font-family: Arial, sans-serif; background-color:#f8fafc;"
+  >
+    <table
+      role="presentation"
+      border="0"
+      cellpadding="0"
+      cellspacing="0"
+      width="100%"
+      style="background-color:#f8fafc;"
+    >
+      <tr>
+        <td align="center">
+          <table
+            role="presentation"
+            border="0"
+            cellpadding="0"
+            cellspacing="0"
+            width="600"
+            style="background-color:#ffffff;"
+          >
+            <!-- Header -->
+            <tr>
+              <td
+                align="center"
+                bgcolor="#1d4ed8"
+                style="padding:30px; color:#ffffff;"
+              >
+                <table border="0" cellpadding="0" cellspacing="0">
+                  <tr>
+                    <td
+                      bgcolor="#ffffff"
+                      style="border-radius:12px; padding:10px;"
+                    >
+                      <img
+                        src="https://res.cloudinary.com/dgnedkivd/image/upload/v1757562088/silaporrt/dev/logo/logo_lnenhb.png"
+                        width="50"
+                        height="50"
+                        alt="SiLaporRT Logo"
+                        style="display:block;"
+                      />
+                    </td>
+                    <td style="padding-left:12px; font-size:28px; font-weight:bold; color:#ffffff; font-family:Arial, sans-serif;">
+                      SiLaporRT
+                    </td>
+                  </tr>
+                </table>
+              </td>
+            </tr>
+
+            <!-- Content -->
+            <tr>
+              <td style="padding:40px;">
+                <h2
+                  style="color:#1e293b; font-size:24px; text-align:center; margin:0 0 20px 0;"
+                >
+                  Kode Verifikasi
+                </h2>
+
+                <p
+                  style="color:#475569; font-size:16px; text-align:center; line-height:1.6; margin:0 0 30px 0;"
+                >
+                  Gunakan kode verifikasi di bawah ini untuk menyelesaikan proses
+                  verifikasi akun Anda di SiLaporRT.
                 </p>
-            </div>
-            
-            <p style="color: #475569; font-size: 16px; line-height: 1.6; margin-bottom: 20px;">
-                Enter this code on the SiLaporRT verification page to complete your account setup.
-            </p>
-            
-            <p style="color: #475569; font-size: 16px; line-height: 1.6; margin-bottom: 20px;">
-                If you didn't request this verification code, please ignore this email or contact our support team.
-            </p>
-            
-            <!-- Security Notice -->
-            <div style="background-color: #f1f5f9; border-left: 4px solid #3b82f6; padding: 20px; margin-top: 30px;">
-                <p style="color: #475569; font-size: 14px; margin: 0;">
-                    <strong>Security Reminder:</strong> Never share this verification code with anyone. SiLaporRT staff will never ask for your verification code.
+
+                <!-- OTP Box -->
+                <table
+                  align="center"
+                  role="presentation"
+                  cellpadding="0"
+                  cellspacing="0"
+                  style="margin:40px auto; border:2px solid #3b82f6; border-radius:16px; background-color:#f1f5f9;"
+                >
+                  <tr>
+                    <td
+                      align="center"
+                      style="padding:20px 30px; font-family:Courier, monospace; font-size:32px; font-weight:bold; color:#3b82f6; letter-spacing:8px;"
+                    >
+                      ${otp}
+                    </td>
+                  </tr>
+                </table>
+
+                <!-- Expiry -->
+                <table
+                  role="presentation"
+                  width="100%"
+                  style="margin:30px 0; background-color:#fef3c7; border:1px solid #f59e0b; border-radius:12px;"
+                >
+                  <tr>
+                    <td
+                      align="center"
+                      style="padding:20px; color:#92400e; font-size:14px;"
+                    >
+                      ⚠️ Kode ini akan kadaluarsa dalam
+                      <strong>${expiryMinutes} menit</strong>
+                    </td>
+                  </tr>
+                </table>
+
+                <p
+                  style="color:#475569; font-size:16px; line-height:1.6; margin:0 0 20px 0;"
+                >
+                  Masukkan kode ini pada halaman verifikasi SiLaporRT untuk
+                  menyelesaikan pendaftaran akun Anda.
                 </p>
-            </div>
-        </div>
-        
-        <!-- Footer -->
-        <div style="background-color: #f1f5f9; padding: 30px; text-align: center; border-top: 1px solid #e2e8f0;">
-            <p style="color: #64748b; font-size: 14px; margin: 0 0 10px 0;">
-                © 2025 SiLaporRT. All rights reserved.
-            </p>
-            <p style="color: #94a3b8; font-size: 12px; margin: 0;">
-                This is an automated message, please do not reply to this email.
-            </p>
-        </div>
-        
-    </div>
-</body>
-</html>
+
+                <p
+                  style="color:#475569; font-size:16px; line-height:1.6; margin:0 0 20px 0;"
+                >
+                  Jika Anda tidak meminta kode ini, abaikan email ini atau hubungi
+                  tim dukungan kami.
+                </p>
+
+                <!-- Security Reminder -->
+                <table
+                  role="presentation"
+                  width="100%"
+                  style="margin-top:30px; background-color:#f1f5f9; border-left:4px solid #3b82f6;"
+                >
+                  <tr>
+                    <td
+                      style="padding:20px; color:#475569; font-size:14px; font-family:Arial, sans-serif;"
+                    >
+                      <strong>Pengingat Keamanan:</strong> Jangan pernah bagikan
+                      kode ini kepada siapa pun. Tim SiLaporRT tidak akan pernah
+                      meminta kode verifikasi Anda.
+                    </td>
+                  </tr>
+                </table>
+              </td>
+            </tr>
+
+            <!-- Footer -->
+            <tr>
+              <td
+                align="center"
+                style="padding:30px; background-color:#f1f5f9; border-top:1px solid #e2e8f0;"
+              >
+                <p style="color:#64748b; font-size:14px; margin:0 0 10px 0;">
+                  © 2025 SiLaporRT. Semua hak dilindungi.
+                </p>
+                <p style="color:#94a3b8; font-size:12px; margin:0;">
+                  Ini adalah pesan otomatis, harap jangan membalas email ini.
+                </p>
+              </td>
+            </tr>
+          </table>
+        </td>
+      </tr>
+    </table>
+  </body>
   `;
   try {
     await transporter.sendMail({
       from: process.env.MAIL_FROM,
       to: email,
-      subject: "OTP Verification",
+      subject: "Verifikasi Akun SiLaporRT",
       html: emailHTML,
     });
 

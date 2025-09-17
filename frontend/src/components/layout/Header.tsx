@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from "react";
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import {
   Menu,
   X,
@@ -17,15 +17,16 @@ import {
 } from "lucide-react";
 import Button from "../ui/Button";
 import Badge from "../ui/Badge";
-import { useAuth } from "../../hooks/useAuth";
 import { Role } from "../../types/auth.types";
 import { cn } from "../../utils/cn";
+import { useAuthContext } from "../../contexts/AuthContext";
 
 const Header: React.FC = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isUserDropdownOpen, setIsUserDropdownOpen] = useState(false);
-  const { user, isAuthenticated, logout } = useAuth();
+  const { user, isAuthenticated, logout } = useAuthContext();
   const location = useLocation();
+  const navigate = useNavigate();
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   const toggleMobileMenu = () => {
@@ -152,7 +153,7 @@ const Header: React.FC = () => {
           <div className="flex items-center space-x-4">
             {/* Notifications (for authenticated users) */}
             {isAuthenticated && (
-              <button className="relative p-2 text-gray-400 hover:text-gray-600 transition-colors">
+              <button className="relative p-2 text-gray-400 hover:text-gray-600 transition-colors hover:cursor-pointer">
                 <Bell className="h-5 w-5" />
                 <span className="absolute -top-1 -right-1 h-4 w-4 rounded-full bg-red-500 text-xs text-white flex items-center justify-center">
                   3
@@ -166,10 +167,18 @@ const Header: React.FC = () => {
                 {/* User Dropdown Trigger */}
                 <button
                   onClick={toggleUserDropdown}
-                  className="flex items-center space-x-3 rounded-md px-3 py-2 text-sm hover:bg-gray-50 transition-colors"
+                  className="flex items-center space-x-3 rounded-md px-3 py-2 text-sm hover:bg-gray-50 transition-colors hover:cursor-pointer"
                 >
-                  <div className="flex h-8 w-8 items-center justify-center rounded-full bg-blue-100 text-sm font-medium text-blue-600">
-                    {user?.name.charAt(0).toUpperCase()}
+                  <div className="flex h-8 w-8 items-center justify-center rounded-full bg-blue-100 text-sm font-medium text-blue-600 overflow-hidden">
+                    {user?.profile ? (
+                      <img
+                        src={user?.profile}
+                        alt=""
+                        className="h-full w-full object-cover"
+                      />
+                    ) : (
+                      user?.name.charAt(0).toUpperCase()
+                    )}
                   </div>
                   <div className="text-left">
                     <div className="font-medium text-gray-900 truncate max-w-[120px]">
@@ -194,8 +203,16 @@ const Header: React.FC = () => {
                       {/* User Info Header */}
                       <div className="px-4 py-3 border-b border-gray-100">
                         <div className="flex items-center space-x-3">
-                          <div className="flex h-10 w-10 items-center justify-center rounded-full bg-blue-100 text-sm font-medium text-blue-600">
-                            {user?.name.charAt(0).toUpperCase()}
+                          <div className="flex h-10 w-10 items-center justify-center rounded-full bg-blue-100 text-sm font-medium text-blue-600 overflow-hidden">
+                            {user?.profile ? (
+                              <img
+                                src={user?.profile}
+                                alt=""
+                                className="h-full w-full object-cover"
+                              />
+                            ) : (
+                              user?.name.charAt(0).toUpperCase()
+                            )}
                           </div>
                           <div className="flex-1 min-w-0">
                             <p className="text-sm font-medium text-gray-900 truncate">
@@ -244,6 +261,7 @@ const Header: React.FC = () => {
                       <button
                         onClick={() => {
                           logout();
+                          navigate("/login");
                           closeUserDropdown();
                         }}
                         className="flex w-full items-center px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors"
@@ -319,8 +337,16 @@ const Header: React.FC = () => {
               <div className="space-y-2">
                 {/* User Info */}
                 <div className="flex items-center space-x-3 px-3 py-3 bg-gray-50 rounded-md">
-                  <div className="flex h-12 w-12 items-center justify-center rounded-full bg-blue-100 text-base font-medium text-blue-600">
-                    {user?.name.charAt(0).toUpperCase()}
+                  <div className="flex h-12 w-12 items-center justify-center rounded-full bg-blue-100 text-base font-medium text-blue-600 overflow-hidden">
+                    {user?.profile ? (
+                      <img
+                        src={user?.profile}
+                        alt=""
+                        className="h-full w-full object-cover"
+                      />
+                    ) : (
+                      user?.name.charAt(0).toUpperCase()
+                    )}
                   </div>
                   <div className="flex-1 min-w-0">
                     <p className="text-sm font-medium text-gray-900 truncate">
@@ -361,6 +387,7 @@ const Header: React.FC = () => {
                 <button
                   onClick={() => {
                     logout();
+                    navigate("/login");
                     closeMobileMenu();
                   }}
                   className="flex w-full items-center space-x-3 rounded-md px-3 py-2 text-base font-medium text-red-600 hover:bg-red-50 transition-colors"

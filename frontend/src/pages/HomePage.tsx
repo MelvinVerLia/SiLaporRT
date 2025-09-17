@@ -19,16 +19,16 @@ import {
   CardTitle,
 } from "../components/ui/Card";
 import Button from "../components/ui/Button";
-import { useAuth } from "../hooks/useAuth";
 import { getRecentReports } from "../services/reportService";
 import { Report } from "../types/report.types";
 import LoadingSpinner from "../components/ui/LoadingSpinner";
 import { useQuery } from "@tanstack/react-query";
 import ReportListItem from "./reports/ReportListItem";
 import FaqItems from "../components/faq/FaqItems";
+import { useAuthContext } from "../contexts/AuthContext";
 
 const HomePage: React.FC = () => {
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated } = useAuthContext();
   const { data, isLoading, isError } = useQuery({
     queryKey: ["recent-reports"],
     queryFn: getRecentReports,

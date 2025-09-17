@@ -28,6 +28,7 @@ import NotFoundPage from "./pages/NotFoundPage";
 // Wrapper
 import PublicOnlyRoute from "./routes/PublicOnlyRoute";
 import ProtectedRoute from "./routes/ProtectedRoute";
+import { AuthProvider } from "./contexts/AuthContext";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -41,136 +42,138 @@ const queryClient = new QueryClient({
 function App() {
   return (
     <QueryClientProvider client={queryClient}>
-      <ToastProvider>
-        <Router>
-          <div className="bg-gray-50">
-            <Routes>
-              {/* Public-only routes (redirect ke "/" jika sudah login) */}
-              <Route
-                path="/login"
-                element={
-                  <PublicOnlyRoute>
-                    <LoginForm />
-                  </PublicOnlyRoute>
-                }
-              />
-              <Route
-                path="/register"
-                element={
-                  <PublicOnlyRoute>
-                    <RegisterForm />
-                  </PublicOnlyRoute>
-                }
-              />
-              <Route
-                path="/forgot-password"
-                element={
-                  <PublicOnlyRoute>
-                    <ForgotPasswordPage />
-                  </PublicOnlyRoute>
-                }
-              />
-              <Route
-                path="/reset/:token/:email"
-                element={
-                  <PublicOnlyRoute>
-                    <ResetPasswordPage />
-                  </PublicOnlyRoute>
-                }
-              />
-              <Route
-                path="/verify-otp"
-                element={
-                  <PublicOnlyRoute>
-                    <OTPVerificationForm />
-                  </PublicOnlyRoute>
-                }
-              />
-              <Route
-                path="/verify-otp/:token"
-                element={
-                  <PublicOnlyRoute>
-                    <OTPVerificationForm />
-                  </PublicOnlyRoute>
-                }
-              />
+      <AuthProvider>
+        <ToastProvider>
+          <Router>
+            <div className="bg-gray-50">
+              <Routes>
+                {/* Public-only routes (redirect ke "/" jika sudah login) */}
+                <Route
+                  path="/login"
+                  element={
+                    <PublicOnlyRoute>
+                      <LoginForm />
+                    </PublicOnlyRoute>
+                  }
+                />
+                <Route
+                  path="/register"
+                  element={
+                    <PublicOnlyRoute>
+                      <RegisterForm />
+                    </PublicOnlyRoute>
+                  }
+                />
+                <Route
+                  path="/forgot-password"
+                  element={
+                    <PublicOnlyRoute>
+                      <ForgotPasswordPage />
+                    </PublicOnlyRoute>
+                  }
+                />
+                <Route
+                  path="/reset/:token/:email"
+                  element={
+                    <PublicOnlyRoute>
+                      <ResetPasswordPage />
+                    </PublicOnlyRoute>
+                  }
+                />
+                <Route
+                  path="/verify-otp"
+                  element={
+                    <PublicOnlyRoute>
+                      <OTPVerificationForm />
+                    </PublicOnlyRoute>
+                  }
+                />
+                <Route
+                  path="/verify-otp/:token"
+                  element={
+                    <PublicOnlyRoute>
+                      <OTPVerificationForm />
+                    </PublicOnlyRoute>
+                  }
+                />
 
-              {/* Routes with layout */}
-              <Route path="/" element={<Layout />}>
-                <Route index element={<HomePage />} />
-                <Route path="reports" element={<ReportsPage />} />
-                <Route path="reports/:id" element={<ReportDetailPage />} />
-                <Route path="announcements" element={<AnnouncementsPage />} />
-                <Route
-                  path="announcements/:id"
-                  element={<AnnouncementDetailPage />}
-                />
-                {/* Protected routes */}
-                <Route
-                  path="create-report"
-                  element={
-                    <ProtectedRoute>
-                      <CreateReportPage />
-                    </ProtectedRoute>
-                  }
-                />
-                <Route
-                  path="my-reports"
-                  element={
-                    <ProtectedRoute>
-                      <MyReportsPage />
-                    </ProtectedRoute>
-                  }
-                />
-                <Route
-                  path="profile"
-                  element={
-                    <ProtectedRoute>
-                      <ProfilePage />
-                    </ProtectedRoute>
-                  }
-                />
-                {/* Admin only */}
-                <Route
-                  path="admin"
-                  element={
-                    <ProtectedRoute requiredRole="RT_ADMIN">
-                      <AdminDashboard />
-                    </ProtectedRoute>
-                  }
-                />
-                <Route
-                  path="admin/announcements"
-                  element={
-                    <ProtectedRoute requiredRole="RT_ADMIN">
-                      <ManageAnnouncementsPage />
-                    </ProtectedRoute>
-                  }
-                />
-                <Route
-                  path="admin/announcements/create"
-                  element={
-                    <ProtectedRoute requiredRole="RT_ADMIN">
-                      <CreateAnnouncementPage />
-                    </ProtectedRoute>
-                  }
-                />
-                <Route
-                  path="admin/announcements/edit/:id"
-                  element={
-                    <ProtectedRoute requiredRole="RT_ADMIN">
-                      <EditAnnouncementPage />
-                    </ProtectedRoute>
-                  }
-                />
-              </Route>
+                {/* Routes with layout */}
+                <Route path="/" element={<Layout />}>
+                  <Route index element={<HomePage />} />
+                  <Route path="reports" element={<ReportsPage />} />
+                  <Route path="reports/:id" element={<ReportDetailPage />} />
+                  <Route path="announcements" element={<AnnouncementsPage />} />
+                  <Route
+                    path="announcements/:id"
+                    element={<AnnouncementDetailPage />}
+                  />
+                  {/* Protected routes */}
+                  <Route
+                    path="create-report"
+                    element={
+                      <ProtectedRoute>
+                        <CreateReportPage />
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path="my-reports"
+                    element={
+                      <ProtectedRoute>
+                        <MyReportsPage />
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path="profile"
+                    element={
+                      <ProtectedRoute>
+                        <ProfilePage />
+                      </ProtectedRoute>
+                    }
+                  />
+                  {/* Admin only */}
+                  <Route
+                    path="admin"
+                    element={
+                      <ProtectedRoute requiredRole="RT_ADMIN">
+                        <AdminDashboard />
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path="admin/announcements"
+                    element={
+                      <ProtectedRoute requiredRole="RT_ADMIN">
+                        <ManageAnnouncementsPage />
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path="admin/announcements/create"
+                    element={
+                      <ProtectedRoute requiredRole="RT_ADMIN">
+                        <CreateAnnouncementPage />
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path="admin/announcements/edit/:id"
+                    element={
+                      <ProtectedRoute requiredRole="RT_ADMIN">
+                        <EditAnnouncementPage />
+                      </ProtectedRoute>
+                    }
+                  />
+                </Route>
 
-              <Route path="*" element={<NotFoundPage />} />
-            </Routes>
-          </div>
-        </Router>
-        <ReactQueryDevtools initialIsOpen={false} />
-      </ToastProvider>
+                <Route path="*" element={<NotFoundPage />} />
+              </Routes>
+            </div>
+          </Router>
+          <ReactQueryDevtools initialIsOpen={false} />
+        </ToastProvider>
+      </AuthProvider>
     </QueryClientProvider>
   );
 }

@@ -22,10 +22,10 @@ import Button from "../../components/ui/Button";
 import Select from "../../components/ui/Select";
 import StatusDonutChart from "./components/StatusDonutChart";
 import CategoryBarChart from "./components/CategoryBarChart";
-import { useAuth } from "../../hooks/useAuth";
+import { useAuthContext } from "../../contexts/AuthContext";
 
 const AdminDashboard: React.FC = () => {
-  const { user } = useAuth();
+  const { user } = useAuthContext();
   const [selectedPeriod, setSelectedPeriod] = useState("30");
 
   // Mock statistics data

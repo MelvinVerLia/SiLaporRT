@@ -1,3 +1,4 @@
+import { json } from "stream/consumers";
 import { AuthService } from "../services/AuthService";
 import { Request, Response } from "express";
 
@@ -86,7 +87,6 @@ export class AuthController {
           .status(400)
           .json({ success: false, message: "Google authentication failed" });
       }
-
       res.cookie("auth", result.token, {
         httpOnly: true,
         secure: process.env.NODE_ENV === "production",
@@ -102,21 +102,46 @@ export class AuthController {
     }
   }
 
+  // static async getProfile(req: Request, res: Response) {
+  //   try {
+  //     // User should be attached by auth middleware
+  //     const user = req.user;
+  //     console.log(user);
+  //     res.status(200).json({
+  //       success: true,
+  //       data: { user },
+  //     });
+  //   } catch (error) {
+  //     res.status(500).json({
+  //       success: false,
+  //       message:
+  //         error instanceof Error ? error.message : "Failed to get profile",
+  //     });
+  //   }
+  // }
+
   static async getProfile(req: Request, res: Response) {
     try {
-      // User should be attached by auth middleware
-      const user = req.user;
-
+      const user = JSON.parse(JSON.stringify(req.user));
+      console.log(user);
       res.status(200).json({
         success: true,
-        data: { user },
+        data: {
+          user: {
+            id: user.id,
+            name: user.name,
+            phone: user.phone,
+            email: user.email,
+            profile: user.profile,
+            role: user.role,
+            isActive: user.isActive,
+            createdAt: user.createdAt,
+            updatedAt: user.updatedAt,
+          },
+        },
       });
     } catch (error) {
-      res.status(500).json({
-        success: false,
-        message:
-          error instanceof Error ? error.message : "Failed to get profile",
-      });
+      console.log(error);
     }
   }
 
@@ -178,16 +203,17 @@ export class AuthController {
 
   static async changePassword(req: Request, res: Response) {
     try {
-      const { email, password } = req.body;
-
-      if (!email || !password) {
+      const { password } = req.body;
+      const userId = JSON.parse(JSON.stringify(req.user)).id;
+      console.log(password, userId)
+      if (!password) {
         return res.status(400).json({
           success: false,
           message: "email, and password are required",
         });
       }
 
-      await AuthService.changePassword(email, password);
+      await AuthService.changePassword(userId, password);
 
       res.json({
         success: true,
@@ -219,8 +245,24 @@ export class AuthController {
     }
   }
 
+  static async resendOtp(req: Request, res: Response) {
+    const { token } = req.body;
+    try {
+      await AuthService.resendOtp(token);
+      res.json({
+        success: true,
+        message: "OTP sent successfully",
+      });
+    } catch (error) {
+      res.status(400).json({
+        success: false,
+        message: error instanceof Error ? error.message : "Failed to send OTP",
+      });
+    }
+  }
+
   static async register(req: Request, res: Response) {
-    console.log("masuk validate Token")
+    console.log("masuk validate Token");
     const { token, otp } = req.body;
     try {
       if (!token) {
@@ -242,6 +284,60 @@ export class AuthController {
         success: false,
         message:
           error instanceof Error ? error.message : "Failed to validate token",
+      });
+    }
+  }
+
+  static async deleteAccount(req: Request, res: Response) {
+    const user = JSON.parse(JSON.stringify(req.user));
+
+    if (!user) {
+      return res.status(400).json({
+        success: false,
+        message: "User not found",
+      });
+    }
+    const userId = user.id;
+    try {
+      await AuthService.deleteAccount(userId);
+      res.json({
+        success: true,
+        message: "Account deleted successfully",
+      });
+    } catch (error) {
+      res.status(400).json({
+        success: false,
+        message:
+          error instanceof Error ? error.message : "Failed to delete account",
+      });
+    }
+  }
+
+  static async updateProfile(req: Request, res: Response) {
+    const userId = JSON.parse(JSON.stringify(req.user)).id;
+    const data = req.body;
+    try {
+      const result = await AuthService.updateProfile(userId, data);
+      res.status(200).json({
+        success: true,
+        message: "User updated successfully",
+        data: {
+          id: result.id,
+          name: result.name,
+          phone: result.phone,
+          email: result.email,
+          profile: result.profile,
+          role: result.role,
+          isActive: result.isActive,
+          createdAt: result.createdAt,
+          updatedAt: result.updatedAt,
+        },
+      });
+    } catch (error) {
+      res.status(400).json({
+        success: false,
+        message:
+          error instanceof Error ? error.message : "Failed to update user",
       });
     }
   }

@@ -80,7 +80,7 @@ export default function Toast({
             <button
               type="button"
               className={cn(
-                "inline-flex rounded-md p-1.5 transition-colors hover:bg-black hover:bg-opacity-10 focus:outline-none focus:ring-2 focus:ring-offset-2",
+                "inline-flex rounded-md p-1.5 transition-colors hover:bg-black hover:bg-opacity-10 focus:outline-none focus:ring-2 focus:ring-offset-2 hover:cursor-pointer",
                 styles.icon
               )}
               onClick={() => onClose(id)}

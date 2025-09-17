@@ -2,7 +2,6 @@ import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import {
   Plus,
-  Filter,
   Search,
   MoreVertical,
   Edit,
@@ -15,20 +14,15 @@ import {
   ThumbsUp,
   Clock,
 } from "lucide-react";
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "../../components/ui/Card";
+import { Card, CardContent } from "../../components/ui/Card";
 import Button from "../../components/ui/Button";
 import Input from "../../components/ui/Input";
 import Select from "../../components/ui/Select";
 import Badge from "../../components/ui/Badge";
-import { useAuth } from "../../hooks/useAuth";
+import { useAuthContext } from "../../contexts/AuthContext";
 
 const MyReportsPage: React.FC = () => {
-  const { user } = useAuth();
+  const { user } = useAuthContext();
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedStatus, setSelectedStatus] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("");

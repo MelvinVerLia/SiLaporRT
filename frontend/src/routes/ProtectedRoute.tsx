@@ -1,6 +1,6 @@
 import { Navigate, useLocation } from "react-router-dom";
-import { useAuth } from "../hooks/useAuth";
 import { ReactNode } from "react";
+import { useAuthContext } from "../contexts/AuthContext";
 
 export default function ProtectedRoute({
   children,
@@ -9,7 +9,7 @@ export default function ProtectedRoute({
   children: ReactNode;
   requiredRole?: "RT_ADMIN" | "CITIZEN";
 }) {
-  const { isAuthenticated, isLoading, user } = useAuth();
+  const { isAuthenticated, isLoading, user } = useAuthContext();
   const location = useLocation();
 
   // Tahan render sampai status sesi diketahui

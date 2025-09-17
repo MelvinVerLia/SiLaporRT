@@ -1,5 +1,14 @@
-import React, { useState, useEffect } from "react";
-import { User, Shield, Edit2, Save, X, CheckCircle } from "lucide-react";
+import React, { useState, useEffect, useRef } from "react";
+import {
+  User,
+  Shield,
+  Edit2,
+  Save,
+  X,
+  CheckCircle,
+  EyeOff,
+  Eye,
+} from "lucide-react";
 import {
   Card,
   CardContent,
@@ -9,31 +18,57 @@ import {
 import Button from "../components/ui/Button";
 import Input from "../components/ui/Input";
 import Badge from "../components/ui/Badge";
-import { useAuth } from "../hooks/useAuth";
+import { useToast } from "../hooks/useToast";
+import ProfilePictureUpload, {
+  ProfilePictureUploadRef,
+} from "../components/upload/ProfilePictureUpload";
+import { useNavigate } from "react-router-dom";
+import { useAuthContext } from "../contexts/AuthContext";
+import Dialog from "../components/ui/Dialog";
+import {
+  Tabs,
+  TabsList,
+  TabsTrigger,
+  TabsContent,
+} from "../components/ui/Tabs";
 
 const ProfilePage: React.FC = () => {
-  const { user } = useAuth();
-
-  // Edit mode states
+  const { user, updateProfile, deleteAccount, changePassword, logout } =
+    useAuthContext();
+  const toast = useToast();
+  const [isOpen, setIsOpen] = useState(false);
   const [isEditingProfile, setIsEditingProfile] = useState(false);
-
-  // Form states
+  const [isLoading, setIsLoading] = useState(false);
+  const [currentTab, setCurrentTab] = useState("profile");
   const [profileForm, setProfileForm] = useState({
     name: "",
-    email: "",
     phone: "",
+    profile: "",
   });
+  const [currentProfilePicture, setCurrentProfilePicture] = useState(
+    user?.profile || ""
+  );
+  const [passwordForm, setPasswordForm] = useState({
+    newPassword: "",
+    confirmPassword: "",
+  });
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const navigate = useNavigate();
 
   useEffect(() => {
     setProfileForm({
       name: user?.name || "",
-      email: user?.email || "",
       phone: user?.phone || "",
+      profile: user?.profile || "",
     });
+    setCurrentProfilePicture(user?.profile || "");
   }, [user]);
 
+  const uploadRef = useRef<ProfilePictureUploadRef>(null);
   // Loading states
   const [isSavingProfile, setIsSavingProfile] = useState(false);
+  const [isChangingPassword, setIsChangingPassword] = useState(false);
 
   // Safety fallback (harusnya tidak kejadian karena ProtectedRoute sudah filter)
   if (!user) return null;
@@ -50,32 +85,77 @@ const ProfilePage: React.FC = () => {
   const handleEditProfile = () => {
     setIsEditingProfile(true);
     setProfileForm({
-      name: user.name,
-      email: user.email || "",
+      name: user.name || "",
       phone: user.phone || "",
+      profile: user.profile || "",
     });
   };
 
   const handleCancelEditProfile = () => {
     setIsEditingProfile(false);
     setProfileForm({
-      name: user.name,
-      email: user.email || "",
+      name: user.name || "",
       phone: user.phone || "",
+      profile: user.profile || "",
     });
+  };
+
+  const handleDeleteAccount = () => {
+    setIsLoading(true);
+    try {
+      deleteAccount();
+      navigate("/");
+      toast.success("Akun berhasil dihapus", "Berhasil");
+    } catch (error) {
+      console.log(error);
+    } finally {
+      setIsLoading(false);
+      setIsOpen(false);
+    }
   };
 
   const handleSaveProfile = async () => {
     setIsSavingProfile(true);
-
-    // Simulate API call
-    setTimeout(() => {
-      // In real app, call API to update profile
-      console.log("Profile updated:", profileForm);
+    try {
+      let profileUrl = profileForm.profile;
+      if (uploadRef.current) {
+        const uploadedUrl = await uploadRef.current.upload();
+        if (uploadedUrl) profileUrl = uploadedUrl;
+      }
+      await updateProfile({
+        ...profileForm,
+        profile: profileUrl,
+      });
+      toast.success("Profil berhasil disimpan", "Berhasil");
       setIsEditingProfile(false);
+    } catch (error) {
+      console.log(error);
+    } finally {
       setIsSavingProfile(false);
-      // Show success message or update user context
-    }, 1500);
+    }
+  };
+
+  const handleChangePassword = async () => {
+    if (passwordForm.newPassword !== passwordForm.confirmPassword) {
+      toast.error("Password baru dan konfirmasi password tidak sama", "Error");
+      return;
+    }
+
+    setIsChangingPassword(true);
+    try {
+      await changePassword(passwordForm.newPassword);
+      toast.success("Password berhasil diubah", "Berhasil");
+      setPasswordForm({
+        newPassword: "",
+        confirmPassword: "",
+      });
+      await logout();
+    } catch (error) {
+      console.log(error);
+      toast.error("Gagal mengubah password", "Error");
+    } finally {
+      setIsChangingPassword(false);
+    }
   };
 
   const getRoleBadge = (role: string) => {
@@ -84,7 +164,7 @@ const ProfilePage: React.FC = () => {
       : { variant: "default" as const, label: "Warga", icon: User };
   };
 
-  const roleBadge = getRoleBadge(user.role);
+  const roleBadge = getRoleBadge(user.role!);
   const RoleIcon = roleBadge.icon;
 
   return (
@@ -97,14 +177,17 @@ const ProfilePage: React.FC = () => {
         </p>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-stretch">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* User Information Card */}
         <div className="lg:col-span-1">
           <Card className="h-full">
             <CardHeader className="text-center">
-              <div className="mx-auto w-24 h-24 bg-gradient-to-br from-blue-500 to-blue-600 rounded-full flex items-center justify-center text-white text-3xl font-bold mb-4">
-                {user.name.charAt(0).toUpperCase()}
-              </div>
+              <ProfilePictureUpload
+                ref={uploadRef}
+                currentUrl={currentProfilePicture}
+                editable={isEditingProfile}
+                user={user}
+              />
               <CardTitle className="text-xl">{user.name}</CardTitle>
               <div className="flex justify-center mt-2">
                 <Badge
@@ -132,87 +215,230 @@ const ProfilePage: React.FC = () => {
               <div className="flex items-center justify-between py-2">
                 <span className="text-sm text-gray-600">Bergabung Sejak</span>
                 <span className="text-sm font-medium text-gray-900">
-                  {formatJoinDate(user.createdAt)}
+                  {formatJoinDate(user.createdAt!)}
                 </span>
               </div>
             </CardContent>
+
+            {/* 🔥 Danger Zone */}
+            <div className="mt-4 border-t border-gray-200 p-4">
+              <Dialog
+                isOpen={isOpen}
+                onClose={() => setIsOpen(false)}
+                title="Apakah anda yakin ingin menghapus akun ini?"
+              >
+                <div className="text-center">
+                  <p className="text-gray-500 mb-8 text-lg leading-relaxed font-medium">
+                    Tindakan ini tidak dapat dibatalkan. Semua data akun akan
+                    hilang secara permanen.
+                  </p>
+
+                  <div className="flex justify-center gap-10">
+                    <Button
+                      variant="primary"
+                      size="md"
+                      className="flex-1"
+                      onClick={() => setIsOpen(false)}
+                    >
+                      Tidak, Batal
+                    </Button>
+                    <Button
+                      variant="danger"
+                      size="md"
+                      className="flex-1"
+                      onClick={handleDeleteAccount}
+                    >
+                      Ya, Hapus Akun
+                    </Button>
+                  </div>
+                </div>
+              </Dialog>
+              <Button
+                variant="danger"
+                onClick={() => setIsOpen(true)}
+                className="w-full"
+                loading={isLoading}
+              >
+                Hapus Akun
+              </Button>
+              <p className="text-xs text-gray-400 mt-2">
+                Menghapus akun bersifat permanen dan tidak dapat dipulihkan.
+              </p>
+            </div>
           </Card>
         </div>
 
         {/* Profile Information Form */}
         <div className="lg:col-span-2">
-          <Card className="h-full">
-            <CardHeader className="flex flex-row items-center justify-between">
-              <CardTitle>Informasi Profil</CardTitle>
-              <div className="flex space-x-2">
-                {isEditingProfile ? (
-                  <>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={handleCancelEditProfile}
-                      disabled={isSavingProfile}
-                    >
-                      <X className="mr-1 h-4 w-4" />
-                      Batal
-                    </Button>
-                    <Button
-                      size="sm"
-                      onClick={handleSaveProfile}
-                      loading={isSavingProfile}
-                    >
-                      <Save className="mr-1 h-4 w-4" />
-                      Simpan
-                    </Button>
-                  </>
-                ) : (
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={handleEditProfile}
-                  >
-                    <Edit2 className="mr-1 h-4 w-4" />
-                    Edit
-                  </Button>
-                )}
-              </div>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                <Input
-                  label="Nama Lengkap"
-                  value={profileForm.name}
-                  onChange={(e) =>
-                    setProfileForm({ ...profileForm, name: e.target.value })
-                  }
-                  placeholder="Masukkan nama lengkap"
-                  disabled={!isEditingProfile}
-                />
+          <Tabs
+            defaultValue="profile"
+            className="h-full"
+            onValueChange={(value) => {
+              if (isEditingProfile) {
+                handleCancelEditProfile();
+              }
+              setCurrentTab(value);
+            }}
+          >
+            <Card className="h-full">
+              <CardHeader>
+                <div className="flex items-center justify-between">
+                  <TabsList>
+                    <TabsTrigger value="profile">Informasi Profil</TabsTrigger>
+                    <TabsTrigger value="password">Ubah Password</TabsTrigger>
+                  </TabsList>
 
-                <Input
-                  label="Email"
-                  type="email"
-                  value={profileForm.email}
-                  onChange={(e) =>
-                    setProfileForm({ ...profileForm, email: e.target.value })
-                  }
-                  placeholder="Masukkan email"
-                  disabled={!isEditingProfile}
-                />
+                  {currentTab === "profile" && (
+                    <div className="flex space-x-2">
+                      {isEditingProfile ? (
+                        <>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={handleCancelEditProfile}
+                            disabled={isSavingProfile}
+                          >
+                            <X className="mr-1 h-4 w-4" />
+                            Batal
+                          </Button>
+                          <Button
+                            size="sm"
+                            onClick={handleSaveProfile}
+                            loading={isSavingProfile}
+                          >
+                            <Save className="mr-1 h-4 w-4" />
+                            Simpan
+                          </Button>
+                        </>
+                      ) : (
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={handleEditProfile}
+                        >
+                          <Edit2 className="mr-1 h-4 w-4" />
+                          Edit
+                        </Button>
+                      )}
+                    </div>
+                  )}
+                </div>
+              </CardHeader>
 
-                <Input
-                  label="Nomor Telepon"
-                  type="tel"
-                  value={profileForm.phone}
-                  onChange={(e) =>
-                    setProfileForm({ ...profileForm, phone: e.target.value })
-                  }
-                  placeholder="Masukkan nomor telepon"
-                  disabled={!isEditingProfile}
-                />
-              </div>
-            </CardContent>
-          </Card>
+              <CardContent>
+                {/* Tab 1: Informasi Profil */}
+                <TabsContent value="profile">
+                  <div className="space-y-4">
+                    <Input
+                      label="Nama Lengkap"
+                      value={profileForm.name}
+                      onChange={(e) =>
+                        setProfileForm({ ...profileForm, name: e.target.value })
+                      }
+                      placeholder="Masukkan nama lengkap"
+                      disabled={!isEditingProfile}
+                    />
+
+                    <Input
+                      label="Email"
+                      type="email"
+                      value={user.email}
+                      placeholder="Masukkan email"
+                      disabled
+                    />
+
+                    <Input
+                      label="Nomor Telepon"
+                      type="tel"
+                      value={profileForm.phone}
+                      onChange={(e) =>
+                        setProfileForm({
+                          ...profileForm,
+                          phone: e.target.value,
+                        })
+                      }
+                      placeholder="Masukkan nomor telepon"
+                      disabled={!isEditingProfile}
+                    />
+                  </div>
+                </TabsContent>
+
+                {/* Tab 2: Change Password */}
+                <TabsContent value="password">
+                  <div className="space-y-4">
+                    <div className="relative">
+                      <Input
+                        label="Password Baru"
+                        type={showPassword ? "text" : "password"}
+                        value={passwordForm.newPassword}
+                        onChange={(e) =>
+                          setPasswordForm({
+                            ...passwordForm,
+                            newPassword: e.target.value,
+                          })
+                        }
+                        placeholder="Masukkan password baru"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowPassword(!showPassword)}
+                        className="absolute right-3 top-10 text-gray-400 hover:text-gray-600 transition-colors duration-200 focus:outline-none"
+                        disabled={isLoading}
+                      >
+                        {showPassword ? (
+                          <EyeOff className="h-4 w-4" />
+                        ) : (
+                          <Eye className="h-4 w-4" />
+                        )}
+                      </button>
+                    </div>
+
+                    <div className="relative">
+                      <Input
+                        label="Konfirmasi Password Baru"
+                        type={showConfirmPassword ? "text" : "password"}
+                        value={passwordForm.confirmPassword}
+                        onChange={(e) =>
+                          setPasswordForm({
+                            ...passwordForm,
+                            confirmPassword: e.target.value,
+                          })
+                        }
+                        placeholder="Ulangi password baru"
+                      />
+                      <button
+                        type="button"
+                        onClick={() =>
+                          setShowConfirmPassword(!showConfirmPassword)
+                        }
+                        className="absolute right-3 top-10 text-gray-400 hover:text-gray-600 transition-colors duration-200 focus:outline-none"
+                        disabled={isLoading}
+                      >
+                        {showConfirmPassword ? (
+                          <EyeOff className="h-4 w-4" />
+                        ) : (
+                          <Eye className="h-4 w-4" />
+                        )}
+                      </button>
+                    </div>
+
+                    <Button
+                      size="md"
+                      className="mt-2"
+                      onClick={handleChangePassword}
+                      loading={isChangingPassword}
+                      disabled={
+                        !passwordForm.newPassword ||
+                        !passwordForm.confirmPassword
+                      }
+                    >
+                      Ubah Password
+                    </Button>
+                  </div>
+                </TabsContent>
+              </CardContent>
+            </Card>
+          </Tabs>
         </div>
       </div>
     </div>
