@@ -28,6 +28,7 @@ type Props = {
   onUploaded?: (files: CloudinaryFile[]) => void;
   onRemove?: (identifier: string) => void; // Use id for database attachments, publicId for new uploads
   onError?: (message: string) => void;
+  onUploadingChange?: (isUploading: boolean) => void; // New prop to track upload status
   className?: string;
 };
 
@@ -40,11 +41,18 @@ const CloudinaryUpload: React.FC<Props> = ({
   onUploaded,
   onRemove,
   onError,
+  onUploadingChange,
   className,
 }) => {
   const inputRef = useRef<HTMLInputElement | null>(null);
   const [uploading, setUploading] = useState(false);
   const toast = useToast();
+
+  // Notify parent when upload status changes
+  const setUploadingWithCallback = (isUploading: boolean) => {
+    setUploading(isUploading);
+    onUploadingChange?.(isUploading);
+  };
 
   async function handleFiles(files: FileList | null) {
     if (!files || files.length === 0) return;
@@ -56,7 +64,7 @@ const CloudinaryUpload: React.FC<Props> = ({
     }
 
     try {
-      setUploading(true);
+      setUploadingWithCallback(true);
 
       const uploaded: CloudinaryFile[] = [];
       for (const f of list) {
@@ -93,7 +101,7 @@ const CloudinaryUpload: React.FC<Props> = ({
       toast.error(error?.message || "Gagal mengunggah file", "Upload Gagal");
       onError?.(error?.message || "Gagal upload");
     } finally {
-      setUploading(false);
+      setUploadingWithCallback(false);
       if (inputRef.current) inputRef.current.value = "";
     }
   }

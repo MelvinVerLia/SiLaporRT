@@ -1,5 +1,4 @@
 import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
 import {
   ArrowLeft,
   ArrowRight,
@@ -21,17 +20,16 @@ import Select from "../../components/ui/Select";
 import Badge from "../../components/ui/Badge";
 import LocationPicker from "../../components/features/maps/LocationPicker";
 import ImageUpload from "../../components/features/media/ImageUpload";
-import {
-  CreateReportFormData,
-  ReportCategory,
-  Location,
-} from "../../types/report.types";
+import { useCreateReport } from "../../hooks/useCreateReport";
+import { CreateReportFormData, ReportCategory } from "../../types/report.types";
+import { useToast } from "../../hooks/useToast";
 
 const CreateReportPage: React.FC = () => {
-  const navigate = useNavigate();
+  const createReportMutation = useCreateReport();
+  const toast = useToast();
   const [currentStep, setCurrentStep] = useState(1);
-  const [isSubmitting, setIsSubmitting] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [isUploading, setIsUploading] = useState(false);
 
   const [formData, setFormData] = useState<CreateReportFormData>({
     title: "",
@@ -121,21 +119,17 @@ const CreateReportPage: React.FC = () => {
   const handleSubmit = async () => {
     if (!validateStep(currentStep)) return;
 
-    setIsSubmitting(true);
-
     try {
-      // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 2000));
-
-      // Mock success - in real app, call actual API
-      console.log("Form data to submit:", formData);
-
-      alert("Laporan berhasil dibuat!");
-      navigate("/my-reports");
-    } catch (error) {
-      alert("Gagal membuat laporan. Silakan coba lagi.");
-    } finally {
-      setIsSubmitting(false);
+      await createReportMutation.mutateAsync(formData);
+      toast.success("Laporan berhasil dibuat!", "Sukses");
+      // Navigation handled by the hook on success
+    } catch (error: unknown) {
+      const errorMessage =
+        error instanceof Error
+          ? error.message
+          : "Terjadi kesalahan saat membuat laporan";
+      toast.error(errorMessage, "Gagal Membuat Laporan");
+      console.error("Submit error:", error);
     }
   };
 
@@ -256,6 +250,7 @@ const CreateReportPage: React.FC = () => {
               setFormData((prev) => ({ ...prev, attachments: files }))
             }
             maxFiles={5}
+            onUploadingChange={setIsUploading}
           />
         );
 
@@ -353,7 +348,7 @@ const CreateReportPage: React.FC = () => {
                     <div className="mt-2 space-y-1">
                       {formData.attachments.map((file, index) => (
                         <p key={index} className="text-sm text-gray-600">
-                          • {file.name}
+                          • {file.original_filename || "image"}
                         </p>
                       ))}
                     </div>
@@ -434,7 +429,20 @@ const CreateReportPage: React.FC = () => {
 
       {/* Form Content */}
       <Card>
-        <CardContent className="p-8">{renderStepContent()}</CardContent>
+        <CardContent className="p-8">
+          {/* Mutation Error Display */}
+          {createReportMutation.isError && (
+            <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg">
+              <p className="text-red-800 text-sm">
+                {createReportMutation.error instanceof Error
+                  ? createReportMutation.error.message
+                  : "Gagal membuat laporan. Silakan coba lagi."}
+              </p>
+            </div>
+          )}
+
+          {renderStepContent()}
+        </CardContent>
       </Card>
 
       {/* Navigation Buttons */}
@@ -442,21 +450,32 @@ const CreateReportPage: React.FC = () => {
         <Button
           variant="outline"
           onClick={handlePrevious}
-          disabled={currentStep === 1}
+          disabled={
+            currentStep === 1 || isUploading || createReportMutation.isPending
+          }
         >
           <ArrowLeft className="mr-2 h-4 w-4" />
           Sebelumnya
         </Button>
 
         {currentStep < steps.length ? (
-          <Button onClick={handleNext}>
+          <Button
+            onClick={handleNext}
+            disabled={isUploading || createReportMutation.isPending}
+          >
             Selanjutnya
             <ArrowRight className="ml-2 h-4 w-4" />
           </Button>
         ) : (
-          <Button onClick={handleSubmit} loading={isSubmitting}>
+          <Button
+            onClick={handleSubmit}
+            loading={createReportMutation.isPending || isUploading}
+            disabled={createReportMutation.isPending || isUploading}
+          >
             <Check className="mr-2 h-4 w-4" />
-            {isSubmitting ? "Mengirim..." : "Kirim Laporan"}
+            {createReportMutation.isPending || isUploading
+              ? "Mengirim..."
+              : "Kirim Laporan"}
           </Button>
         )}
       </div>

@@ -2,7 +2,13 @@ import { Link } from "react-router-dom";
 import { Card, CardContent } from "../../components/ui/Card";
 import Badge from "../../components/ui/Badge";
 import { Report } from "../../types/report.types";
-import { Clock, MapPin, MessageCircle, ThumbsUp } from "lucide-react";
+import {
+  Clock,
+  MapPin,
+  MessageCircle,
+  Paperclip,
+  ThumbsUp,
+} from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import { id } from "date-fns/locale";
 
@@ -31,12 +37,12 @@ const ReportListItem = ({ r }: { r: Report }) => {
 
   const statusInfo = getStatusBadge(r.status);
   return (
-    <Link to={`/reports/${r.id}`}>
-      <Card key={r.id} className="hover:shadow-md transition-shadow">
+    <Card className="hover:shadow-md transition-shadow">
+      <Link to={`/reports/${r.id}`}>
         <CardContent className="p-6">
           <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-4">
             {/* Main Content */}
-            <div className="flex-1 space-y-3">
+            <div className="flex-1 space-y-2">
               {/* Title and Badges */}
               <div className="space-y-2">
                 <h3 className="text-lg font-semibold text-gray-900">
@@ -80,7 +86,10 @@ const ReportListItem = ({ r }: { r: Report }) => {
                     {r.commentCount}
                   </span>
                   {r.attachments.length > 0 && (
-                    <span>📎 {r.attachments.length} file</span>
+                    <span className="flex items-center">
+                      <Paperclip className="mr-1 h-4 w-4" />
+                      {r.attachments.length} file
+                    </span>
                   )}
                 </div>
 
@@ -102,8 +111,8 @@ const ReportListItem = ({ r }: { r: Report }) => {
             </div>
           </div>
         </CardContent>
-      </Card>
-    </Link>
+      </Link>
+    </Card>
   );
 };
 

@@ -10,6 +10,7 @@ import {
   Paperclip,
   EyeOff,
   AlertCircle,
+  RefreshCw,
 } from "lucide-react";
 import {
   Card,
@@ -25,6 +26,7 @@ import { getReportDetails, toggleUpvote } from "../../services/reportService";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import LoadingSpinner from "../../components/ui/LoadingSpinner";
 import { Report } from "../../types/report.types";
+import ReportDetailSkeleton from "./components/ReportDetailSkeleton";
 import { useAuthContext } from "../../contexts/AuthContext";
 
 const ReportDetailPage: React.FC = () => {
@@ -37,6 +39,8 @@ const ReportDetailPage: React.FC = () => {
     data: report,
     isLoading,
     isError,
+    refetch,
+    isFetching,
   } = useQuery({
     queryKey: ["report", id],
     queryFn: () => getReportDetails(id!),
@@ -133,34 +137,43 @@ const ReportDetailPage: React.FC = () => {
     }, 1000);
   };
 
-  if (isLoading)
-    return (
-      <div className="flex items-center justify-center gap-2">
-        <LoadingSpinner className="w-5 h-5" />
-        <p className="text-sm text-gray-500">Memuat…</p>{" "}
-      </div>
-    );
+  if (isLoading) return <ReportDetailSkeleton />;
 
   if (isError || !report) {
     return (
-      <div className="text-center py-12">
-        <AlertCircle className="mx-auto h-12 w-12 text-gray-400 mb-4" />
-        <h2 className="text-xl font-semibold text-gray-900 mb-2">
-          Laporan Tidak Ditemukan
-        </h2>
-        <p className="text-gray-600 mb-6">
-          Laporan yang Anda cari tidak ditemukan atau mungkin sudah dihapus.
-        </p>
-        <Link to="/reports">
-          <Button>Kembali ke Daftar Laporan</Button>
-        </Link>
-      </div>
+      <Card>
+        <CardContent className="p-12 text-center">
+          <AlertCircle className="mx-auto h-12 w-12 text-red-500 mb-4" />
+          <h3 className="text-lg font-semibold text-gray-900 mb-2">
+            {!report ? "Laporan Tidak Ditemukan" : "Gagal Memuat Laporan"}
+          </h3>
+          <p className="text-gray-600 mb-6">
+            {!report
+              ? "Laporan yang Anda cari tidak ditemukan atau mungkin sudah dihapus."
+              : "Terjadi kesalahan saat memuat detail laporan. Silakan coba lagi."}
+          </p>
+          <div className="flex flex-col sm:flex-row gap-3 justify-center">
+            {isError && (
+              <Button
+                variant="outline"
+                onClick={() => refetch()}
+                loading={isFetching}
+              >
+                <RefreshCw className="mr-2 h-4 w-4" />
+                Coba Lagi
+              </Button>
+            )}
+            <Link to="/reports">
+              <Button>Kembali ke Daftar Laporan</Button>
+            </Link>
+          </div>
+        </CardContent>
+      </Card>
     );
   }
   const statusInfo = getStatusBadge(report.status);
 
   const breadcrumbItems = [
-    { label: "Beranda", href: "/" },
     { label: "Laporan", href: "/reports" },
     {
       label:

@@ -17,6 +17,18 @@ interface CreateReportData {
     kelurahan?: string;
     kecamatan?: string;
   };
+  attachments?: {
+    filename: string;
+    url: string;
+    fileType: string;
+    provider?: string;
+    publicId?: string;
+    resourceType?: string;
+    format?: string;
+    bytes?: number;
+    width?: number;
+    height?: number;
+  }[];
 }
 
 export { CreateReportData };
