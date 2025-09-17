@@ -72,7 +72,7 @@ const ReportsPage: React.FC = () => {
       <div>
         <h1 className="text-3xl font-bold text-gray-900">Laporan Warga</h1>
         <p className="text-gray-600 mt-1">
-          Lihat dan pantau laporan dari warga RT
+          Lihat dan pantau laporan dari warga RT • {total} laporan
         </p>
       </div>
 
@@ -122,6 +122,7 @@ const ReportsPage: React.FC = () => {
             ))}
           </>
         )}
+
         {isError && (
           <Card>
             <CardContent className="p-12 text-center">
@@ -144,7 +145,9 @@ const ReportsPage: React.FC = () => {
             </CardContent>
           </Card>
         )}
+
         {!isLoading &&
+          !isError &&
           items &&
           items.map((r: Report) => <ReportListItem key={r.id} r={r} />)}
       </div>

@@ -22,11 +22,14 @@ import LocationPicker from "../../components/features/maps/LocationPicker";
 import ImageUpload from "../../components/features/media/ImageUpload";
 import { useCreateReport } from "../../hooks/useCreateReport";
 import { CreateReportFormData, ReportCategory } from "../../types/report.types";
+import { useToast } from "../../hooks/useToast";
 
 const CreateReportPage: React.FC = () => {
   const createReportMutation = useCreateReport();
+  const toast = useToast();
   const [currentStep, setCurrentStep] = useState(1);
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [isUploading, setIsUploading] = useState(false);
 
   const [formData, setFormData] = useState<CreateReportFormData>({
     title: "",
@@ -118,9 +121,14 @@ const CreateReportPage: React.FC = () => {
 
     try {
       await createReportMutation.mutateAsync(formData);
+      toast.success("Laporan berhasil dibuat!", "Sukses");
       // Navigation handled by the hook on success
-    } catch (error) {
-      // Error display handled by the mutation
+    } catch (error: unknown) {
+      const errorMessage =
+        error instanceof Error
+          ? error.message
+          : "Terjadi kesalahan saat membuat laporan";
+      toast.error(errorMessage, "Gagal Membuat Laporan");
       console.error("Submit error:", error);
     }
   };
@@ -242,6 +250,7 @@ const CreateReportPage: React.FC = () => {
               setFormData((prev) => ({ ...prev, attachments: files }))
             }
             maxFiles={5}
+            onUploadingChange={setIsUploading}
           />
         );
 
@@ -441,25 +450,32 @@ const CreateReportPage: React.FC = () => {
         <Button
           variant="outline"
           onClick={handlePrevious}
-          disabled={currentStep === 1}
+          disabled={
+            currentStep === 1 || isUploading || createReportMutation.isPending
+          }
         >
           <ArrowLeft className="mr-2 h-4 w-4" />
           Sebelumnya
         </Button>
 
         {currentStep < steps.length ? (
-          <Button onClick={handleNext}>
+          <Button
+            onClick={handleNext}
+            disabled={isUploading || createReportMutation.isPending}
+          >
             Selanjutnya
             <ArrowRight className="ml-2 h-4 w-4" />
           </Button>
         ) : (
           <Button
             onClick={handleSubmit}
-            loading={createReportMutation.isPending}
-            disabled={createReportMutation.isPending}
+            loading={createReportMutation.isPending || isUploading}
+            disabled={createReportMutation.isPending || isUploading}
           >
             <Check className="mr-2 h-4 w-4" />
-            {createReportMutation.isPending ? "Mengirim..." : "Kirim Laporan"}
+            {createReportMutation.isPending || isUploading
+              ? "Mengirim..."
+              : "Kirim Laporan"}
           </Button>
         )}
       </div>

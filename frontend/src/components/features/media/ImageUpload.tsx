@@ -7,6 +7,7 @@ interface ImageUploadProps {
   onFilesChange: (files: CloudinaryFile[]) => void;
   maxFiles?: number;
   error?: string;
+  onUploadingChange?: (isUploading: boolean) => void;
 }
 
 const ImageUpload: React.FC<ImageUploadProps> = ({
@@ -14,6 +15,7 @@ const ImageUpload: React.FC<ImageUploadProps> = ({
   onFilesChange,
   maxFiles = 5,
   error,
+  onUploadingChange,
 }) => {
   const handleUploaded = (newFiles: CloudinaryFile[]) => {
     onFilesChange([...files, ...newFiles]);
@@ -55,6 +57,7 @@ const ImageUpload: React.FC<ImageUploadProps> = ({
         }))}
         onUploaded={handleUploaded}
         onRemove={handleRemove}
+        onUploadingChange={onUploadingChange}
       />
 
       {error && <p className="text-sm text-red-600">{error}</p>}

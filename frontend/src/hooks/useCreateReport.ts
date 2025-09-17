@@ -1,14 +1,18 @@
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
 import { createReport } from "../services/reportService";
 import { CreateReportFormData } from "../types/report.types";
 
 export const useCreateReport = () => {
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
 
   return useMutation({
     mutationFn: (formData: CreateReportFormData) => createReport(formData),
     onSuccess: (data) => {
+      // Invalidate and refetch reports list
+      queryClient.invalidateQueries({ queryKey: ["reports"] });
+
       // Navigate to the created report or success page
       navigate(`/reports/${data.id}`, {
         replace: true,
