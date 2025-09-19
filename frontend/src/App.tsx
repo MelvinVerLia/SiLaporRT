@@ -30,6 +30,7 @@ import NotFoundPage from "./pages/NotFoundPage";
 import PublicOnlyRoute from "./routes/PublicOnlyRoute";
 import ProtectedRoute from "./routes/ProtectedRoute";
 import { AuthProvider } from "./contexts/AuthContext";
+import ScrollToTop from "./utils/ScrollToTop";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -46,6 +47,7 @@ function App() {
       <AuthProvider>
         <ToastProvider>
           <Router>
+            <ScrollToTop />
             <div className="bg-gray-50">
               <Routes>
                 {/* Public-only routes (redirect ke "/" jika sudah login) */}
