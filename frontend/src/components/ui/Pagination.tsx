@@ -42,7 +42,7 @@ export default function Pagination({
 
   return (
     <div
-      className={`flex flex-col sm:flex-row items-start sm:items-center justify-between pt-6 border-t border-gray-200 gap-4 ${className}`}
+      className={`flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 ${className}`}
     >
       {/* Page Size Selector */}
       {showPageSizeSelector && (

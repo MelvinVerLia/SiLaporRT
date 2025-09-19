@@ -1,4 +1,4 @@
-import { useParams } from "react-router-dom";
+import { useParams, useLocation } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { getAnnouncement } from "../../services/announcementService";
 import {
@@ -25,6 +25,13 @@ function formatDateTime(s?: string | null) {
 
 export default function AnnouncementDetailPage() {
   const { id } = useParams<{ id: string }>();
+  const location = useLocation();
+
+  // Detect where user came from based on location state or current URL context
+  const isFromAdmin =
+    location.state?.from === "admin" ||
+    location.pathname.includes("/admin") ||
+    document.referrer.includes("/admin/announcements");
 
   const {
     data: a,
@@ -47,10 +54,14 @@ export default function AnnouncementDetailPage() {
       ? "warning"
       : "default";
 
-  const breadcrumbItems = [
-    { label: "Pengumuman", href: "/announcements" },
-    { label: a.title },
-  ];
+  // Dynamic breadcrumb based on where user came from
+  const breadcrumbItems = isFromAdmin
+    ? [
+        { label: "Dashboard", href: "/admin" },
+        { label: "Kelola Pengumuman", href: "/admin/announcements" },
+        { label: a.title },
+      ]
+    : [{ label: "Pengumuman", href: "/announcements" }, { label: a.title }];
 
   return (
     <div className="space-y-6">

@@ -192,6 +192,12 @@ export default function ManageAnnouncementsPage() {
     navigate(`/admin/announcements/edit/${announcement.id}`);
   };
 
+  const handleViewClick = (announcement: Announcement) => {
+    navigate(`/announcements/${announcement.id}`, {
+      state: { from: "admin" },
+    });
+  };
+
   const handlePageSizeChange = (newPageSize: number) => {
     setPageSize(newPageSize);
     setPage(1); // Reset to first page when changing page size
@@ -319,7 +325,8 @@ export default function ManageAnnouncementsPage() {
                       return (
                         <tr
                           key={announcement.id}
-                          className="border-b border-gray-100 hover:bg-gray-50 transition-colors"
+                          className="border-b border-gray-100 hover:bg-gray-50 transition-colors cursor-pointer"
+                          onClick={() => handleViewClick(announcement)}
                         >
                           <td className="py-5 pr-6">
                             <div className="flex items-start space-x-3">
@@ -385,12 +392,13 @@ export default function ManageAnnouncementsPage() {
                                 size="sm"
                                 variant="ghost"
                                 className="p-2"
-                                onClick={() =>
+                                onClick={(e) => {
+                                  e.stopPropagation();
                                   mutPin.mutate({
                                     id: announcement.id,
                                     isPinned: !announcement.isPinned,
-                                  })
-                                }
+                                  });
+                                }}
                                 title={announcement.isPinned ? "Unpin" : "Pin"}
                               >
                                 {announcement.isPinned ? (
@@ -404,12 +412,13 @@ export default function ManageAnnouncementsPage() {
                                 size="sm"
                                 variant="ghost"
                                 className="p-2"
-                                onClick={() =>
+                                onClick={(e) => {
+                                  e.stopPropagation();
                                   mutActive.mutate({
                                     id: announcement.id,
                                     isActive: !announcement.isActive,
-                                  })
-                                }
+                                  });
+                                }}
                                 title={
                                   announcement.isActive
                                     ? "Nonaktifkan"
@@ -427,7 +436,10 @@ export default function ManageAnnouncementsPage() {
                                 size="sm"
                                 variant="ghost"
                                 className="p-2"
-                                onClick={() => handleEditClick(announcement)}
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleEditClick(announcement);
+                                }}
                                 title="Edit"
                               >
                                 <Edit3 className="h-4 w-4" />
@@ -450,7 +462,8 @@ export default function ManageAnnouncementsPage() {
                   return (
                     <Card
                       key={announcement.id}
-                      className="hover:shadow-md transition-shadow"
+                      className="hover:shadow-md transition-shadow cursor-pointer"
+                      onClick={() => handleViewClick(announcement)}
                     >
                       <CardContent className="p-4">
                         <div className="space-y-3">
@@ -512,12 +525,13 @@ export default function ManageAnnouncementsPage() {
                               <Button
                                 size="sm"
                                 variant="outline"
-                                onClick={() =>
+                                onClick={(e) => {
+                                  e.stopPropagation();
                                   mutPin.mutate({
                                     id: announcement.id,
                                     isPinned: !announcement.isPinned,
-                                  })
-                                }
+                                  });
+                                }}
                               >
                                 {announcement.isPinned ? "Unpin" : "Pin"}
                               </Button>
@@ -527,12 +541,13 @@ export default function ManageAnnouncementsPage() {
                                 variant={
                                   announcement.isActive ? "danger" : "primary"
                                 }
-                                onClick={() =>
+                                onClick={(e) => {
+                                  e.stopPropagation();
                                   mutActive.mutate({
                                     id: announcement.id,
                                     isActive: !announcement.isActive,
-                                  })
-                                }
+                                  });
+                                }}
                               >
                                 {announcement.isActive
                                   ? "Nonaktifkan"
@@ -543,7 +558,10 @@ export default function ManageAnnouncementsPage() {
                             <Button
                               size="sm"
                               variant="outline"
-                              onClick={() => handleEditClick(announcement)}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleEditClick(announcement);
+                              }}
                             >
                               <Edit3 className="h-4 w-4" />
                             </Button>
