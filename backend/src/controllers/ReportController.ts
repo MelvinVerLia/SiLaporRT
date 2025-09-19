@@ -146,7 +146,8 @@ class ReportController {
   static async updateStatus(req: Request, res: Response) {
     try {
       const { reportId } = req.params;
-      const { status, userId } = req.body;
+      const { status } = req.body;
+      const user = req.user as { id: string };
 
       if (!reportId || !status) {
         throw new Error("Report ID and status are required");
@@ -160,7 +161,7 @@ class ReportController {
 
       res.json({
         success: true,
-        message: `Report status updated to ${status} for user ${userId}`,
+        message: `Report status updated to ${status}`,
         data: result,
       });
     } catch (error: any) {
@@ -174,15 +175,16 @@ class ReportController {
   static async addOfficialResponse(req: Request, res: Response) {
     try {
       const { reportId } = req.params;
-      const { adminId, message, attachments } = req.body;
+      const { message, attachments } = req.body;
+      const user = req.user as { id: string };
 
-      if (!reportId || !adminId || !message?.trim()) {
+      if (!reportId || !user?.id || !message?.trim()) {
         throw new Error("Report ID, user ID, and message are required");
       }
 
       const response = await ReportService.addOfficialResponse(
         reportId,
-        adminId,
+        user.id,
         message,
         attachments
       );
@@ -263,12 +265,10 @@ class ReportController {
     const user = req.user as { id: string };
 
     if (!reportId || !user.id)
-      return res
-        .status(400)
-        .json({
-          success: false,
-          message: "Report ID and user authentication required",
-        });
+      return res.status(400).json({
+        success: false,
+        message: "Report ID and user authentication required",
+      });
 
     try {
       const result = await ReportService.getUserUpvoteStatus(reportId, user.id);

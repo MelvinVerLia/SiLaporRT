@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { useParams, Link } from "react-router-dom";
+import { useParams, Link, useLocation } from "react-router-dom";
 import {
   MapPin,
   Clock,
@@ -28,6 +28,10 @@ import {
   addComment,
   getUserUpvoteStatus,
 } from "../../services/reportService";
+import {
+  updateReportStatus,
+  addOfficialResponse,
+} from "../../services/reportAdminService";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   Attachment,
@@ -37,12 +41,24 @@ import {
 } from "../../types/report.types";
 import ReportDetailSkeleton from "./components/ReportDetailSkeleton";
 import { useAuthContext } from "../../contexts/AuthContext";
+import { Role } from "../../types/auth.types";
 
 const ReportDetailPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
+  const location = useLocation();
   const { user, isAuthenticated } = useAuthContext();
   const queryClient = useQueryClient();
   const [commentText, setCommentText] = useState("");
+  const [adminResponseText, setAdminResponseText] = useState("");
+  const [selectedStatus, setSelectedStatus] = useState("");
+
+  const isAdmin = user?.role === Role.RT_ADMIN;
+
+  // Detect where user came from based on location state or current URL context
+  const isFromAdmin =
+    location.state?.from === "admin" ||
+    location.pathname.includes("/admin") ||
+    document.referrer.includes("/admin/reports");
 
   const {
     data: report,
@@ -181,9 +197,55 @@ const ReportDetailPage: React.FC = () => {
     },
   });
 
+  // Admin mutations
+  const updateStatusMutation = useMutation({
+    mutationFn: ({ status, message }: { status: string; message?: string }) =>
+      updateReportStatus(report!.id, status, message),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["report"] });
+      queryClient.invalidateQueries({ queryKey: ["reports"] });
+      queryClient.invalidateQueries({ queryKey: ["admin-reports"] });
+      setSelectedStatus("");
+    },
+    onError: (error) => {
+      console.error("Error updating status:", error);
+    },
+  });
+
+  const addResponseMutation = useMutation({
+    mutationFn: (message: string) => addOfficialResponse(report!.id, message),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["report"] });
+      queryClient.invalidateQueries({ queryKey: ["reports"] });
+      queryClient.invalidateQueries({ queryKey: ["admin-reports"] });
+      setAdminResponseText("");
+    },
+    onError: (error) => {
+      console.error("Error adding response:", error);
+    },
+  });
+
   const handleSubmitComment = async () => {
     if (!commentText.trim()) return;
     addCommentMutation.mutate(commentText);
+  };
+
+  const handleStatusChange = (status: string) => {
+    if (status === selectedStatus) return;
+    setSelectedStatus(status);
+
+    // For certain status changes, we might want to require a message
+    if (status === "REJECTED") {
+      // For now, just update without message - could add modal for message later
+      updateStatusMutation.mutate({ status });
+    } else {
+      updateStatusMutation.mutate({ status });
+    }
+  };
+
+  const handleSubmitResponse = () => {
+    if (!adminResponseText.trim()) return;
+    addResponseMutation.mutate(adminResponseText);
   };
 
   if (isLoading) return <ReportDetailSkeleton />;
@@ -222,15 +284,27 @@ const ReportDetailPage: React.FC = () => {
   }
   const statusInfo = getStatusBadge(report.status);
 
-  const breadcrumbItems = [
-    { label: "Laporan", href: "/reports" },
-    {
-      label:
-        report.title.length > 50
-          ? report.title.substring(0, 50) + "..."
-          : report.title,
-    },
-  ];
+  // Dynamic breadcrumb based on where user came from
+  const breadcrumbItems = isFromAdmin
+    ? [
+        { label: "Dashboard", href: "/admin" },
+        { label: "Kelola Laporan", href: "/admin/reports" },
+        {
+          label:
+            report.title.length > 50
+              ? report.title.substring(0, 50) + "..."
+              : report.title,
+        },
+      ]
+    : [
+        { label: "Laporan", href: "/reports" },
+        {
+          label:
+            report.title.length > 50
+              ? report.title.substring(0, 50) + "..."
+              : report.title,
+        },
+      ];
 
   return (
     <div className="space-y-6">
@@ -558,19 +632,65 @@ const ReportDetailPage: React.FC = () => {
             </CardContent>
           </Card>
 
-          {/* Quick Actions */}
-          {user?.role === "RT_ADMIN" && (
+          {/* Admin Controls */}
+          {isAdmin && (
             <Card>
               <CardHeader>
-                <CardTitle>Aksi Admin</CardTitle>
+                <CardTitle>Kontrol Admin</CardTitle>
               </CardHeader>
-              <CardContent className="space-y-2">
-                <Button variant="outline" className="w-full justify-start">
-                  Ubah Status
-                </Button>
-                <Button variant="outline" className="w-full justify-start">
-                  Berikan Tanggapan
-                </Button>
+              <CardContent className="space-y-4">
+                {/* Status Update */}
+                <div>
+                  <label className="text-sm font-medium text-gray-600 mb-2 block">
+                    Ubah Status
+                  </label>
+                  <select
+                    value={selectedStatus || report.status}
+                    onChange={(e) => handleStatusChange(e.target.value)}
+                    className="w-full text-sm border border-gray-300 rounded px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    disabled={updateStatusMutation.isPending}
+                  >
+                    <option value="PENDING">Menunggu</option>
+                    <option value="IN_PROGRESS">Dalam Proses</option>
+                    <option value="RESOLVED">Selesai</option>
+                    <option value="REJECTED">Ditolak</option>
+                    <option value="CLOSED">Ditutup</option>
+                  </select>
+                </div>
+
+                {/* Quick Response */}
+                <div>
+                  <label className="text-sm font-medium text-gray-600 mb-2 block">
+                    Tanggapan Resmi
+                  </label>
+                  <Textarea
+                    value={adminResponseText}
+                    onChange={(e) => setAdminResponseText(e.target.value)}
+                    placeholder="Tulis tanggapan resmi untuk warga..."
+                    rows={3}
+                    className="w-full text-sm"
+                  />
+                  <Button
+                    onClick={handleSubmitResponse}
+                    disabled={
+                      !adminResponseText.trim() || addResponseMutation.isPending
+                    }
+                    className="w-full mt-2"
+                    size="sm"
+                  >
+                    {addResponseMutation.isPending ? (
+                      <>
+                        <RefreshCw className="mr-2 h-4 w-4 animate-spin" />
+                        Mengirim...
+                      </>
+                    ) : (
+                      <>
+                        <Send className="mr-2 h-4 w-4" />
+                        Kirim Tanggapan
+                      </>
+                    )}
+                  </Button>
+                </div>
               </CardContent>
             </Card>
           )}

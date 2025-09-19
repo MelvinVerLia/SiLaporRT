@@ -23,6 +23,7 @@ import AnnouncementDetailPage from "./pages/announcements/AnnouncementDetailPage
 import ManageAnnouncementsPage from "./pages/announcements/ManageAnnouncementsPage";
 import CreateAnnouncementPage from "./pages/announcements/CreateAnnouncementPage";
 import EditAnnouncementPage from "./pages/announcements/EditAnnouncementPage";
+import ManageReportsPage from "./pages/reports/ManageReportsPage";
 import NotFoundPage from "./pages/NotFoundPage";
 
 // Wrapper
@@ -146,6 +147,14 @@ function App() {
                     element={
                       <ProtectedRoute requiredRole="RT_ADMIN">
                         <ManageAnnouncementsPage />
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path="admin/reports"
+                    element={
+                      <ProtectedRoute requiredRole="RT_ADMIN">
+                        <ManageReportsPage />
                       </ProtectedRoute>
                     }
                   />
