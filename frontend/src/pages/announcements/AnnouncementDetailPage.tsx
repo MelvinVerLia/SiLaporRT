@@ -9,8 +9,9 @@ import {
 } from "../../components/ui/Card";
 import Badge from "../../components/ui/Badge";
 import Breadcrumb from "../../components/ui/Breadcrumb";
+import AttachmentViewer from "../../components/ui/AttachmentViewer";
 import AnnouncementDetailSkeleton from "./components/AnnouncementDetailSkeleton";
-import { Pin, Calendar, Bell, Paperclip } from "lucide-react";
+import { Pin, Calendar, Bell } from "lucide-react";
 
 function formatDateTime(s?: string | null) {
   if (!s) return "-";
@@ -122,35 +123,18 @@ export default function AnnouncementDetailPage() {
 
           {a.attachments?.length > 0 && (
             <Card>
-              <CardHeader>
-                <CardTitle>Lampiran</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  {a.attachments.map((att) => (
-                    <div
-                      key={att.id}
-                      className="p-4 bg-gray-50 rounded-lg border border-gray-200"
-                    >
-                      <div className="flex items-center">
-                        <Paperclip className="h-5 w-5 text-gray-400 mr-2" />
-                        <div>
-                          <a
-                            href={att.url}
-                            target="_blank"
-                            rel="noreferrer"
-                            className="text-sm font-medium text-blue-600 hover:underline"
-                          >
-                            {att.filename}
-                          </a>
-                          <p className="text-xs text-gray-500">
-                            {att.fileType}
-                          </p>
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
+              <CardContent className="p-6">
+                <AttachmentViewer
+                  attachments={a.attachments.map((att) => ({
+                    id: att.id,
+                    filename: att.filename,
+                    url: att.url,
+                    fileType: att.fileType as "image" | "video" | "document",
+                    format: att.filename.split(".").pop()?.toLowerCase(),
+                  }))}
+                  title="Lampiran"
+                  gridCols={3}
+                />
               </CardContent>
             </Card>
           )}

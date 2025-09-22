@@ -7,7 +7,6 @@ import {
   ThumbsUp,
   MessageCircle,
   Send,
-  Paperclip,
   EyeOff,
   AlertCircle,
   RefreshCw,
@@ -22,6 +21,7 @@ import Button from "../../components/ui/Button";
 import Badge from "../../components/ui/Badge";
 import Textarea from "../../components/ui/Textarea";
 import Breadcrumb from "../../components/ui/Breadcrumb";
+import AttachmentViewer from "../../components/ui/AttachmentViewer";
 import {
   getReportDetails,
   toggleUpvote,
@@ -440,35 +440,26 @@ const ReportDetailPage: React.FC = () => {
           {/* Attachments */}
           {report.attachments.length > 0 && (
             <Card>
-              <CardHeader>
-                <CardTitle>Lampiran</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  {report.attachments.map((attachment: Attachment) => (
-                    <div
-                      key={attachment.id}
-                      className="p-4 bg-gray-50 rounded-lg border border-gray-200"
-                    >
-                      <div className="flex items-center">
-                        <Paperclip className="h-5 w-5 text-gray-400 mr-2" />
-                        <div>
-                          <a
-                            href={attachment.url}
-                            target="_blank"
-                            rel="noreferrer"
-                            className="text-sm font-medium text-blue-600 hover:underline"
-                          >
-                            {attachment.filename}
-                          </a>
-                          <p className="text-xs text-gray-500">
-                            {attachment.fileType.toUpperCase()}
-                          </p>
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
+              <CardContent className="p-6">
+                <AttachmentViewer
+                  attachments={report.attachments.map(
+                    (attachment: Attachment) => ({
+                      id: attachment.id,
+                      filename: attachment.filename,
+                      url: attachment.url,
+                      fileType: attachment.fileType as
+                        | "image"
+                        | "video"
+                        | "document",
+                      format: attachment.filename
+                        .split(".")
+                        .pop()
+                        ?.toLowerCase(),
+                    })
+                  )}
+                  title="Lampiran"
+                  gridCols={3}
+                />
               </CardContent>
             </Card>
           )}
