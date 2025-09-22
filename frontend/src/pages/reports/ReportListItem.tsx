@@ -106,7 +106,12 @@ const ReportListItem = ({ r }: { r: Report }) => {
 
               {/* Author */}
               <div className="text-sm text-gray-500">
-                Dilaporkan oleh: {r.isAnonymous ? "Anonim" : r.user?.name}
+                Dilaporkan oleh:{" "}
+                {r.isAnonymous
+                  ? "Anonim"
+                  : r.user?.isDeleted
+                  ? "Pengguna Hilang"
+                  : r.user?.name}
               </div>
             </div>
           </div>

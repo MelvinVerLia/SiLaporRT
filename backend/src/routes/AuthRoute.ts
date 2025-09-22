@@ -35,6 +35,4 @@ router.delete("/delete-account", authenticateJWT, AuthController.deleteAccount);
 
 router.put("/update/profile", authenticateJWT, AuthController.updateProfile);
 
-// router.post("/validate-otp-token", AuthController.validateOtpToken);
-
 export default router;

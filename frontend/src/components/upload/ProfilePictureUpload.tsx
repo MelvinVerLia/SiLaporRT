@@ -36,6 +36,10 @@ const ProfilePictureUpload = React.forwardRef<ProfilePictureUploadRef, Props>(
     }));
 
     useEffect(() => {
+      console.log(currentUrl);
+    }, []);
+
+    useEffect(() => {
       if (!editable) {
         setPreviewFile(null);
         setPreviewUrl(null);

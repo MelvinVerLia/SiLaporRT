@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { Link } from "react-router-dom";
 import {
   FileText,
@@ -27,6 +27,7 @@ import ReportListItem from "./reports/ReportListItem";
 import FaqItems from "../components/faq/FaqItems";
 import ReportListItemSkeleton from "./reports/components/ReportListItemSkeleton";
 import { useAuthContext } from "../contexts/AuthContext";
+import { useToast } from "../hooks/useToast";
 
 const HomePage: React.FC = () => {
   const { isAuthenticated } = useAuthContext();
@@ -34,7 +35,14 @@ const HomePage: React.FC = () => {
     queryKey: ["recent-reports"],
     queryFn: getRecentReports,
   });
+  const toast = useToast();
 
+  useEffect(() => {
+    toast.success("Selamat datang di Aplikasi Pengaduan Masyarakat", "Selamat Datang");
+    // toast.error("Selamat datang di Aplikasi Pengaduan Masyarakat", "Selamat Datang");
+    // toast.info("Selamat datang di Aplikasi Pengaduan Masyarakat", "Selamat Datang");
+
+  }, []);
   const items = data?.items ?? [];
 
   const stats = [

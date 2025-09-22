@@ -365,7 +365,11 @@ const ReportDetailPage: React.FC = () => {
                 <div className="flex items-center">
                   <User className="mr-1 h-4 w-4" />
                   <span>
-                    {report.isAnonymous ? "Anonim" : report.user?.name}
+                    {report.isAnonymous
+                      ? "Anonim"
+                      : report.user?.isDeleted
+                      ? "Pengguna Hilang"
+                      : report.user?.name}
                   </span>
                 </div>
                 <div className="flex items-center">
@@ -521,8 +525,12 @@ const ReportDetailPage: React.FC = () => {
                 <div className="mb-6">
                   <div className="flex items-start space-x-3">
                     <div className="flex-shrink-0">
-                      <div className="w-8 h-8 bg-gray-200 rounded-full flex items-center justify-center text-sm font-medium text-gray-600">
-                        {user?.name.charAt(0).toUpperCase()}
+                      <div className="w-8 h-8 bg-gray-200 rounded-full flex items-center overflow-hidden justify-center text-sm font-medium text-gray-600">
+                        {user!.profile ? (
+                          <img src={user!.profile} alt={user!.name.charAt(0)} />
+                        ) : (
+                          user!.name.charAt(0)
+                        )}
                       </div>
                     </div>
                     <div className="flex-1">
@@ -531,6 +539,12 @@ const ReportDetailPage: React.FC = () => {
                         value={commentText}
                         onChange={(e) => setCommentText(e.target.value)}
                         rows={3}
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter" && !e.shiftKey) {
+                            e.preventDefault();
+                            handleSubmitComment();
+                          }
+                        }}
                       />
                       <div className="flex justify-end mt-2">
                         <Button
@@ -565,19 +579,30 @@ const ReportDetailPage: React.FC = () => {
                   <div key={comment.id} className="flex items-start space-x-3">
                     <div className="flex-shrink-0">
                       <div
-                        className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium ${
+                        className={`w-8 h-8 rounded-full overflow-hidden flex items-center justify-center text-sm font-medium ${
                           comment.user.role === "RT_ADMIN"
                             ? "bg-blue-600 text-white"
                             : "bg-gray-200 text-gray-600"
                         }`}
                       >
-                        {comment.user.name.charAt(0).toUpperCase()}
+                        {comment.user.isDeleted ? (
+                          <Badge />
+                        ) : comment.user.profile ? (
+                          <img
+                            src={comment.user.profile}
+                            alt={comment.user.name.charAt(0).toUpperCase()}
+                          />
+                        ) : (
+                          comment.user.name.charAt(0).toUpperCase()
+                        )}
                       </div>
                     </div>
                     <div className="flex-1">
                       <div className="flex items-center space-x-2 mb-1">
                         <span className="font-medium text-gray-900">
-                          {comment.user.name}
+                          {comment.user.isDeleted
+                            ? "Pengguna Hilang"
+                            : comment.user.name}
                         </span>
                         {comment.user.role === "RT_ADMIN" && (
                           <Badge variant="info" size="sm">

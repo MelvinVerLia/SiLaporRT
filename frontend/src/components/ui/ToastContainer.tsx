@@ -1,3 +1,4 @@
+import { AnimatePresence } from "framer-motion";
 import Toast, { ToastProps } from "./Toast";
 
 interface ToastContainerProps {
@@ -10,14 +11,13 @@ export default function ToastContainer({
   onClose,
 }: ToastContainerProps) {
   return (
-    <div
-      aria-live="assertive"
-      className="pointer-events-none fixed inset-0 z-50 flex flex-col items-end justify-start px-4 py-6 sm:items-start sm:justify-end sm:p-6"
-    >
+    <div className="pointer-events-none fixed inset-0 z-50 flex flex-col items-end justify-start px-4 py-6 sm:items-start sm:justify-end sm:p-6">
       <div className="flex w-full flex-col items-center space-y-4 sm:items-end">
-        {toasts.map((toast) => (
-          <Toast key={toast.id} {...toast} onClose={onClose} />
-        ))}
+        <AnimatePresence>
+          {toasts.map((toast) => (
+            <Toast key={toast.id} {...toast} onClose={onClose} />
+          ))}
+        </AnimatePresence>
       </div>
     </div>
   );

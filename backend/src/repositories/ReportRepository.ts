@@ -94,7 +94,9 @@ class ReportRepository {
           take: pageSize,
           include: {
             location: true,
-            user: { select: { id: true, name: true, email: true } },
+            user: {
+              select: { id: true, name: true, email: true, isDeleted: true },
+            },
             attachments: {
               select: { id: true, filename: true, url: true, fileType: true },
             },
@@ -103,44 +105,6 @@ class ReportRepository {
         }),
       ]);
       return { total, items };
-
-      // const data = await prisma.report.findMany({
-      //   where: { isPublic: true },
-      //   include: {
-      //     location: true,
-      //     user: {
-      //       select: {
-      //         id: true,
-      //         name: true,
-      //         role: true,
-      //       },
-      //     },
-      //     attachments: true,
-      //     responses: {
-      //       include: {
-      //         responder: { select: { name: true, role: true } },
-      //         attachments: true,
-      //       },
-      //       orderBy: { createdAt: "desc" },
-      //     },
-      //     _count: {
-      //       select: {
-      //         reportUpvotes: true,
-      //         reportComments: true,
-      //         responses: true,
-      //       },
-      //     },
-      //   },
-      //   orderBy: { createdAt: "desc" },
-      // });
-
-      // return data.map((report) => ({
-      //   // report,
-      //   ...report,
-      //   upvoteCount: report._count.reportUpvotes,
-      //   commentCount: report._count.reportComments,
-      //   responseCount: report._count.responses,
-      // }));
     } catch (error) {
       throw error;
     }
@@ -157,6 +121,8 @@ class ReportRepository {
               id: true,
               name: true,
               role: true,
+              isDeleted: true,
+              profile: true
             },
           },
           attachments: true,
@@ -174,6 +140,8 @@ class ReportRepository {
                   id: true,
                   name: true,
                   role: true,
+                  isDeleted: true,
+                  profile: true
                 },
               },
             },

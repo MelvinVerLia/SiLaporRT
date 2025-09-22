@@ -205,7 +205,6 @@ export class AuthController {
     try {
       const { password } = req.body;
       const userId = JSON.parse(JSON.stringify(req.user)).id;
-      console.log(password, userId)
       if (!password) {
         return res.status(400).json({
           success: false,
@@ -298,6 +297,7 @@ export class AuthController {
       });
     }
     const userId = user.id;
+    console.log("userId", user.id);
     try {
       await AuthService.deleteAccount(userId);
       res.json({
@@ -334,6 +334,7 @@ export class AuthController {
         },
       });
     } catch (error) {
+      console.log(error);
       res.status(400).json({
         success: false,
         message:

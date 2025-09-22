@@ -49,9 +49,11 @@ export interface User {
   phone?: string;
   email?: string;
   role: Role;
+  isDeleted: boolean;
   isActive: boolean;
   createdAt: string;
   updatedAt: string;
+  profile?: string;
 }
 
 export interface Report {
