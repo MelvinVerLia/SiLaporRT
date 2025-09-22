@@ -22,6 +22,7 @@ model User {
   password    String?  
   googleId    String?  @unique
   profile     String? 
+  isDeleted   Boolean  @default(false)
 
   role        Role     @default(CITIZEN)
   isActive    Boolean  @default(true)

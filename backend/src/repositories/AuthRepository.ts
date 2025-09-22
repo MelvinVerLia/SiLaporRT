@@ -36,7 +36,25 @@ export class AuthRepository {
   }
 
   static async deleteUser(userId: string) {
-    return prisma.user.deleteMany({ where: { id: userId } });
+    try {
+      console.log("userIdddddddd", userId);
+      const hi = await prisma.user.update({
+        where: { id: userId },
+        data: {
+          isDeleted: true,
+          googleId: null,
+          phone: null,
+          profile: null,
+          email: null,
+          password: null,
+        },
+      });
+      console.log("wtf is this", hi);
+      return hi;
+    } catch (error) {
+      console.error("Delete failed:", error);
+      throw error;
+    }
   }
 
   static async updateProfile(userId: string, data: User) {
@@ -45,5 +63,4 @@ export class AuthRepository {
       data: { ...data, updatedAt: new Date() },
     });
   }
-
 }

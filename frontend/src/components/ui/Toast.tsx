@@ -1,6 +1,7 @@
 import { useEffect } from "react";
 import { X, CheckCircle, AlertCircle, AlertTriangle, Info } from "lucide-react";
 import { cn } from "../../utils/cn";
+import { motion, AnimatePresence } from "framer-motion";
 
 export type ToastType = "success" | "error" | "warning" | "info";
 
@@ -44,7 +45,7 @@ export default function Toast({
   type,
   title,
   message,
-  duration = 5000,
+  duration = 4000,
   onClose,
 }: ToastProps) {
   const Icon = iconMap[type];
@@ -52,45 +53,43 @@ export default function Toast({
 
   useEffect(() => {
     if (duration > 0) {
-      const timer = setTimeout(() => {
-        onClose(id);
-      }, duration);
-
+      const timer = setTimeout(() => onClose(id), duration);
       return () => clearTimeout(timer);
     }
   }, [id, duration, onClose]);
 
   return (
-    <div
+    <motion.div
+      key={id}
+      initial={{ opacity: 0, y: 200, scale: 0 }}
+      animate={{ opacity: 1, y: 0, scale: 1 }}
+      exit={{ opacity: 0, y: 200, scale: 1 }}
+      transition={{ duration: 0.3, ease: "easeInOut" }}
       className={cn(
-        "pointer-events-auto w-full max-w-sm overflow-hidden rounded-lg border shadow-lg transition-all duration-300 ease-in-out",
+        "pointer-events-auto w-full max-w-sm rounded-xl border shadow-lg",
+        "overflow-hidden backdrop-blur-sm transition-all",
         styles.container
       )}
     >
-      <div className="p-4">
-        <div className="flex items-start">
-          <div className="flex-shrink-0">
-            <Icon className={cn("h-5 w-5", styles.icon)} />
-          </div>
-          <div className="ml-3 w-0 flex-1">
-            {title && <p className="text-sm font-medium">{title}</p>}
-            <p className={cn("text-sm", title && "mt-1")}>{message}</p>
-          </div>
-          <div className="ml-4 flex flex-shrink-0">
-            <button
-              type="button"
-              className={cn(
-                "inline-flex rounded-md p-1.5 transition-colors hover:bg-black hover:bg-opacity-10 focus:outline-none focus:ring-2 focus:ring-offset-2 hover:cursor-pointer",
-                styles.icon
-              )}
-              onClick={() => onClose(id)}
-            >
-              <span className="sr-only">Dismiss</span>
-              <X className="h-4 w-4" />
-            </button>
-          </div>
+      <div className="p-4 flex items-start gap-3">
+        <Icon className={cn("h-5 w-5 flex-shrink-0", styles.icon)} />
+        <div className="flex-1">
+          {title && <p className="text-sm font-semibold">{title}</p>}
+          <p className={cn("text-sm leading-snug", title && "mt-0.5")}>
+            {message}
+          </p>
         </div>
+        <button
+          type="button"
+          className={cn(
+            "rounded-md p-1.5 hover:bg-black/10 transition-colors focus:outline-none hover:cursor-pointer",
+            styles.icon
+          )}
+          onClick={() => onClose(id)}
+        >
+          <X className="h-4 w-4" />
+        </button>
       </div>
-    </div>
+    </motion.div>
   );
 }

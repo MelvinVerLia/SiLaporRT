@@ -144,7 +144,7 @@ export const useAuth = () => {
     } finally {
       setIsLoading(false);
     }
-  }, []);
+  }, [user]);
 
   const deleteAccount = useCallback(async () => {
     setIsLoading(true);
