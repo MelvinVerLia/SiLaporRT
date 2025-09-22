@@ -1,5 +1,6 @@
 import { request } from "./api";
 import { CreateReportFormData, Report } from "../types/report.types";
+import { CloudinaryFile } from "../types/announcement.types";
 
 export interface CreateReportPayload {
   title: string;
@@ -38,6 +39,30 @@ export async function createReport(
     throw new Error("Lokasi wajib ditentukan");
   }
 
+  // Helper function to classify file type (same as in CreateReportPage)
+  function classifyFile(f: {
+    format?: string;
+    resource_type?: string;
+  }): "image" | "video" | "document" {
+    const fmt = (f.format || "").toLowerCase();
+    const docFormats = [
+      "pdf",
+      "doc",
+      "docx",
+      "xls",
+      "xlsx",
+      "ppt",
+      "pptx",
+      "txt",
+    ];
+
+    if (docFormats.includes(fmt)) return "document";
+    if (f.resource_type === "raw") return "document";
+    if (f.resource_type === "image") return "image";
+    if (f.resource_type === "video") return "video";
+    return "document"; // fallback teraman
+  }
+
   try {
     // Prepare the payload
     const payload: CreateReportPayload = {
@@ -55,19 +80,22 @@ export async function createReport(
         kelurahan: formData.location.kelurahan,
         kecamatan: formData.location.kecamatan,
       },
-      // Convert CloudinaryFile to attachment format
-      attachments: formData.attachments.map((file) => ({
-        filename: file.original_filename || "image",
-        url: file.secure_url,
-        fileType: "image",
-        provider: "cloudinary",
-        publicId: file.public_id,
-        resourceType: file.resource_type,
-        format: file.format,
-        bytes: file.bytes,
-        width: file.width,
-        height: file.height,
-      })),
+      // Convert CloudinaryFile to attachment format with proper classification
+      attachments: formData.attachments.map((file) => {
+        const extendedFile = file as CloudinaryFile & { fileType?: string };
+        return {
+          filename: file.original_filename || "file",
+          url: file.secure_url,
+          fileType: extendedFile.fileType || classifyFile(file), // Use classified type
+          provider: "cloudinary",
+          publicId: file.public_id,
+          resourceType: file.resource_type,
+          format: file.format,
+          bytes: file.bytes,
+          width: file.width,
+          height: file.height,
+        };
+      }),
     };
 
     console.log("Payload to send:", payload); // Debug log

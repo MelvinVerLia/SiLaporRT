@@ -19,9 +19,16 @@ import Textarea from "../../components/ui/Textarea";
 import Select from "../../components/ui/Select";
 import Badge from "../../components/ui/Badge";
 import LocationPicker from "../../components/features/maps/LocationPicker";
-import ImageUpload from "../../components/features/media/ImageUpload";
+import CloudinaryUpload from "../../components/upload/CloudinaryUpload";
 import { useCreateReport } from "../../hooks/useCreateReport";
 import { CreateReportFormData, ReportCategory } from "../../types/report.types";
+import { CloudinaryFile } from "../../types/announcement.types";
+
+// Extended CloudinaryFile untuk keperluan form data
+interface ExtendedCloudinaryFile extends CloudinaryFile {
+  fileType?: "image" | "video" | "document";
+}
+
 import { useToast } from "../../hooks/useToast";
 
 const CreateReportPage: React.FC = () => {
@@ -38,7 +45,7 @@ const CreateReportPage: React.FC = () => {
     isAnonymous: false,
     isPublic: true,
     location: null,
-    attachments: [],
+    attachments: [] as ExtendedCloudinaryFile[],
   });
 
   const steps = [
@@ -57,7 +64,7 @@ const CreateReportPage: React.FC = () => {
     {
       number: 3,
       title: "Lampiran",
-      description: "Upload foto (opsional)",
+      description: "Upload file (opsional)",
       icon: Upload,
     },
     {
@@ -136,6 +143,51 @@ const CreateReportPage: React.FC = () => {
   const getCategoryLabel = (category: string) => {
     const option = categoryOptions.find((opt) => opt.value === category);
     return option?.label || category;
+  };
+
+  // Fungsi untuk mengklasifikasi file type seperti di announcement
+  function classifyFile(f: CloudinaryFile): "image" | "video" | "document" {
+    const fmt = (f.format || "").toLowerCase();
+    const docFormats = [
+      "pdf",
+      "doc",
+      "docx",
+      "xls",
+      "xlsx",
+      "ppt",
+      "pptx",
+      "txt",
+    ];
+
+    if (docFormats.includes(fmt)) return "document";
+    if (f.resource_type === "raw") return "document";
+    if (f.resource_type === "image") return "image";
+    if (f.resource_type === "video") return "video";
+    return "document"; // fallback teraman
+  }
+
+  // Handler untuk file upload
+  function onUploaded(files: CloudinaryFile[]) {
+    const mapped: ExtendedCloudinaryFile[] = files.map((f) => {
+      const fileType = classifyFile(f);
+      return {
+        ...f, // spread all CloudinaryFile properties
+        fileType, // add the fileType classification
+      };
+    });
+    setFormData((prev) => ({
+      ...prev,
+      attachments: [...prev.attachments, ...mapped],
+    }));
+  }
+
+  const removeAttachment = (identifier: string) => {
+    setFormData((prev) => ({
+      ...prev,
+      attachments: prev.attachments.filter(
+        (file) => file.public_id !== identifier
+      ),
+    }));
   };
 
   const renderStepContent = () => {
@@ -244,14 +296,40 @@ const CreateReportPage: React.FC = () => {
 
       case 3:
         return (
-          <ImageUpload
-            files={formData.attachments}
-            onFilesChange={(files) =>
-              setFormData((prev) => ({ ...prev, attachments: files }))
-            }
-            maxFiles={5}
-            onUploadingChange={setIsUploading}
-          />
+          <div className="space-y-4">
+            <div className="text-center">
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                Lampiran (Opsional)
+              </h3>
+              <p className="text-gray-600 text-sm">
+                Tambahkan foto, video, atau dokumen sebagai bukti laporan Anda
+              </p>
+            </div>
+
+            <CloudinaryUpload
+              folder="reports"
+              multiple={true}
+              accept="image/*,video/*,.pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt"
+              maxFiles={5}
+              attachments={formData.attachments.map((file) => ({
+                filename: file.original_filename || "file",
+                url: file.secure_url,
+                fileType:
+                  (file as ExtendedCloudinaryFile).fileType ||
+                  classifyFile(file), // Use already classified or classify
+                provider: "cloudinary" as const,
+                publicId: file.public_id,
+                resourceType: file.resource_type,
+                format: file.format,
+                bytes: file.bytes,
+                width: file.width,
+                height: file.height,
+              }))}
+              onUploaded={onUploaded}
+              onRemove={removeAttachment}
+              onUploadingChange={setIsUploading}
+            />
+          </div>
         );
 
       case 4:
@@ -346,11 +424,23 @@ const CreateReportPage: React.FC = () => {
                       {formData.attachments.length} file terlampir
                     </p>
                     <div className="mt-2 space-y-1">
-                      {formData.attachments.map((file, index) => (
-                        <p key={index} className="text-sm text-gray-600">
-                          • {file.original_filename || "image"}
-                        </p>
-                      ))}
+                      {formData.attachments.map((file, index) => {
+                        const fileType =
+                          (file as ExtendedCloudinaryFile).fileType ||
+                          classifyFile(file);
+                        const icon =
+                          fileType === "image"
+                            ? "🖼️"
+                            : fileType === "video"
+                            ? "🎥"
+                            : "📄";
+                        return (
+                          <p key={index} className="text-sm text-gray-600">
+                            {icon} {file.original_filename || "file"} (
+                            {fileType})
+                          </p>
+                        );
+                      })}
                     </div>
                   </CardContent>
                 </Card>

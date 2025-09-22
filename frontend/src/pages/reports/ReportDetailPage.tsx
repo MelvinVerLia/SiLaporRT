@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 import { useParams, Link, useLocation } from "react-router-dom";
 import {
   MapPin,
@@ -52,6 +52,10 @@ const ReportDetailPage: React.FC = () => {
   const [adminResponseText, setAdminResponseText] = useState("");
   const [selectedStatus, setSelectedStatus] = useState("");
 
+  // Ref untuk mencegah spam clicking
+  const lastUpvoteTime = useRef<number>(0);
+  const UPVOTE_COOLDOWN = 500; // 500ms cooldown
+
   const isAdmin = user?.role === Role.RT_ADMIN;
 
   // Detect where user came from based on location state or current URL context
@@ -78,7 +82,7 @@ const ReportDetailPage: React.FC = () => {
     enabled: !!id && isAuthenticated,
   });
 
-  const hasUpvoted = upvoteStatus?.result || false;
+  const hasUpvoted = upvoteStatus?.data?.result || false;
 
   const getStatusBadge = (status: string) => {
     const variants = {
@@ -114,6 +118,7 @@ const ReportDetailPage: React.FC = () => {
   };
 
   const handleUpvote = useMutation({
+    mutationKey: ["upvote", id], // Unique key to prevent duplicate mutations
     mutationFn: () => toggleUpvote(report!.id),
     onMutate: async () => {
       // Cancel outgoing refetches to prevent overwriting optimistic updates
@@ -127,12 +132,16 @@ const ReportDetailPage: React.FC = () => {
         id,
       ]);
 
-      // Get current upvote status to calculate the change correctly
-      const currentHasUpvoted = upvoteStatus?.result || false;
+      // Get CURRENT upvote status from fresh query data (not stale upvoteStatus variable)
+      const currentUpvoteData = queryClient.getQueryData([
+        "upvote-status",
+        id,
+      ]) as { data: { result: boolean } } | undefined;
+      const currentHasUpvoted = currentUpvoteData?.data?.result || false;
 
       // Optimistically update the upvote status and count
       queryClient.setQueryData(["upvote-status", id], () => ({
-        result: !currentHasUpvoted,
+        data: { result: !currentHasUpvoted },
       }));
 
       queryClient.setQueryData(["report", id], (old: unknown) => {
@@ -149,7 +158,7 @@ const ReportDetailPage: React.FC = () => {
       return { previousReport, previousUpvoteStatus };
     },
     onError: (_err, _variables, context) => {
-      // Rollback on error
+      // Rollback on error (but not for cooldown errors)
       if (context?.previousReport) {
         queryClient.setQueryData(["report", id], context.previousReport);
       }
@@ -161,12 +170,12 @@ const ReportDetailPage: React.FC = () => {
       }
     },
     onSuccess: () => {
-      // Only invalidate list queries to sync them with the updated data
+      // Sync with other queries immediately
       queryClient.invalidateQueries({ queryKey: ["reports"] });
       queryClient.invalidateQueries({ queryKey: ["recent-reports"] });
     },
     onSettled: () => {
-      // Minimal invalidation - just mark as stale without refetching
+      // Ensure data is fresh for next operations
       queryClient.invalidateQueries({
         queryKey: ["report", id],
         refetchType: "none",
@@ -177,6 +186,24 @@ const ReportDetailPage: React.FC = () => {
       });
     },
   });
+
+  // Helper function untuk handle upvote dengan cooldown check
+  const handleUpvoteClick = () => {
+    const now = Date.now();
+
+    // Check cooldown
+    if (now - lastUpvoteTime.current < UPVOTE_COOLDOWN) {
+      // Silently ignore rapid clicks - no error thrown to user
+      return;
+    }
+
+    // Only proceed if not currently pending another upvote request
+    if (!handleUpvote.isPending) {
+      lastUpvoteTime.current = now; // Update timestamp on successful call
+      handleUpvote.mutate();
+    }
+  };
+
   // const handleUpvote = () => {
   //   setHasUpvoted(!hasUpvoted);
   //   // In real app, call API to toggle upvote
@@ -358,16 +385,19 @@ const ReportDetailPage: React.FC = () => {
                 <Button
                   variant={hasUpvoted ? "primary" : "outline"}
                   size="sm"
-                  onClick={() => handleUpvote.mutate()}
-                  className={`flex items-center transition-colors ${
+                  onClick={handleUpvoteClick}
+                  className={`flex items-center transition-all duration-200 ${
                     hasUpvoted ? "bg-blue-600 text-white hover:bg-blue-700" : ""
+                  } ${
+                    handleUpvote.isPending
+                      ? "scale-95 opacity-75"
+                      : "hover:scale-105"
                   }`}
-                  disabled={handleUpvote.isPending}
                 >
                   <ThumbsUp
-                    className={`mr-1 h-4 w-4 ${
+                    className={`mr-1 h-4 w-4 transition-all duration-200 ${
                       hasUpvoted ? "fill-current" : ""
-                    }`}
+                    } ${handleUpvote.isPending ? "animate-pulse" : ""}`}
                   />
                   {report.upvoteCount}
                 </Button>
