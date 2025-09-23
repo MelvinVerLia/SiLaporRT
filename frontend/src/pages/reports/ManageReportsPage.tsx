@@ -16,6 +16,7 @@ import {
 import {
   adminListReports,
   updateReportStatus,
+  getReportStatistics,
 } from "../../services/reportAdminService";
 import Button from "../../components/ui/Button";
 import {
@@ -66,6 +67,13 @@ export default function ManageReportsPage() {
         status: selectedStatus,
       }),
     staleTime: 0,
+  });
+
+  // Separate query for statistics that's not affected by pagination
+  const { data: statsData } = useQuery({
+    queryKey: ["report-statistics"],
+    queryFn: () => getReportStatistics(),
+    staleTime: 5 * 60 * 1000, // Cache for 5 minutes
   });
 
   const statusMutation = useMutation({
@@ -127,12 +135,21 @@ export default function ManageReportsPage() {
       qc.invalidateQueries({ queryKey: ["admin-reports"] });
       qc.invalidateQueries({ queryKey: ["reports"] });
       qc.invalidateQueries({ queryKey: ["report", variables.id] });
+      qc.invalidateQueries({ queryKey: ["report-statistics"] });
     },
   });
 
   const items = data?.items ?? [];
   const total = data?.total ?? 0;
   const totalPages = Math.max(1, Math.ceil(total / pageSize));
+
+  // Use stats data for statistics cards, fallback to local counting if not available
+  const statusCounts =
+    statsData ||
+    items.reduce((acc: Record<string, number>, report: Report) => {
+      acc[report.status] = (acc[report.status] || 0) + 1;
+      return acc;
+    }, {});
 
   const breadcrumbItems = [
     { label: "Dashboard", href: "/admin" },
@@ -242,15 +259,6 @@ export default function ManageReportsPage() {
     setPage(1); // Reset to first page when searching
   };
 
-  // Count reports by status
-  const statusCounts = items.reduce(
-    (acc: Record<string, number>, report: Report) => {
-      acc[report.status] = (acc[report.status] || 0) + 1;
-      return acc;
-    },
-    {}
-  );
-
   return (
     <div className="space-y-6">
       {/* Breadcrumb */}
@@ -330,7 +338,9 @@ export default function ManageReportsPage() {
               <FileText className="h-8 w-8 text-gray-500" />
               <div className="ml-3">
                 <p className="text-sm font-medium text-gray-500">Total</p>
-                <p className="text-lg font-semibold">{total}</p>
+                <p className="text-lg font-semibold">
+                  {statsData?.TOTAL || total}
+                </p>
               </div>
             </div>
           </CardContent>

@@ -72,11 +72,44 @@ export async function getReportsByCategory(category: string) {
 
 // Get report statistics for admin dashboard
 export async function getReportStatistics() {
-  // This might need a new backend endpoint
-  const res = await request("/reports/stats", {
-    method: "GET",
-  });
-  return res.data;
+  // Get counts for each status by calling the endpoint with different status filters
+  const [pendingRes, inProgressRes, resolvedRes, rejectedRes, closedRes] =
+    await Promise.all([
+      request("/reports", {
+        method: "GET",
+        params: { status: "PENDING", pageSize: 1 },
+      }),
+      request("/reports", {
+        method: "GET",
+        params: { status: "IN_PROGRESS", pageSize: 1 },
+      }),
+      request("/reports", {
+        method: "GET",
+        params: { status: "RESOLVED", pageSize: 1 },
+      }),
+      request("/reports", {
+        method: "GET",
+        params: { status: "REJECTED", pageSize: 1 },
+      }),
+      request("/reports", {
+        method: "GET",
+        params: { status: "CLOSED", pageSize: 1 },
+      }),
+    ]);
+
+  return {
+    PENDING: pendingRes.data.total || 0,
+    IN_PROGRESS: inProgressRes.data.total || 0,
+    RESOLVED: resolvedRes.data.total || 0,
+    REJECTED: rejectedRes.data.total || 0,
+    CLOSED: closedRes.data.total || 0,
+    TOTAL:
+      (pendingRes.data.total || 0) +
+      (inProgressRes.data.total || 0) +
+      (resolvedRes.data.total || 0) +
+      (rejectedRes.data.total || 0) +
+      (closedRes.data.total || 0),
+  };
 }
 
 export type { Report };

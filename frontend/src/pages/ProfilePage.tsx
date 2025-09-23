@@ -54,6 +54,14 @@ const ProfilePage: React.FC = () => {
   });
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const [profileErrors, setProfileErrors] = useState<{
+    name?: string;
+    phone?: string;
+  }>({});
+  const [passwordErrors, setPasswordErrors] = useState<{
+    newPassword?: string;
+    confirmPassword?: string;
+  }>({});
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -82,6 +90,72 @@ const ProfilePage: React.FC = () => {
     });
   };
 
+  const clearProfileErrors = () => {
+    setProfileErrors({});
+  };
+
+  const clearPasswordErrors = () => {
+    setPasswordErrors({});
+  };
+
+  const validateProfile = () => {
+    const errors: { name?: string; phone?: string } = {};
+
+    if (!profileForm.name.trim()) {
+      errors.name = "Nama lengkap wajib diisi";
+    }
+
+    if (!profileForm.phone.trim()) {
+      errors.phone = "Nomor telepon wajib diisi";
+    } else if (!/^[0-9+\-\s]+$/.test(profileForm.phone)) {
+      errors.phone = "Format nomor telepon tidak valid";
+    }
+
+    setProfileErrors(errors);
+    return Object.keys(errors).length === 0;
+  };
+
+  const validatePassword = () => {
+    const errors: { newPassword?: string; confirmPassword?: string } = {};
+
+    if (!passwordForm.newPassword) {
+      errors.newPassword = "Password baru wajib diisi";
+    } else if (passwordForm.newPassword.length < 6) {
+      errors.newPassword = "Password minimal 6 karakter";
+    }
+
+    if (!passwordForm.confirmPassword) {
+      errors.confirmPassword = "Konfirmasi password wajib diisi";
+    } else if (passwordForm.newPassword !== passwordForm.confirmPassword) {
+      errors.confirmPassword = "Password tidak sama";
+    }
+
+    setPasswordErrors(errors);
+    return Object.keys(errors).length === 0;
+  };
+
+  const handleProfileChange = (field: string, value: string) => {
+    setProfileForm((prev) => ({ ...prev, [field]: value }));
+    // Clear specific field error when user starts typing
+    if (profileErrors[field as keyof typeof profileErrors]) {
+      setProfileErrors((prev) => ({
+        ...prev,
+        [field]: undefined,
+      }));
+    }
+  };
+
+  const handlePasswordChange = (field: string, value: string) => {
+    setPasswordForm((prev) => ({ ...prev, [field]: value }));
+    // Clear specific field error when user starts typing
+    if (passwordErrors[field as keyof typeof passwordErrors]) {
+      setPasswordErrors((prev) => ({
+        ...prev,
+        [field]: undefined,
+      }));
+    }
+  };
+
   const handleEditProfile = () => {
     setIsEditingProfile(true);
     setProfileForm({
@@ -89,6 +163,7 @@ const ProfilePage: React.FC = () => {
       phone: user.phone || "",
       profile: user.profile || "",
     });
+    clearProfileErrors();
   };
 
   const handleCancelEditProfile = () => {
@@ -98,6 +173,7 @@ const ProfilePage: React.FC = () => {
       phone: user.phone || "",
       profile: user.profile || "",
     });
+    clearProfileErrors();
   };
 
   const handleDeleteAccount = () => {
@@ -115,6 +191,10 @@ const ProfilePage: React.FC = () => {
   };
 
   const handleSaveProfile = async () => {
+    if (!validateProfile()) {
+      return;
+    }
+
     setIsSavingProfile(true);
     try {
       let profileUrl = profileForm.profile;
@@ -128,16 +208,17 @@ const ProfilePage: React.FC = () => {
       });
       toast.success("Profil berhasil disimpan", "Berhasil");
       setIsEditingProfile(false);
+      clearProfileErrors();
     } catch (error) {
       console.log(error);
+      toast.error("Gagal menyimpan profil", "Error");
     } finally {
       setIsSavingProfile(false);
     }
   };
 
   const handleChangePassword = async () => {
-    if (passwordForm.newPassword !== passwordForm.confirmPassword) {
-      toast.error("Password baru dan konfirmasi password tidak sama", "Error");
+    if (!validatePassword()) {
       return;
     }
 
@@ -149,6 +230,7 @@ const ProfilePage: React.FC = () => {
         newPassword: "",
         confirmPassword: "",
       });
+      clearPasswordErrors();
       await logout();
     } catch (error) {
       console.log(error);
@@ -305,6 +387,11 @@ const ProfilePage: React.FC = () => {
                             size="sm"
                             onClick={handleSaveProfile}
                             loading={isSavingProfile}
+                            disabled={
+                              isSavingProfile ||
+                              !profileForm.name.trim() ||
+                              !profileForm.phone.trim()
+                            }
                           >
                             <Save className="mr-1 h-4 w-4" />
                             Simpan
@@ -333,10 +420,12 @@ const ProfilePage: React.FC = () => {
                       label="Nama Lengkap"
                       value={profileForm.name}
                       onChange={(e) =>
-                        setProfileForm({ ...profileForm, name: e.target.value })
+                        handleProfileChange("name", e.target.value)
                       }
+                      error={profileErrors.name}
                       placeholder="Masukkan nama lengkap"
                       disabled={!isEditingProfile}
+                      required={isEditingProfile}
                     />
 
                     <Input
@@ -352,13 +441,12 @@ const ProfilePage: React.FC = () => {
                       type="tel"
                       value={profileForm.phone}
                       onChange={(e) =>
-                        setProfileForm({
-                          ...profileForm,
-                          phone: e.target.value,
-                        })
+                        handleProfileChange("phone", e.target.value)
                       }
+                      error={profileErrors.phone}
                       placeholder="Masukkan nomor telepon"
                       disabled={!isEditingProfile}
+                      required={isEditingProfile}
                     />
                   </div>
                 </TabsContent>
@@ -372,11 +460,9 @@ const ProfilePage: React.FC = () => {
                         type={showPassword ? "text" : "password"}
                         value={passwordForm.newPassword}
                         onChange={(e) =>
-                          setPasswordForm({
-                            ...passwordForm,
-                            newPassword: e.target.value,
-                          })
+                          handlePasswordChange("newPassword", e.target.value)
                         }
+                        error={passwordErrors.newPassword}
                         placeholder="Masukkan password baru"
                       />
                       <button
@@ -399,11 +485,12 @@ const ProfilePage: React.FC = () => {
                         type={showConfirmPassword ? "text" : "password"}
                         value={passwordForm.confirmPassword}
                         onChange={(e) =>
-                          setPasswordForm({
-                            ...passwordForm,
-                            confirmPassword: e.target.value,
-                          })
+                          handlePasswordChange(
+                            "confirmPassword",
+                            e.target.value
+                          )
                         }
+                        error={passwordErrors.confirmPassword}
                         placeholder="Ulangi password baru"
                       />
                       <button
@@ -428,11 +515,12 @@ const ProfilePage: React.FC = () => {
                       onClick={handleChangePassword}
                       loading={isChangingPassword}
                       disabled={
+                        isChangingPassword ||
                         !passwordForm.newPassword ||
                         !passwordForm.confirmPassword
                       }
                     >
-                      Ubah Password
+                      Ubah Password 
                     </Button>
                   </div>
                 </TabsContent>
