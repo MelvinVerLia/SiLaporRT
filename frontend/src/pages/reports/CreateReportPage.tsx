@@ -301,6 +301,8 @@ const CreateReportPage: React.FC = () => {
               label="Judul Laporan"
               placeholder="Contoh: Jalan berlubang di RT 05"
               value={formData.title}
+              limit={100}
+              showCounter
               onChange={(e) =>
                 setFormData((prev) => ({ ...prev, title: e.target.value }))
               }
@@ -311,6 +313,8 @@ const CreateReportPage: React.FC = () => {
               label="Deskripsi Laporan"
               placeholder="Jelaskan detail masalah yang ingin dilaporkan..."
               value={formData.description}
+              limit={500}
+              showCounter
               onChange={(e) =>
                 setFormData((prev) => ({
                   ...prev,
@@ -469,14 +473,16 @@ const CreateReportPage: React.FC = () => {
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <div>
-                    <label className="text-sm font-medium text-gray-600">
+                    <label className="text-sm font-medium text-gray-600 ">
                       Judul
                     </label>
-                    <p className="text-gray-900">{formData.title}</p>
+                    <p className="text-gray-900 whitespace-pre-wrap break-words">
+                      {formData.title}
+                    </p>
                   </div>
 
                   <div>
-                    <label className="text-sm font-medium text-gray-600">
+                    <label className="text-sm font-medium text-gray-600 ">
                       Kategori
                     </label>
                     <div className="mt-1">
@@ -490,7 +496,7 @@ const CreateReportPage: React.FC = () => {
                     <label className="text-sm font-medium text-gray-600">
                       Deskripsi
                     </label>
-                    <p className="text-gray-900 text-sm whitespace-pre-wrap">
+                    <p className="text-gray-900 text-sm whitespace-pre-wrap break-words">
                       {formData.description}
                     </p>
                   </div>

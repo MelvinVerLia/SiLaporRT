@@ -59,7 +59,6 @@ const ReportDetailPage: React.FC = () => {
   const [selectedStatus, setSelectedStatus] = useState("");
   const libraries: Libraries = ["places"];
 
-
   // Ref untuk mencegah spam clicking
   const lastUpvoteTime = useRef<number>(0);
   const UPVOTE_COOLDOWN = 500; // 500ms cooldown
@@ -123,6 +122,13 @@ const ReportDetailPage: React.FC = () => {
       hour: "2-digit",
       minute: "2-digit",
     });
+  };
+
+  const handleMapClick = () => {
+    window.open(
+      `https://www.google.com/maps?q=${report.location.latitude},${report.location.longitude}`,
+      "_blank"
+    );
   };
 
   const handleUpvote = useMutation({
@@ -350,7 +356,7 @@ const ReportDetailPage: React.FC = () => {
       <Card>
         <CardHeader>
           <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-4">
-            <div className="flex-1">
+            <div className="flex-1 min-w-0">
               <div className="flex flex-wrap gap-2 mb-3">
                 <Badge variant="default">
                   {getCategoryLabel(report.category)}
@@ -365,7 +371,7 @@ const ReportDetailPage: React.FC = () => {
                 )}
               </div>
 
-              <CardTitle className="text-2xl text-gray-900 mb-4">
+              <CardTitle className="text-2xl text-gray-900 mb-4 whitespace-pre-wrap break-words">
                 {report.title}
               </CardTitle>
 
@@ -380,6 +386,7 @@ const ReportDetailPage: React.FC = () => {
                       lat: report.location.latitude,
                       lng: report.location.longitude,
                     }}
+                    onClick={handleMapClick}
                     mapContainerClassName="w-full h-full"
                   >
                     <Marker
@@ -394,7 +401,7 @@ const ReportDetailPage: React.FC = () => {
               <div className="flex flex-col sm:flex-row sm:items-center gap-4 text-sm text-gray-600">
                 <div className="flex items-center">
                   <User className="mr-1 h-4 w-4" />
-                <div>{report.location.latitude}</div>
+                  <div>{report.location.latitude}</div>
                   <span>
                     {report.isAnonymous
                       ? "Anonim"
@@ -453,7 +460,7 @@ const ReportDetailPage: React.FC = () => {
               <CardTitle>Deskripsi Laporan</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="prose prose-sm max-w-none">
+              <div className="prose prose-sm max-w-none whitespace-pre-wrap break-words" >
                 {report.description
                   .split("\n")
                   .map((paragraph: string, index: number) => (
@@ -556,6 +563,8 @@ const ReportDetailPage: React.FC = () => {
                         placeholder="Tulis komentar Anda..."
                         value={commentText}
                         onChange={(e) => setCommentText(e.target.value)}
+                        limit={250}
+                        showCounter
                         rows={3}
                         onKeyDown={(e) => {
                           if (e.key === "Enter" && !e.shiftKey) {
@@ -615,7 +624,7 @@ const ReportDetailPage: React.FC = () => {
                         )}
                       </div>
                     </div>
-                    <div className="flex-1">
+                    <div className="flex-1 min-w-0">
                       <div className="flex items-center space-x-2 mb-1">
                         <span className="font-medium text-gray-900">
                           {comment.user.isDeleted
@@ -637,7 +646,7 @@ const ReportDetailPage: React.FC = () => {
                           {formatDateTime(comment.createdAt)}
                         </span>
                       </div>
-                      <p className="text-gray-700">{comment.content}</p>
+                      <p className="text-gray-700 whitespace-pre-wrap break-words">{comment.content}</p>
                     </div>
                   </div>
                 ))}

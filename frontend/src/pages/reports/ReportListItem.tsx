@@ -42,10 +42,10 @@ const ReportListItem = ({ r }: { r: Report }) => {
         <CardContent className="p-6">
           <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-4">
             {/* Main Content */}
-            <div className="flex-1 space-y-2">
+            <div className="flex-1 space-y-2 min-w-0">
               {/* Title and Badges */}
               <div className="space-y-2">
-                <h3 className="text-lg font-semibold text-gray-900">
+                <h3 className="text-lg font-semibold text-gray-900 whitespace-pre-wrap break-words line-clamp-1">
                   {r.title}
                 </h3>
                 <div className="flex flex-wrap gap-2">
@@ -64,7 +64,7 @@ const ReportListItem = ({ r }: { r: Report }) => {
               </div>
 
               {/* Description */}
-              <p className="text-gray-600 text-sm line-clamp-2">
+              <p className="text-gray-600 text-sm line-clamp-3 break-words">
                 {r.description}
               </p>
 
