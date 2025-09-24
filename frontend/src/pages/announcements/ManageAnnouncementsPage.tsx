@@ -232,7 +232,7 @@ export default function ManageAnnouncementsPage() {
       {/* Announcements List */}
       <Card>
         <CardHeader>
-          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+          <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
             <div className="flex items-center gap-3">
               <CardTitle>Daftar Pengumuman</CardTitle>
               <Badge variant="default" size="sm">
@@ -242,7 +242,7 @@ export default function ManageAnnouncementsPage() {
 
             {/* Filters */}
             <div className="flex items-center gap-4">
-              <label className="flex items-center gap-2 text-sm font-medium text-gray-600">
+              <label className="flex items-center gap-2 text-sm font-medium text-gray-600 whitespace-nowrap">
                 <input
                   type="checkbox"
                   checked={showInactiveOnly}
@@ -334,11 +334,23 @@ export default function ManageAnnouncementsPage() {
                                 <Pin className="h-4 w-4 text-yellow-500 mt-1 flex-shrink-0" />
                               )}
                               <div className="min-w-0 flex-1">
-                                <p className="text-sm font-medium text-gray-900 line-clamp-1 leading-5">
-                                  {announcement.title}
+                                <p
+                                  className="text-sm font-medium text-gray-900 line-clamp-1 leading-5"
+                                  title={announcement.title}
+                                >
+                                  {announcement.title.length > 50
+                                    ? announcement.title.substring(0, 50) +
+                                      "..."
+                                    : announcement.title}
                                 </p>
-                                <p className="text-sm text-gray-500 line-clamp-2 leading-5 mt-1">
-                                  {announcement.content}
+                                <p
+                                  className="text-sm text-gray-500 line-clamp-2 leading-5 mt-1"
+                                  title={announcement.content}
+                                >
+                                  {announcement.content.length > 50
+                                    ? announcement.content.substring(0, 50) +
+                                      "..."
+                                    : announcement.content}
                                 </p>
                               </div>
                             </div>
@@ -474,11 +486,11 @@ export default function ManageAnnouncementsPage() {
                                 {announcement.isPinned && (
                                   <Pin className="h-4 w-4 text-yellow-500 flex-shrink-0" />
                                 )}
-                                <h3 className="text-sm font-medium text-gray-900 line-clamp-1">
+                                <h3 className="text-sm font-medium text-gray-900 line-clamp-1 whitespace-pre-wrap break-words">
                                   {announcement.title}
                                 </h3>
                               </div>
-                              <p className="text-sm text-gray-500 line-clamp-2">
+                              <p className="text-sm text-gray-500 line-clamp-2 whitespace-pre-wrap break-words">
                                 {announcement.content}
                               </p>
                             </div>

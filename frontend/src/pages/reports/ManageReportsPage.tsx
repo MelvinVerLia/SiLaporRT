@@ -354,15 +354,15 @@ export default function ManageReportsPage() {
             <CardTitle>Daftar Laporan</CardTitle>
 
             {/* Filters */}
-            <div className="flex flex-col sm:flex-row gap-4 w-full lg:w-auto">
+            <div className="flex flex-col md:flex-row gap-4 w-full lg:w-auto">
               <form onSubmit={handleSearch} className="flex gap-2">
                 <Input
                   placeholder="Cari laporan..."
                   value={q}
                   onChange={(e) => setQ(e.target.value)}
-                  className="w-full sm:w-64"
+                  className="w-full md:w-64"
                 />
-                <Button type="submit" variant="outline" size="sm">
+                <Button type="submit" variant="outline">
                   <Search className="h-4 w-4" />
                 </Button>
               </form>
@@ -374,7 +374,7 @@ export default function ManageReportsPage() {
                   setPage(1);
                 }}
                 options={categoryOptions}
-                className="w-full sm:w-48"
+                className="w-full md:w-48"
               />
 
               <Select
@@ -384,7 +384,7 @@ export default function ManageReportsPage() {
                   setPage(1);
                 }}
                 options={statusOptions}
-                className="w-full sm:w-48"
+                className="w-full md:w-48"
               />
             </div>
           </div>
@@ -461,16 +461,32 @@ export default function ManageReportsPage() {
                         >
                           <td className="py-5 pr-6">
                             <div className="min-w-0 flex-1">
-                              <p className="text-sm font-medium text-gray-900 line-clamp-1 leading-5">
-                                {report.title}
+                              <p
+                                className="text-sm font-medium text-gray-900 line-clamp-1 leading-5"
+                                title={report.title}
+                              >
+                                {report.title.length > 50
+                                  ? report.title.substring(0, 50) + "..."
+                                  : report.title}
                               </p>
-                              <p className="text-sm text-gray-500 line-clamp-2 leading-5 mt-1">
-                                {report.description}
+                              <p
+                                className="text-sm text-gray-500 line-clamp-1 leading-5 mt-1"
+                                title={report.description}
+                              >
+                                {report.description.length > 50
+                                  ? report.description.substring(0, 50) + "..."
+                                  : report.description}
                               </p>
                               <div className="flex items-center mt-2 text-xs text-gray-500">
                                 <MapPin className="h-3 w-3 mr-1" />
-                                <span className="truncate">
-                                  {report.location.address}
+                                <span
+                                  className="truncate"
+                                  title={report.location.address}
+                                >
+                                  {report.location.address.length > 50
+                                    ? report.location.address.substring(0, 50) +
+                                      "..."
+                                    : report.location.address}
                                 </span>
                               </div>
                             </div>
@@ -556,11 +572,11 @@ export default function ManageReportsPage() {
                       <CardContent className="p-4">
                         <div className="space-y-3">
                           {/* Header */}
-                          <div>
-                            <h3 className="text-sm font-medium text-gray-900 line-clamp-2">
+                          <div className="min-w-0">
+                            <h3 className="text-sm font-medium text-gray-900 line-clamp-2 whitespace-pre-wrap break-words">
                               {report.title}
                             </h3>
-                            <p className="text-sm text-gray-500 line-clamp-2 mt-1">
+                            <p className="text-sm text-gray-500 line-clamp-2 mt-1 whitespace-pre-wrap break-words">
                               {report.description}
                             </p>
                           </div>

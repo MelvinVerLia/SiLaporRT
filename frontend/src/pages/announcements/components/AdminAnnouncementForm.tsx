@@ -369,6 +369,8 @@ export default function AdminAnnouncementForm({
           placeholder="Masukkan judul pengumuman yang jelas..."
           value={title}
           onChange={(e) => setTitle(e.target.value)}
+          limit={100}
+          showCounter
           required
           error={!title.trim() && isSubmitting ? "Judul harus diisi" : ""}
         />
@@ -378,6 +380,8 @@ export default function AdminAnnouncementForm({
           placeholder="Tulis detail pengumuman untuk warga..."
           value={content}
           onChange={(e) => setContent(e.target.value)}
+          limit={500}
+          showCounter
           rows={5}
           required
           error={!content.trim() && isSubmitting ? "Konten harus diisi" : ""}

@@ -27,10 +27,10 @@ export default function AnnouncementListItem({ a }: { a: Announcement }) {
         <CardContent className="p-6">
           <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-4">
             {/* Main */}
-            <div className="flex-1 space-y-3">
+            <div className="flex-1 space-y-3 min-w-0">
               {/* Title + badges */}
               <div className="space-y-2">
-                <h3 className="text-lg font-semibold text-gray-900">
+                <h3 className="text-lg font-semibold text-gray-900 whitespace-pre-wrap break-words line-clamp-1">
                   {a.title}
                 </h3>
                 <div className="flex flex-wrap gap-2">
@@ -54,7 +54,9 @@ export default function AnnouncementListItem({ a }: { a: Announcement }) {
               </div>
 
               {/* Snippet */}
-              <p className="text-gray-600 text-sm line-clamp-2">{a.content}</p>
+              <p className="text-gray-600 text-sm line-clamp-3 whitespace-pre-wrap break-words">
+                {a.content}
+              </p>
 
               {/* Meta */}
               <div className="flex items-center justify-between text-sm text-gray-500">

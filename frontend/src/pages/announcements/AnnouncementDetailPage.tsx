@@ -60,9 +60,18 @@ export default function AnnouncementDetailPage() {
     ? [
         { label: "Dashboard", href: "/admin" },
         { label: "Kelola Pengumuman", href: "/admin/announcements" },
-        { label: a.title },
+        {
+          label:
+            a.title.length > 50 ? a.title.substring(0, 50) + "..." : a.title,
+        },
       ]
-    : [{ label: "Pengumuman", href: "/announcements" }, { label: a.title }];
+    : [
+        { label: "Pengumuman", href: "/announcements" },
+        {
+          label:
+            a.title.length > 50 ? a.title.substring(0, 50) + "..." : a.title,
+        },
+      ];
 
   return (
     <div className="space-y-6">
@@ -73,7 +82,7 @@ export default function AnnouncementDetailPage() {
       <Card>
         <CardHeader>
           <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-4">
-            <div className="flex-1">
+            <div className="flex-1 min-w-0">
               <div className="flex flex-wrap gap-2 mb-3">
                 {a.isPinned && (
                   <span className="inline-flex items-center gap-1 text-amber-600 text-sm font-medium">
@@ -88,7 +97,7 @@ export default function AnnouncementDetailPage() {
                 </Badge>
               </div>
 
-              <CardTitle className="text-2xl text-gray-900 mb-4">
+              <CardTitle className="text-2xl text-gray-900 mb-4 whitespace-pre-wrap break-words">
                 {a.title}
               </CardTitle>
 
@@ -115,7 +124,7 @@ export default function AnnouncementDetailPage() {
               <CardTitle>Isi Pengumuman</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="prose prose-sm max-w-none whitespace-pre-line text-gray-700">
+              <div className="prose prose-sm max-w-none whitespace-pre-wrap break-words text-gray-700">
                 {a.content}
               </div>
             </CardContent>
