@@ -33,8 +33,14 @@ import {
 } from "../components/ui/Tabs";
 
 const ProfilePage: React.FC = () => {
-  const { user, updateProfile, deleteAccount, changePassword, logout } =
-    useAuthContext();
+  const {
+    user,
+    updateProfile,
+    deleteAccount,
+    changePassword,
+    logout,
+    isChangingPassword,
+  } = useAuthContext();
   const toast = useToast();
   const [isOpen, setIsOpen] = useState(false);
   const [isEditingProfile, setIsEditingProfile] = useState(false);
@@ -76,7 +82,6 @@ const ProfilePage: React.FC = () => {
   const uploadRef = useRef<ProfilePictureUploadRef>(null);
   // Loading states
   const [isSavingProfile, setIsSavingProfile] = useState(false);
-  const [isChangingPassword, setIsChangingPassword] = useState(false);
 
   // Safety fallback (harusnya tidak kejadian karena ProtectedRoute sudah filter)
   if (!user) return null;
@@ -222,21 +227,22 @@ const ProfilePage: React.FC = () => {
       return;
     }
 
-    setIsChangingPassword(true);
     try {
-      await changePassword(passwordForm.newPassword);
-      toast.success("Password berhasil diubah", "Berhasil");
-      setPasswordForm({
-        newPassword: "",
-        confirmPassword: "",
-      });
-      clearPasswordErrors();
-      await logout();
+      const success = await changePassword(passwordForm.newPassword);
+      if (success) {
+        toast.success("Password berhasil diubah", "Berhasil");
+        setPasswordForm({
+          newPassword: "",
+          confirmPassword: "",
+        });
+        clearPasswordErrors();
+        // Gunakan pattern yang sama seperti header logout
+        logout(); // Tanpa await
+        navigate("/login"); // Navigate langsung
+      }
     } catch (error) {
       console.log(error);
       toast.error("Gagal mengubah password", "Error");
-    } finally {
-      setIsChangingPassword(false);
     }
   };
 
@@ -520,7 +526,7 @@ const ProfilePage: React.FC = () => {
                         !passwordForm.confirmPassword
                       }
                     >
-                      Ubah Password 
+                      Ubah Password
                     </Button>
                   </div>
                 </TabsContent>

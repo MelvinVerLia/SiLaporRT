@@ -24,7 +24,8 @@ import { useAuthContext } from "../../contexts/AuthContext";
 const Header: React.FC = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isUserDropdownOpen, setIsUserDropdownOpen] = useState(false);
-  const { user, isAuthenticated, logout } = useAuthContext();
+  const { user, isAuthenticated, isLoading, isLoggingOut, logout } =
+    useAuthContext();
   const location = useLocation();
   const navigate = useNavigate();
   const dropdownRef = useRef<HTMLDivElement>(null);
@@ -35,6 +36,15 @@ const Header: React.FC = () => {
 
   const closeMobileMenu = () => {
     setIsMobileMenuOpen(false);
+  };
+
+  const handleLogout = async () => {
+    closeUserDropdown();
+    closeMobileMenu();
+    // Trigger logout tanpa await supaya loading muncul
+    logout();
+    // Navigate ke login agar PublicOnlyRoute bisa show loading
+    navigate("/login");
   };
 
   const toggleUserDropdown = () => {
@@ -132,26 +142,33 @@ const Header: React.FC = () => {
 
           {/* Desktop Navigation */}
           <nav className="hidden lg:flex items-center space-x-1">
-            {navigationItems.map((item) => {
-              const Icon = item.icon;
-              const isActive = isActivePath(item.path);
+            {!isLoading &&
+              navigationItems.map((item) => {
+                const Icon = item.icon;
+                const isActive = isActivePath(item.path);
 
-              return (
-                <Link
-                  key={item.path}
-                  to={item.path}
-                  className={cn(
-                    "flex items-center space-x-2 rounded-md px-3 py-2 text-sm font-medium transition-colors",
-                    isActive
-                      ? "bg-blue-100 text-blue-700"
-                      : "text-gray-600 hover:bg-gray-100 hover:text-gray-900"
-                  )}
-                >
-                  <Icon className="h-4 w-4" />
-                  <span>{item.label}</span>
-                </Link>
-              );
-            })}
+                return (
+                  <Link
+                    key={item.path}
+                    to={item.path}
+                    className={cn(
+                      "flex items-center space-x-2 rounded-md px-3 py-2 text-sm font-medium transition-all duration-200",
+                      isActive
+                        ? "bg-blue-100 text-blue-700"
+                        : "text-gray-600 hover:bg-gray-100 hover:text-gray-900"
+                    )}
+                  >
+                    <Icon className="h-4 w-4" />
+                    <span>{item.label}</span>
+                  </Link>
+                );
+              })}
+            {isLoading && (
+              <div className="flex items-center space-x-2 rounded-md px-3 py-2">
+                <div className="h-4 w-4 animate-pulse bg-gray-300 rounded"></div>
+                <div className="h-4 w-16 animate-pulse bg-gray-300 rounded"></div>
+              </div>
+            )}
           </nav>
 
           {/* User Menu */}
@@ -167,12 +184,21 @@ const Header: React.FC = () => {
             )}
 
             {/* User Info & Actions */}
-            {isAuthenticated ? (
+            {isLoading ? (
+              <div className="hidden lg:flex items-center space-x-3 rounded-md px-3 py-2">
+                <div className="h-8 w-8 rounded-full bg-gray-200 animate-pulse"></div>
+                <div className="space-y-1">
+                  <div className="h-3 w-20 bg-gray-200 rounded animate-pulse"></div>
+                  <div className="h-2 w-16 bg-gray-200 rounded animate-pulse"></div>
+                </div>
+              </div>
+            ) : isAuthenticated ? (
               <div className="hidden lg:block relative" ref={dropdownRef}>
                 {/* User Dropdown Trigger */}
                 <button
                   onClick={toggleUserDropdown}
-                  className="flex items-center space-x-3 rounded-md px-3 py-2 text-sm hover:bg-gray-50 transition-colors hover:cursor-pointer"
+                  disabled={isLoggingOut}
+                  className="flex items-center space-x-3 rounded-md px-3 py-2 text-sm hover:bg-gray-50 transition-colors hover:cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   <div className="flex h-8 w-8 items-center justify-center rounded-full bg-blue-100 text-sm font-medium text-blue-600 overflow-hidden">
                     {user?.profile ? (
@@ -264,15 +290,17 @@ const Header: React.FC = () => {
 
                       {/* Logout */}
                       <button
-                        onClick={() => {
-                          logout();
-                          navigate("/login");
-                          closeUserDropdown();
-                        }}
-                        className="flex w-full items-center px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors"
+                        onClick={handleLogout}
+                        disabled={isLoggingOut}
+                        className="flex w-full items-center px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                       >
-                        <LogOut className="h-4 w-4 mr-3" />
-                        Keluar
+                        <LogOut
+                          className={cn(
+                            "h-4 w-4 mr-3",
+                            isLoggingOut && "animate-spin"
+                          )}
+                        />
+                        {isLoggingOut ? "Keluar..." : "Keluar"}
                       </button>
                     </div>
                   </div>
@@ -281,13 +309,15 @@ const Header: React.FC = () => {
             ) : (
               <div className="hidden lg:flex items-center space-x-2">
                 <Link to="/login">
-                  <Button variant="ghost" size="sm">
+                  <Button variant="ghost" size="sm" disabled={isLoading}>
                     <LogIn className="h-4 w-4 mr-1" />
                     Masuk
                   </Button>
                 </Link>
                 <Link to="/register">
-                  <Button size="sm">Daftar</Button>
+                  <Button size="sm" disabled={isLoading}>
+                    Daftar
+                  </Button>
                 </Link>
               </div>
             )}
@@ -309,36 +339,52 @@ const Header: React.FC = () => {
 
       {/* Mobile Menu */}
       {isMobileMenuOpen && (
-        <div className="lg:hidden border-t border-gray-200 bg-white">
+        <div className="lg:hidden border-t border-gray-200 bg-white animate-in slide-in-from-top-2 duration-200">
           <div className="px-4 py-2 space-y-1">
             {/* Navigation Items */}
-            {navigationItems.map((item) => {
-              const Icon = item.icon;
-              const isActive = isActivePath(item.path);
+            {!isLoading &&
+              navigationItems.map((item) => {
+                const Icon = item.icon;
+                const isActive = isActivePath(item.path);
 
-              return (
-                <Link
-                  key={item.path}
-                  to={item.path}
-                  onClick={closeMobileMenu}
-                  className={cn(
-                    "flex items-center space-x-3 rounded-md px-3 py-2 text-base font-medium transition-colors",
-                    isActive
-                      ? "bg-blue-100 text-blue-700"
-                      : "text-gray-600 hover:bg-gray-100 hover:text-gray-900"
-                  )}
-                >
-                  <Icon className="h-5 w-5" />
-                  <span>{item.label}</span>
-                </Link>
-              );
-            })}
+                return (
+                  <Link
+                    key={item.path}
+                    to={item.path}
+                    onClick={closeMobileMenu}
+                    className={cn(
+                      "flex items-center space-x-3 rounded-md px-3 py-2 text-base font-medium transition-colors",
+                      isActive
+                        ? "bg-blue-100 text-blue-700"
+                        : "text-gray-600 hover:bg-gray-100 hover:text-gray-900"
+                    )}
+                  >
+                    <Icon className="h-5 w-5" />
+                    <span>{item.label}</span>
+                  </Link>
+                );
+              })}
+
+            {/* Loading state for navigation */}
+            {isLoading && (
+              <div className="space-y-2">
+                {[1, 2, 3].map((i) => (
+                  <div
+                    key={i}
+                    className="flex items-center space-x-3 rounded-md px-3 py-2"
+                  >
+                    <div className="h-5 w-5 animate-pulse bg-gray-300 rounded"></div>
+                    <div className="h-4 w-20 animate-pulse bg-gray-300 rounded"></div>
+                  </div>
+                ))}
+              </div>
+            )}
 
             {/* Divider */}
             <div className="border-t border-gray-200 my-2" />
 
             {/* User Actions */}
-            {isAuthenticated ? (
+            {!isLoading && isAuthenticated ? (
               <div className="space-y-2">
                 {/* User Info */}
                 <div className="flex items-center space-x-3 px-3 py-3 bg-gray-50 rounded-md">
@@ -390,18 +436,17 @@ const Header: React.FC = () => {
 
                 {/* Logout Button */}
                 <button
-                  onClick={() => {
-                    logout();
-                    navigate("/login");
-                    closeMobileMenu();
-                  }}
-                  className="flex w-full items-center space-x-3 rounded-md px-3 py-2 text-base font-medium text-red-600 hover:bg-red-50 transition-colors"
+                  onClick={handleLogout}
+                  disabled={isLoggingOut}
+                  className="flex w-full items-center space-x-3 rounded-md px-3 py-2 text-base font-medium text-red-600 hover:bg-red-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  <LogOut className="h-5 w-5" />
-                  <span>Keluar</span>
+                  <LogOut
+                    className={cn("h-5 w-5", isLoggingOut && "animate-spin")}
+                  />
+                  <span>{isLoggingOut ? "Keluar..." : "Keluar"}</span>
                 </button>
               </div>
-            ) : (
+            ) : !isLoading ? (
               <div className="space-y-1">
                 <Link
                   to="/login"
@@ -419,6 +464,18 @@ const Header: React.FC = () => {
                   <User className="h-5 w-5" />
                   <span>Daftar</span>
                 </Link>
+              </div>
+            ) : (
+              <div className="space-y-2">
+                {[1, 2].map((i) => (
+                  <div
+                    key={i}
+                    className="flex items-center space-x-3 rounded-md px-3 py-2"
+                  >
+                    <div className="h-5 w-5 animate-pulse bg-gray-300 rounded"></div>
+                    <div className="h-4 w-16 animate-pulse bg-gray-300 rounded"></div>
+                  </div>
+                ))}
               </div>
             )}
           </div>
