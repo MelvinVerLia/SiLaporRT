@@ -23,19 +23,42 @@ import CloudinaryUpload from "../../components/upload/CloudinaryUpload";
 import { useCreateReport } from "../../hooks/useCreateReport";
 import { CreateReportFormData, ReportCategory } from "../../types/report.types";
 import { CloudinaryFile } from "../../types/announcement.types";
+import { useToast } from "../../hooks/useToast";
 
 // Extended CloudinaryFile untuk keperluan form data
 interface ExtendedCloudinaryFile extends CloudinaryFile {
   fileType?: "image" | "video" | "document";
 }
 
-import { useToast } from "../../hooks/useToast";
+// Form validation errors interface
+interface FormErrors {
+  title?: string;
+  description?: string;
+  category?: string;
+  location?: string;
+  address?: string;
+  rt?: string;
+  rw?: string;
+  kelurahan?: string;
+  kecamatan?: string;
+}
+
+// Location form data interface
+interface LocationFormData {
+  address: string;
+  rt: string;
+  rw: string;
+  kelurahan: string;
+  kecamatan: string;
+  latitude: number;
+  longitude: number;
+}
 
 const CreateReportPage: React.FC = () => {
   const createReportMutation = useCreateReport();
   const toast = useToast();
   const [currentStep, setCurrentStep] = useState(1);
-  const [errors, setErrors] = useState<Record<string, string>>({});
+  const [errors, setErrors] = useState<FormErrors>({});
   const [isUploading, setIsUploading] = useState(false);
 
   const [formData, setFormData] = useState<CreateReportFormData>({
@@ -46,6 +69,17 @@ const CreateReportPage: React.FC = () => {
     isPublic: true,
     location: null,
     attachments: [] as ExtendedCloudinaryFile[],
+  });
+
+  // Separate location form state
+  const [locationForm, setLocationForm] = useState<LocationFormData>({
+    address: "",
+    rt: "",
+    rw: "",
+    kelurahan: "",
+    kecamatan: "",
+    latitude: 0,
+    longitude: 0,
   });
 
   const steps = [
@@ -88,7 +122,7 @@ const CreateReportPage: React.FC = () => {
   ];
 
   const validateStep = (step: number): boolean => {
-    const newErrors: Record<string, string> = {};
+    const newErrors: FormErrors = {};
 
     switch (step) {
       case 1:
@@ -102,9 +136,25 @@ const CreateReportPage: React.FC = () => {
           newErrors.category = "Kategori wajib dipilih";
         }
         break;
+
       case 2:
-        if (!formData.location) {
-          newErrors.location = "Lokasi kejadian wajib ditentukan";
+        if (!locationForm.address.trim()) {
+          newErrors.address = "Alamat harus diisi";
+        }
+        if (!locationForm.rt.trim()) {
+          newErrors.rt = "RT harus diisi";
+        }
+        if (!locationForm.rw.trim()) {
+          newErrors.rw = "RW harus diisi";
+        }
+        if (!locationForm.kelurahan.trim()) {
+          newErrors.kelurahan = "Kelurahan harus diisi";
+        }
+        if (!locationForm.kecamatan.trim()) {
+          newErrors.kecamatan = "Kecamatan harus diisi";
+        }
+        if (locationForm.latitude === 0 || locationForm.longitude === 0) {
+          newErrors.location = "Koordinat lokasi wajib ditentukan";
         }
         break;
     }
@@ -127,7 +177,21 @@ const CreateReportPage: React.FC = () => {
     if (!validateStep(currentStep)) return;
 
     try {
-      await createReportMutation.mutateAsync(formData);
+      // Create the final form data with location
+      const submitData: CreateReportFormData = {
+        ...formData,
+        location: {
+          address: locationForm.address,
+          latitude: locationForm.latitude,
+          longitude: locationForm.longitude,
+          rt: locationForm.rt,
+          rw: locationForm.rw,
+          kelurahan: locationForm.kelurahan,
+          kecamatan: locationForm.kecamatan,
+        },
+      };
+
+      await createReportMutation.mutateAsync(submitData);
       toast.success("Laporan berhasil dibuat!", "Sukses");
       // Navigation handled by the hook on success
     } catch (error: unknown) {
@@ -137,6 +201,35 @@ const CreateReportPage: React.FC = () => {
           : "Terjadi kesalahan saat membuat laporan";
       toast.error(errorMessage, "Gagal Membuat Laporan");
       console.error("Submit error:", error);
+    }
+  };
+
+  // Location form handlers
+  const handleLocationFormChange = (
+    field: keyof LocationFormData,
+    value: string | number
+  ) => {
+    setLocationForm((prev) => ({ ...prev, [field]: value }));
+
+    // Clear related errors
+    if (errors[field as keyof FormErrors]) {
+      setErrors((prev) => ({ ...prev, [field]: undefined }));
+    }
+  };
+
+  const handleLocationSelect = (location: any) => {
+    setFormData((prev) => ({ ...prev, location }));
+    // Clear location error when location is selected
+    if (errors.location) {
+      setErrors((prev) => ({ ...prev, location: undefined }));
+    }
+  };
+
+  const handleCoordinatesChange = (lat: number, lng: number) => {
+    setLocationForm((prev) => ({ ...prev, latitude: lat, longitude: lng }));
+    // Clear location error when coordinates are set
+    if (errors.location) {
+      setErrors((prev) => ({ ...prev, location: undefined }));
     }
   };
 
@@ -287,10 +380,35 @@ const CreateReportPage: React.FC = () => {
         return (
           <LocationPicker
             selectedLocation={formData.location}
-            onLocationSelect={(location) =>
-              setFormData((prev) => ({ ...prev, location }))
-            }
+            onLocationSelect={handleLocationSelect}
             error={errors.location}
+            // Location form props
+            address={locationForm.address}
+            rt={locationForm.rt}
+            rw={locationForm.rw}
+            kelurahan={locationForm.kelurahan}
+            kecamatan={locationForm.kecamatan}
+            latitude={locationForm.latitude}
+            longitude={locationForm.longitude}
+            // Form handlers
+            onAddressChange={(address) =>
+              handleLocationFormChange("address", address)
+            }
+            onRtChange={(rt) => handleLocationFormChange("rt", rt)}
+            onRwChange={(rw) => handleLocationFormChange("rw", rw)}
+            onKelurahanChange={(kelurahan) =>
+              handleLocationFormChange("kelurahan", kelurahan)
+            }
+            onKecamatanChange={(kecamatan) =>
+              handleLocationFormChange("kecamatan", kecamatan)
+            }
+            onCoordinatesChange={handleCoordinatesChange}
+            // Error props
+            addressError={errors.address}
+            rtError={errors.rt}
+            rwError={errors.rw}
+            kelurahanError={errors.kelurahan}
+            kecamatanError={errors.kecamatan}
           />
         );
 
@@ -392,27 +510,26 @@ const CreateReportPage: React.FC = () => {
                 </CardContent>
               </Card>
 
-              {formData.location && (
-                <Card>
-                  <CardHeader>
-                    <CardTitle>Lokasi</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="space-y-2">
-                      <p className="text-gray-900">
-                        {formData.location.address}
-                      </p>
-                      <p className="text-sm text-gray-600">
-                        RT {formData.location.rt} RW {formData.location.rw}
-                      </p>
-                      <p className="text-xs text-gray-500">
-                        {formData.location.latitude.toFixed(6)},{" "}
-                        {formData.location.longitude.toFixed(6)}
-                      </p>
-                    </div>
-                  </CardContent>
-                </Card>
-              )}
+              <Card>
+                <CardHeader>
+                  <CardTitle>Lokasi</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-2">
+                    <p className="text-gray-900">{locationForm.address}</p>
+                    <p className="text-sm text-gray-600">
+                      RT {locationForm.rt} RW {locationForm.rw}
+                    </p>
+                    <p className="text-sm text-gray-600">
+                      {locationForm.kelurahan}, {locationForm.kecamatan}
+                    </p>
+                    <p className="text-xs text-gray-500">
+                      {locationForm.latitude.toFixed(6)},{" "}
+                      {locationForm.longitude.toFixed(6)}
+                    </p>
+                  </div>
+                </CardContent>
+              </Card>
 
               {formData.attachments.length > 0 && (
                 <Card>

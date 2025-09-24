@@ -73,7 +73,7 @@ export const useAuth = () => {
       }
 
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      const { confirmPassword: _, ...body } = data;
+      const { confirmPassword, ...body } = data;
 
       const response = await sendOTP(body);
       return response.token;
