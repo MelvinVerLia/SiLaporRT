@@ -42,6 +42,12 @@ import {
 import ReportDetailSkeleton from "./components/ReportDetailSkeleton";
 import { useAuthContext } from "../../contexts/AuthContext";
 import { Role } from "../../types/auth.types";
+import {
+  GoogleMap,
+  Libraries,
+  LoadScript,
+  Marker,
+} from "@react-google-maps/api";
 
 const ReportDetailPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -51,6 +57,8 @@ const ReportDetailPage: React.FC = () => {
   const [commentText, setCommentText] = useState("");
   const [adminResponseText, setAdminResponseText] = useState("");
   const [selectedStatus, setSelectedStatus] = useState("");
+  const libraries: Libraries = ["places"];
+
 
   // Ref untuk mencegah spam clicking
   const lastUpvoteTime = useRef<number>(0);
@@ -361,24 +369,43 @@ const ReportDetailPage: React.FC = () => {
                 {report.title}
               </CardTitle>
 
+              <div className="rounded-md overflow-hidden border border-gray-200 h-96">
+                <LoadScript
+                  googleMapsApiKey={import.meta.env.VITE_API_GOOGLE_MAP}
+                  libraries={libraries}
+                >
+                  <GoogleMap
+                    zoom={15}
+                    center={{
+                      lat: report.location.latitude,
+                      lng: report.location.longitude,
+                    }}
+                    mapContainerClassName="w-full h-full"
+                  >
+                    <Marker
+                      position={{
+                        lat: report.location.latitude,
+                        lng: report.location.longitude,
+                      }}
+                    />
+                  </GoogleMap>
+                </LoadScript>
+              </div>
               <div className="flex flex-col sm:flex-row sm:items-center gap-4 text-sm text-gray-600">
                 <div className="flex items-center">
                   <User className="mr-1 h-4 w-4" />
+                <div>{report.location.latitude}</div>
                   <span>
                     {report.isAnonymous
                       ? "Anonim"
                       : report.user?.isDeleted
-                      ? "Pengguna Hilang"
+                      ? "Pengguna Terhapus"
                       : report.user?.name}
                   </span>
                 </div>
                 <div className="flex items-center">
                   <Clock className="mr-1 h-4 w-4" />
                   <span>{formatDateTime(report.createdAt)}</span>
-                </div>
-                <div className="flex items-center">
-                  <MapPin className="mr-1 h-4 w-4" />
-                  <span>{report.location.address}</span>
                 </div>
               </div>
             </div>
@@ -592,7 +619,7 @@ const ReportDetailPage: React.FC = () => {
                       <div className="flex items-center space-x-2 mb-1">
                         <span className="font-medium text-gray-900">
                           {comment.user.isDeleted
-                            ? "Pengguna Hilang"
+                            ? "Pengguna Terhapus"
                             : comment.user.name}
                         </span>
                         {comment.user.role === "RT_ADMIN" && (
@@ -600,6 +627,12 @@ const ReportDetailPage: React.FC = () => {
                             Admin RT
                           </Badge>
                         )}
+                        {comment.user.id === report.user.id &&
+                          !report.isAnonymous && (
+                            <Badge variant="success" size="sm">
+                              Penulis
+                            </Badge>
+                          )}
                         <span className="text-sm text-gray-500">
                           {formatDateTime(comment.createdAt)}
                         </span>

@@ -70,6 +70,7 @@ export const useAuth = () => {
         return;
       }
 
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const { confirmPassword, ...body } = data;
 
       const response = await sendOTP(body);
@@ -128,23 +129,26 @@ export const useAuth = () => {
     []
   );
 
-  const updateProfile = useCallback(async (data: User) => {
-    setIsLoading(true);
-    setError(null);
-    try {
-      const newUser = await apiUpdateProfile(data);
-      console.log("old user", user);
-      console.log("udpated user", newUser.data);
-      setUser(newUser.data);
-      return true;
-    } catch (e: unknown) {
-      console.log(e);
-      setError({ message: "Gagal memperbarui profil" });
-      return false;
-    } finally {
-      setIsLoading(false);
-    }
-  }, [user]);
+  const updateProfile = useCallback(
+    async (data: User) => {
+      setIsLoading(true);
+      setError(null);
+      try {
+        const newUser = await apiUpdateProfile(data);
+        console.log("old user", user);
+        console.log("udpated user", newUser.data);
+        setUser(newUser.data);
+        return true;
+      } catch (e: unknown) {
+        console.log(e);
+        setError({ message: "Gagal memperbarui profil" });
+        return false;
+      } finally {
+        setIsLoading(false);
+      }
+    },
+    [user]
+  );
 
   const deleteAccount = useCallback(async () => {
     setIsLoading(true);

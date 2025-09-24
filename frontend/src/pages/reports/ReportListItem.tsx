@@ -110,7 +110,7 @@ const ReportListItem = ({ r }: { r: Report }) => {
                 {r.isAnonymous
                   ? "Anonim"
                   : r.user?.isDeleted
-                  ? "Pengguna Hilang"
+                  ? "Pengguna Terhapus"
                   : r.user?.name}
               </div>
             </div>
