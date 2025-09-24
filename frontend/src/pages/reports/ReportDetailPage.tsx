@@ -1,13 +1,11 @@
 import React, { useState, useRef } from "react";
 import { useParams, Link, useLocation } from "react-router-dom";
 import {
-  MapPin,
   Clock,
   User,
   ThumbsUp,
   MessageCircle,
   Send,
-  EyeOff,
   AlertCircle,
   RefreshCw,
 } from "lucide-react";
@@ -357,7 +355,7 @@ const ReportDetailPage: React.FC = () => {
         <CardHeader>
           <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-4">
             <div className="flex-1 min-w-0">
-              <div className="flex flex-wrap gap-2 mb-3">
+              {/* <div className="flex flex-wrap gap-2 mb-3">
                 <Badge variant="default">
                   {getCategoryLabel(report.category)}
                 </Badge>
@@ -369,13 +367,13 @@ const ReportDetailPage: React.FC = () => {
                     Privat
                   </Badge>
                 )}
-              </div>
+              </div> */}
 
-              <CardTitle className="text-2xl text-gray-900 mb-4 whitespace-pre-wrap break-words">
+              <CardTitle className="text-2xl text-gray-900 mb-5 whitespace-pre-wrap break-words">
                 {report.title}
               </CardTitle>
 
-              <div className="rounded-md overflow-hidden border border-gray-200 h-96">
+              <div className="rounded-md overflow-hidden border border-gray-200 h-96 mb-5">
                 <LoadScript
                   googleMapsApiKey={import.meta.env.VITE_API_GOOGLE_MAP}
                   libraries={libraries}
@@ -400,8 +398,32 @@ const ReportDetailPage: React.FC = () => {
               </div>
               <div className="flex flex-col sm:flex-row sm:items-center gap-4 text-sm text-gray-600">
                 <div className="flex items-center">
+                  {isAuthenticated && (
+                    <Button
+                      variant={hasUpvoted ? "primary" : "outline"}
+                      size="sm"
+                      onClick={handleUpvoteClick}
+                      className={`flex items-center transition-all duration-200 ${
+                        hasUpvoted
+                          ? "bg-blue-600 text-white hover:bg-blue-700"
+                          : ""
+                      } ${
+                        handleUpvote.isPending
+                          ? "scale-95 opacity-75"
+                          : "hover:scale-105"
+                      }`}
+                    >
+                      <ThumbsUp
+                        className={`mr-1 h-4 w-4 transition-all duration-200 ${
+                          hasUpvoted ? "fill-current" : ""
+                        } ${handleUpvote.isPending ? "animate-pulse" : ""}`}
+                      />
+                      {report.upvoteCount}
+                    </Button>
+                  )}
+                </div>
+                <div className="flex items-center">
                   <User className="mr-1 h-4 w-4" />
-                  <div>{report.location.latitude}</div>
                   <span>
                     {report.isAnonymous
                       ? "Anonim"
@@ -414,36 +436,6 @@ const ReportDetailPage: React.FC = () => {
                   <Clock className="mr-1 h-4 w-4" />
                   <span>{formatDateTime(report.createdAt)}</span>
                 </div>
-              </div>
-            </div>
-
-            {/* Action Buttons */}
-            <div className="flex items-center gap-2">
-              {isAuthenticated && (
-                <Button
-                  variant={hasUpvoted ? "primary" : "outline"}
-                  size="sm"
-                  onClick={handleUpvoteClick}
-                  className={`flex items-center transition-all duration-200 ${
-                    hasUpvoted ? "bg-blue-600 text-white hover:bg-blue-700" : ""
-                  } ${
-                    handleUpvote.isPending
-                      ? "scale-95 opacity-75"
-                      : "hover:scale-105"
-                  }`}
-                >
-                  <ThumbsUp
-                    className={`mr-1 h-4 w-4 transition-all duration-200 ${
-                      hasUpvoted ? "fill-current" : ""
-                    } ${handleUpvote.isPending ? "animate-pulse" : ""}`}
-                  />
-                  {report.upvoteCount}
-                </Button>
-              )}
-
-              <div className="flex items-center text-sm text-gray-500">
-                <MessageCircle className="mr-1 h-4 w-4" />
-                <span>{report.commentCount} komentar</span>
               </div>
             </div>
           </div>
@@ -460,7 +452,7 @@ const ReportDetailPage: React.FC = () => {
               <CardTitle>Deskripsi Laporan</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="prose prose-sm max-w-none whitespace-pre-wrap break-words" >
+              <div className="prose prose-sm max-w-none whitespace-pre-wrap break-words">
                 {report.description
                   .split("\n")
                   .map((paragraph: string, index: number) => (
@@ -542,7 +534,15 @@ const ReportDetailPage: React.FC = () => {
           {/* Comments Section */}
           <Card>
             <CardHeader>
-              <CardTitle>Diskusi & Komentar</CardTitle>
+              <div className="flex items-center gap-2">
+                <div className="flex items-center gap-2">
+                  <MessageCircle className="mx-1 h-7 w-7" />
+                  <CardTitle>Diskusi & Komentar</CardTitle>
+                </div>
+                <div className="flex items-center text-xl font-bold">
+                  <span>{report.commentCount}</span>
+                </div>
+              </div>
             </CardHeader>
             <CardContent>
               {/* Comment Form */}
@@ -646,7 +646,9 @@ const ReportDetailPage: React.FC = () => {
                           {formatDateTime(comment.createdAt)}
                         </span>
                       </div>
-                      <p className="text-gray-700 whitespace-pre-wrap break-words">{comment.content}</p>
+                      <p className="text-gray-700 whitespace-pre-wrap break-words">
+                        {comment.content}
+                      </p>
                     </div>
                   </div>
                 ))}
