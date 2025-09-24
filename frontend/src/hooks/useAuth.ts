@@ -21,6 +21,8 @@ import {
 export const useAuth = () => {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
+  const [isChangingPassword, setIsChangingPassword] = useState(false);
   const [error, setError] = useState<AuthError | null>(null);
 
   const initializeAuth = async () => {
@@ -86,13 +88,20 @@ export const useAuth = () => {
 
   // LOGOUT: hapus cookie di server; FE bersihkan state & arahkan ke login
   const logout = useCallback(async () => {
+    setIsLoggingOut(true);
     try {
       await apiLogout();
+      // Tambahkan delay kecil untuk memberikan feedback visual yang baik
+      await new Promise((resolve) => setTimeout(resolve, 800));
     } catch {
       // abaikan error logout
+      // Tetap berikan delay meskipun ada error
+      await new Promise((resolve) => setTimeout(resolve, 600));
+    } finally {
+      setUser(null);
+      setError(null);
+      setIsLoggingOut(false);
     }
-    setUser(null);
-    setError(null);
   }, []);
 
   const resendOTP = useCallback(async (token: string): Promise<boolean> => {
@@ -168,20 +177,25 @@ export const useAuth = () => {
   }, []);
 
   const changePassword = useCallback(async (password: string) => {
-    setIsLoading(true);
+    setIsChangingPassword(true);
     setError(null);
     try {
       await apiChangePassword(password);
+      return true;
     } catch (error) {
       console.log(error);
+      setError({ message: "Gagal mengubah password" });
+      return false;
     } finally {
-      setIsLoading(false);
+      setIsChangingPassword(false);
     }
   }, []);
 
   return {
     user,
     isLoading,
+    isLoggingOut,
+    isChangingPassword,
     isAuthenticated: !!user,
     login,
     logout,
