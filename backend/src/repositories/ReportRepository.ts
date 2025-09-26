@@ -2,7 +2,11 @@ import prisma from "../config/prisma";
 import { ReportStatus } from "@prisma/client";
 import { CreateReportData } from "../types/reportTypes";
 
-const visibleWhere = () => {
+const visibleWhere = (includePrivate: boolean = false) => {
+  if (includePrivate) {
+    // Admin can see all reports (both public and private)
+    return {};
+  }
   return {
     isPublic: true,
   };
@@ -71,9 +75,20 @@ class ReportRepository {
     }
   }
 
-  static async getAllReports({ page, pageSize, q, category, status }: any) {
+  static async getAllReports({
+    page,
+    pageSize,
+    q,
+    category,
+    status,
+    userId,
+    includePrivate = false,
+  }: any) {
     try {
-      const where: any = { ...visibleWhere() };
+      // If userId is provided, user should see all their own reports (public and private)
+      // Otherwise, apply visibility filter
+      const where: any = userId ? {} : { ...visibleWhere(includePrivate) };
+
       if (q && q.trim()) {
         where.OR = [
           ...(where.OR || []),
@@ -83,6 +98,7 @@ class ReportRepository {
       }
       if (category) where.category = category;
       if (status) where.status = status;
+      if (userId) where.userId = userId;
 
       const skip = (page - 1) * pageSize;
 
@@ -122,7 +138,7 @@ class ReportRepository {
               name: true,
               role: true,
               isDeleted: true,
-              profile: true
+              profile: true,
             },
           },
           attachments: true,
@@ -141,7 +157,7 @@ class ReportRepository {
                   name: true,
                   role: true,
                   isDeleted: true,
-                  profile: true
+                  profile: true,
                 },
               },
             },
@@ -400,6 +416,58 @@ class ReportRepository {
       }),
     ]);
     return { total, items };
+  }
+
+  static async deleteReport(reportId: string, userId: string) {
+    try {
+      // First verify the report belongs to the user
+      const report = await prisma.report.findFirst({
+        where: { id: reportId, userId: userId },
+      });
+
+      if (!report) {
+        throw new Error("Report not found or unauthorized");
+      }
+
+      // Delete the report (this will cascade to related records)
+      const deletedReport = await prisma.report.delete({
+        where: { id: reportId },
+      });
+
+      return { success: true, data: deletedReport };
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  static async toggleVisibility(reportId: string, userId: string) {
+    try {
+      // First verify the report belongs to the user
+      const report = await prisma.report.findFirst({
+        where: { id: reportId, userId: userId },
+      });
+
+      if (!report) {
+        throw new Error("Report not found or unauthorized");
+      }
+
+      // Toggle the visibility
+      const updatedReport = await prisma.report.update({
+        where: { id: reportId },
+        data: { isPublic: !report.isPublic },
+        include: {
+          location: true,
+          user: { select: { id: true, name: true, email: true } },
+          attachments: {
+            select: { id: true, filename: true, url: true, fileType: true },
+          },
+        },
+      });
+
+      return { success: true, data: updatedReport };
+    } catch (error) {
+      throw error;
+    }
   }
 }
 

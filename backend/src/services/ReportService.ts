@@ -23,6 +23,8 @@ class ReportService {
     q?: string;
     category?: string;
     status?: string;
+    includePrivate?: string | boolean;
+    userId?: string;
   }) {
     const page = Math.max(1, parseInt(params.page ?? "1", 10) || 1);
     const pageSize = Math.min(
@@ -37,6 +39,9 @@ class ReportService {
         q: params.q,
         category: params.category,
         status: params.status,
+        userId: params.userId,
+        includePrivate:
+          params.includePrivate === true || params.includePrivate === "true",
       });
       return { page, pageSize, total, items };
     } catch (error) {
@@ -150,6 +155,24 @@ class ReportService {
   static async getRecentReports() {
     const { items } = await ReportRepository.getRecentReports();
     return { items };
+  }
+
+  static async deleteReport(reportId: string, userId: string) {
+    try {
+      const result = await ReportRepository.deleteReport(reportId, userId);
+      return result;
+    } catch (error) {
+      throw new Error(`Failed to delete report: ${error}`);
+    }
+  }
+
+  static async toggleVisibility(reportId: string, userId: string) {
+    try {
+      const result = await ReportRepository.toggleVisibility(reportId, userId);
+      return result;
+    } catch (error) {
+      throw new Error(`Failed to toggle visibility: ${error}`);
+    }
   }
 }
 

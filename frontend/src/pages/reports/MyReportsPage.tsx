@@ -1,10 +1,10 @@
-import React, { useState } from "react";
-import { Link } from "react-router-dom";
+import React, { useState, useEffect } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   Plus,
   Search,
   MoreVertical,
-  Edit,
   Trash2,
   Eye,
   EyeOff,
@@ -13,6 +13,7 @@ import {
   MessageCircle,
   ThumbsUp,
   Clock,
+  AlertTriangle,
 } from "lucide-react";
 import { Card, CardContent } from "../../components/ui/Card";
 import Button from "../../components/ui/Button";
@@ -20,117 +21,214 @@ import Input from "../../components/ui/Input";
 import Select from "../../components/ui/Select";
 import Badge from "../../components/ui/Badge";
 import { useAuthContext } from "../../contexts/AuthContext";
+import {
+  getUserReports,
+  deleteUserReport,
+  toggleReportVisibility,
+} from "../../services/reportService";
+import { Report } from "../../types/report.types";
 
 const MyReportsPage: React.FC = () => {
   const { user } = useAuthContext();
+  const navigate = useNavigate();
+  const qc = useQueryClient();
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedStatus, setSelectedStatus] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("");
-  const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
+  const [page, setPage] = useState(1);
+  const [openDropdown, setOpenDropdown] = useState<string | null>(null);
+  const pageSize = 6; // Fixed page size for now
 
-  // Mock user's reports data
-  const mockUserReports = [
-    {
-      id: "1",
-      title: "Jalan berlubang di RT 05",
-      description:
-        "Jalan di depan rumah nomor 45 terdapat lubang besar yang membahayakan pengendara.",
-      category: "INFRASTRUCTURE",
-      status: "PENDING",
-      isPublic: true,
-      isAnonymous: false,
-      upvoteCount: 12,
-      commentCount: 5,
-      responseCount: 0,
-      viewCount: 87,
-      location: {
-        address: "Jl. Mawar No. 45, RT 05",
-        rt: "05",
-        rw: "02",
-      },
-      attachments: [
-        { fileType: "image", filename: "photo1.jpg" },
-        { fileType: "image", filename: "photo2.jpg" },
-      ],
-      createdAt: "2024-01-20T08:30:00Z",
-      updatedAt: "2024-01-20T08:30:00Z",
-    },
-    {
-      id: "2",
-      title: "Lampu jalan mati sudah 3 hari",
-      description:
-        "Lampu jalan di ujung gang sudah mati 3 hari, sangat gelap di malam hari.",
-      category: "LIGHTING",
-      status: "IN_PROGRESS",
-      isPublic: true,
-      isAnonymous: false,
-      upvoteCount: 8,
-      commentCount: 3,
-      responseCount: 1,
-      viewCount: 45,
-      location: {
-        address: "Gang Melati RT 03",
-        rt: "03",
-        rw: "01",
-      },
-      attachments: [],
-      createdAt: "2024-01-19T15:20:00Z",
-      updatedAt: "2024-01-21T10:30:00Z",
-    },
-    {
-      id: "3",
-      title: "Saran perbaikan taman RT",
-      description:
-        "Taman RT perlu diperbaiki dengan menambah bangku dan tanaman hias.",
-      category: "SUGGESTION",
-      status: "RESOLVED",
-      isPublic: false,
-      isAnonymous: false,
-      upvoteCount: 6,
-      commentCount: 2,
-      responseCount: 1,
-      viewCount: 23,
-      location: {
-        address: "Taman RT 04",
-        rt: "04",
-        rw: "02",
-      },
-      attachments: [{ fileType: "image", filename: "taman-sketch.jpg" }],
-      createdAt: "2024-01-15T09:00:00Z",
-      updatedAt: "2024-01-22T14:20:00Z",
-    },
-    {
-      id: "4",
-      title: "Keluhan sampah tidak diangkut",
-      description: "Sampah di TPS sudah 2 minggu tidak diangkut, mulai bau.",
-      category: "CLEANLINESS",
-      status: "REJECTED",
-      isPublic: true,
-      isAnonymous: true,
-      upvoteCount: 3,
-      commentCount: 1,
-      responseCount: 1,
-      viewCount: 34,
-      location: {
-        address: "TPS RT 05",
-        rt: "05",
-        rw: "02",
-      },
-      attachments: [],
-      createdAt: "2024-01-10T11:15:00Z",
-      updatedAt: "2024-01-18T16:45:00Z",
-    },
-  ];
+  // Clear cache when user changes (fixes cache issue when switching accounts)
+  useEffect(() => {
+    if (user?.id) {
+      qc.invalidateQueries({ queryKey: ["user-reports"] });
+    }
+  }, [user?.id, qc]);
 
-  // Statistics calculation
+  // Click outside handler to close dropdown
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (!event.target) return;
+
+      const target = event.target as Element;
+      const isDropdownClick =
+        target.closest("[data-dropdown]") ||
+        target.closest("button[data-dropdown-toggle]");
+
+      if (!isDropdownClick) {
+        setOpenDropdown(null);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  // Query for user's reports
+  const { data, isLoading, isError, error } = useQuery({
+    queryKey: [
+      "user-reports",
+      user?.id,
+      { page, pageSize, q: searchTerm, selectedCategory, selectedStatus },
+    ],
+    queryFn: () =>
+      getUserReports({
+        page,
+        pageSize,
+        q: searchTerm || undefined,
+        category: selectedCategory || undefined,
+        status: selectedStatus || undefined,
+      }),
+    enabled: !!user,
+    staleTime: 5 * 60 * 1000, // Cache for 5 minutes
+  });
+
+  // Mutation for deleting reports
+  const deleteMutation = useMutation({
+    mutationFn: deleteUserReport,
+    onMutate: async (reportId: string) => {
+      // Cancel any outgoing refetches
+      await qc.cancelQueries({ queryKey: ["user-reports"] });
+
+      // Snapshot the previous value
+      const previousUserReports = qc.getQueryData([
+        "user-reports",
+        user?.id,
+        page,
+        searchTerm,
+        selectedStatus,
+        selectedCategory,
+      ]);
+
+      // Optimistically update by removing the report
+      qc.setQueryData(
+        [
+          "user-reports",
+          user?.id,
+          page,
+          searchTerm,
+          selectedStatus,
+          selectedCategory,
+        ],
+        (old: unknown) => {
+          if (!old || typeof old !== "object") return old;
+          const reportData = old as { items: Report[]; total: number };
+          return {
+            ...reportData,
+            items: reportData.items.filter(
+              (report: Report) => report.id !== reportId
+            ),
+            total: reportData.total - 1,
+          };
+        }
+      );
+
+      return { previousUserReports };
+    },
+    onError: (_err, _variables, context) => {
+      // Rollback on error
+      if (context?.previousUserReports) {
+        qc.setQueryData(
+          [
+            "user-reports",
+            user?.id,
+            page,
+            searchTerm,
+            selectedStatus,
+            selectedCategory,
+          ],
+          context.previousUserReports
+        );
+      }
+    },
+    onSuccess: () => {
+      // Invalidate user reports and general reports to keep data consistent
+      qc.invalidateQueries({ queryKey: ["user-reports"] });
+      qc.invalidateQueries({ queryKey: ["reports"] });
+      qc.invalidateQueries({ queryKey: ["recent-reports"] });
+    },
+  });
+
+  // Mutation for toggling visibility
+  const visibilityMutation = useMutation({
+    mutationFn: toggleReportVisibility,
+    onMutate: async (reportId: string) => {
+      // Cancel any outgoing refetches
+      await qc.cancelQueries({ queryKey: ["user-reports"] });
+
+      // Snapshot the previous value
+      const previousUserReports = qc.getQueryData([
+        "user-reports",
+        user?.id,
+        page,
+        searchTerm,
+        selectedStatus,
+        selectedCategory,
+      ]);
+
+      // Optimistically update by toggling the visibility
+      qc.setQueryData(
+        [
+          "user-reports",
+          user?.id,
+          page,
+          searchTerm,
+          selectedStatus,
+          selectedCategory,
+        ],
+        (old: unknown) => {
+          if (!old || typeof old !== "object") return old;
+          const reportData = old as { items: Report[]; total: number };
+          return {
+            ...reportData,
+            items: reportData.items.map((report: Report) =>
+              report.id === reportId
+                ? { ...report, isPublic: !report.isPublic }
+                : report
+            ),
+          };
+        }
+      );
+
+      return { previousUserReports };
+    },
+    onError: (_err, _variables, context) => {
+      // Rollback on error
+      if (context?.previousUserReports) {
+        qc.setQueryData(
+          [
+            "user-reports",
+            user?.id,
+            page,
+            searchTerm,
+            selectedStatus,
+            selectedCategory,
+          ],
+          context.previousUserReports
+        );
+      }
+    },
+    onSuccess: () => {
+      // Invalidate user reports and general reports to keep data consistent
+      qc.invalidateQueries({ queryKey: ["user-reports"] });
+      qc.invalidateQueries({ queryKey: ["reports"] });
+      qc.invalidateQueries({ queryKey: ["recent-reports"] });
+    },
+  });
+
+  const reports = data?.items ?? [];
+  const total = data?.total ?? 0;
+  const totalPages = Math.max(1, Math.ceil(total / pageSize));
+
+  // Statistics calculation from real data
   const stats = {
-    total: mockUserReports.length,
-    pending: mockUserReports.filter((r) => r.status === "PENDING").length,
-    inProgress: mockUserReports.filter((r) => r.status === "IN_PROGRESS")
+    total: total,
+    pending: reports.filter((r: Report) => r.status === "PENDING").length,
+    inProgress: reports.filter((r: Report) => r.status === "IN_PROGRESS")
       .length,
-    resolved: mockUserReports.filter((r) => r.status === "RESOLVED").length,
-    totalUpvotes: mockUserReports.reduce((sum, r) => sum + r.upvoteCount, 0),
-    totalViews: mockUserReports.reduce((sum, r) => sum + r.viewCount, 0),
+    resolved: reports.filter((r: Report) => r.status === "RESOLVED").length,
+    rejected: reports.filter((r: Report) => r.status === "REJECTED").length,
   };
 
   const statusOptions = [
@@ -184,27 +282,31 @@ const MyReportsPage: React.FC = () => {
 
   const handleDeleteReport = (reportId: string) => {
     if (window.confirm("Yakin ingin menghapus laporan ini?")) {
-      // In real app, call delete API
-      console.log("Delete report:", reportId);
+      deleteMutation.mutate(reportId);
     }
   };
 
-  const toggleReportVisibility = (reportId: string) => {
-    // In real app, call toggle visibility API
-    console.log("Toggle visibility:", reportId);
+  const handleToggleVisibility = (reportId: string) => {
+    visibilityMutation.mutate(reportId);
   };
 
-  // Filter reports based on search and filters
-  const filteredReports = mockUserReports.filter((report) => {
-    const matchesSearch =
-      report.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      report.description.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesStatus = !selectedStatus || report.status === selectedStatus;
-    const matchesCategory =
-      !selectedCategory || report.category === selectedCategory;
+  const handleCardClick = (reportId: string) => {
+    navigate(`/reports/${reportId}`, {
+      state: { from: "my-reports" },
+    });
+  };
 
-    return matchesSearch && matchesStatus && matchesCategory;
-  });
+  const handleSearch = (e: React.FormEvent) => {
+    e.preventDefault();
+    setPage(1); // Reset to first page when searching
+  };
+
+  const handlePageChange = (newPage: number) => {
+    setPage(newPage);
+  };
+
+  // No client-side filtering needed since API handles it
+  const filteredReports = reports;
 
   return (
     <div className="space-y-6">
@@ -226,7 +328,7 @@ const MyReportsPage: React.FC = () => {
       </div>
 
       {/* Statistics Cards */}
-      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+      <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
         <Card>
           <CardContent className="p-4">
             <div className="text-center">
@@ -272,21 +374,10 @@ const MyReportsPage: React.FC = () => {
         <Card>
           <CardContent className="p-4">
             <div className="text-center">
-              <p className="text-2xl font-bold text-purple-600">
-                {stats.totalUpvotes}
+              <p className="text-2xl font-bold text-red-600">
+                {stats.rejected}
               </p>
-              <p className="text-sm text-gray-600">Total Dukungan</p>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardContent className="p-4">
-            <div className="text-center">
-              <p className="text-2xl font-bold text-gray-600">
-                {stats.totalViews}
-              </p>
-              <p className="text-sm text-gray-600">Total Dilihat</p>
+              <p className="text-sm text-gray-600">Ditolak</p>
             </div>
           </CardContent>
         </Card>
@@ -295,8 +386,8 @@ const MyReportsPage: React.FC = () => {
       {/* Filters */}
       <Card>
         <CardContent className="p-6">
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-            <div className="relative">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <form onSubmit={handleSearch} className="relative">
               <Search className="absolute left-3 top-2.5 h-4 w-4 text-gray-400" />
               <Input
                 placeholder="Cari laporan..."
@@ -304,183 +395,61 @@ const MyReportsPage: React.FC = () => {
                 onChange={(e) => setSearchTerm(e.target.value)}
                 className="pl-10"
               />
-            </div>
+            </form>
 
             <Select
               options={statusOptions}
               value={selectedStatus}
-              onChange={(e) => setSelectedStatus(e.target.value)}
+              onChange={(e) => {
+                setSelectedStatus(e.target.value);
+                setPage(1);
+              }}
               placeholder="Filter status"
             />
 
             <Select
               options={categoryOptions}
               value={selectedCategory}
-              onChange={(e) => setSelectedCategory(e.target.value)}
+              onChange={(e) => {
+                setSelectedCategory(e.target.value);
+                setPage(1);
+              }}
               placeholder="Filter kategori"
             />
-
-            <div className="flex gap-2">
-              <Button
-                variant={viewMode === "grid" ? "primary" : "outline"}
-                size="sm"
-                onClick={() => setViewMode("grid")}
-                className="flex-1"
-              >
-                Grid
-              </Button>
-              <Button
-                variant={viewMode === "list" ? "primary" : "outline"}
-                size="sm"
-                onClick={() => setViewMode("list")}
-                className="flex-1"
-              >
-                List
-              </Button>
-            </div>
           </div>
         </CardContent>
       </Card>
 
       {/* Reports List */}
-      <div
-        className={
-          viewMode === "grid"
-            ? "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
-            : "space-y-4"
-        }
-      >
-        {filteredReports.map((report) => {
-          const statusInfo = getStatusBadge(report.status);
-
-          return (
-            <Card key={report.id} className="hover:shadow-md transition-shadow">
+      {isLoading ? (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {[...Array(6)].map((_, i) => (
+            <Card key={i} className="animate-pulse">
               <CardContent className="p-6">
-                {/* Header with actions */}
-                <div className="flex justify-between items-start mb-3">
-                  <div className="flex flex-wrap gap-2">
-                    <Badge variant="default" size="sm">
-                      {getCategoryLabel(report.category)}
-                    </Badge>
-                    <Badge variant={statusInfo.variant} size="sm">
-                      {statusInfo.label}
-                    </Badge>
-                    {report.isAnonymous && (
-                      <Badge variant="default" size="sm">
-                        Anonim
-                      </Badge>
-                    )}
-                    {!report.isPublic && (
-                      <Badge variant="default" size="sm">
-                        <EyeOff className="mr-1 h-3 w-3" />
-                        Privat
-                      </Badge>
-                    )}
-                  </div>
-
-                  {/* Action Menu */}
-                  <div className="relative">
-                    <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
-                      <MoreVertical className="h-4 w-4" />
-                    </Button>
-                    {/* Dropdown menu would go here in real implementation */}
-                  </div>
-                </div>
-
-                {/* Title and Description */}
-                <h3 className="font-semibold text-gray-900 mb-2 line-clamp-2">
-                  {report.title}
-                </h3>
-                <p className="text-sm text-gray-600 mb-4 line-clamp-3">
-                  {report.description}
-                </p>
-
-                {/* Location */}
-                <div className="flex items-center text-sm text-gray-500 mb-4">
-                  <span className="truncate">{report.location.address}</span>
-                </div>
-
-                {/* Metrics */}
-                <div className="flex items-center justify-between text-sm text-gray-500 mb-4">
-                  <div className="flex items-center space-x-4">
-                    <span className="flex items-center">
-                      <ThumbsUp className="mr-1 h-4 w-4" />
-                      {report.upvoteCount}
-                    </span>
-                    <span className="flex items-center">
-                      <MessageCircle className="mr-1 h-4 w-4" />
-                      {report.commentCount}
-                    </span>
-                    <span className="flex items-center">
-                      <Eye className="mr-1 h-4 w-4" />
-                      {report.viewCount}
-                    </span>
-                  </div>
-
-                  {report.attachments.length > 0 && (
-                    <span className="text-xs">
-                      📎 {report.attachments.length}
-                    </span>
-                  )}
-                </div>
-
-                {/* Dates */}
-                <div className="flex items-center justify-between text-xs text-gray-400 mb-4">
-                  <span className="flex items-center">
-                    <Calendar className="mr-1 h-3 w-3" />
-                    Dibuat: {formatDate(report.createdAt)}
-                  </span>
-                  {report.updatedAt !== report.createdAt && (
-                    <span className="flex items-center">
-                      <Clock className="mr-1 h-3 w-3" />
-                      Update: {formatDate(report.updatedAt)}
-                    </span>
-                  )}
-                </div>
-
-                {/* Action Buttons */}
-                <div className="flex gap-2">
-                  <Link to={`/reports/${report.id}`} className="flex-1">
-                    <Button variant="outline" size="sm" className="w-full">
-                      <Eye className="mr-1 h-4 w-4" />
-                      Lihat
-                    </Button>
-                  </Link>
-
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => toggleReportVisibility(report.id)}
-                    className="px-3"
-                  >
-                    {report.isPublic ? (
-                      <Eye className="h-4 w-4" />
-                    ) : (
-                      <EyeOff className="h-4 w-4" />
-                    )}
-                  </Button>
-
-                  <Button variant="ghost" size="sm" className="px-3">
-                    <Edit className="h-4 w-4" />
-                  </Button>
-
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => handleDeleteReport(report.id)}
-                    className="px-3 text-red-600 hover:text-red-700"
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </Button>
+                <div className="h-4 bg-gray-200 rounded w-3/4 mb-2"></div>
+                <div className="h-3 bg-gray-200 rounded w-1/2 mb-4"></div>
+                <div className="space-y-2">
+                  <div className="h-2 bg-gray-200 rounded"></div>
+                  <div className="h-2 bg-gray-200 rounded w-5/6"></div>
                 </div>
               </CardContent>
             </Card>
-          );
-        })}
-      </div>
-
-      {/* Empty State */}
-      {filteredReports.length === 0 && (
+          ))}
+        </div>
+      ) : isError ? (
+        <Card>
+          <CardContent className="p-12 text-center">
+            <AlertTriangle className="mx-auto h-12 w-12 text-red-400 mb-4" />
+            <h3 className="text-lg font-semibold text-gray-900 mb-2">
+              Gagal Memuat Laporan
+            </h3>
+            <p className="text-gray-600 mb-4">
+              {error?.message || "Terjadi kesalahan saat memuat laporan Anda"}
+            </p>
+            <Button onClick={() => window.location.reload()}>Coba Lagi</Button>
+          </CardContent>
+        </Card>
+      ) : filteredReports.length === 0 ? (
         <Card>
           <CardContent className="p-12 text-center">
             <TrendingUp className="mx-auto h-12 w-12 text-gray-400 mb-4" />
@@ -504,14 +473,189 @@ const MyReportsPage: React.FC = () => {
             )}
           </CardContent>
         </Card>
-      )}
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {filteredReports.map((report: Report) => {
+            const statusInfo = getStatusBadge(report.status);
 
-      {/* Load More (if needed) */}
-      {filteredReports.length > 0 && (
-        <div className="text-center">
-          <Button variant="outline">Muat Lebih Banyak</Button>
+            return (
+              <Card
+                key={report.id}
+                className="hover:shadow-lg transition-shadow cursor-pointer relative"
+              >
+                <CardContent
+                  className="p-6"
+                  onClick={() => handleCardClick(report.id)}
+                >
+                  {/* Header with actions */}
+                  <div className="flex justify-between items-start mb-3">
+                    <div className="flex flex-wrap gap-2">
+                      <Badge variant="default" size="sm">
+                        {getCategoryLabel(report.category)}
+                      </Badge>
+                      <Badge variant={statusInfo.variant} size="sm">
+                        {statusInfo.label}
+                      </Badge>
+                      {report.isAnonymous && (
+                        <Badge variant="default" size="sm">
+                          Anonim
+                        </Badge>
+                      )}
+                      {!report.isPublic && (
+                        <Badge variant="default" size="sm">
+                          <EyeOff className="mr-1 h-3 w-3" />
+                          Privat
+                        </Badge>
+                      )}
+                    </div>
+
+                    {/* Action Menu */}
+                    <div className="relative">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="h-8 w-8 p-0"
+                        data-dropdown-toggle
+                        onClick={(e) => {
+                          e.stopPropagation(); // Prevent card click
+                          setOpenDropdown(
+                            openDropdown === report.id ? null : report.id
+                          );
+                        }}
+                      >
+                        <MoreVertical className="h-4 w-4" />
+                      </Button>
+
+                      {/* Dropdown Menu */}
+                      {openDropdown === report.id && (
+                        <div
+                          className="absolute right-0 top-8 mt-1 w-48 bg-white rounded-md shadow-lg border border-gray-200 z-10"
+                          data-dropdown
+                        >
+                          <div className="py-1">
+                            <button
+                              className="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleToggleVisibility(report.id);
+                                setOpenDropdown(null);
+                              }}
+                            >
+                              {report.isPublic ? (
+                                <>
+                                  <EyeOff className="mr-2 h-4 w-4" />
+                                  Jadikan Privat
+                                </>
+                              ) : (
+                                <>
+                                  <Eye className="mr-2 h-4 w-4" />
+                                  Jadikan Publik
+                                </>
+                              )}
+                            </button>
+                            <button
+                              className="flex items-center w-full px-4 py-2 text-sm text-red-600 hover:bg-gray-100"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleDeleteReport(report.id);
+                                setOpenDropdown(null);
+                              }}
+                            >
+                              <Trash2 className="mr-2 h-4 w-4" />
+                              Hapus Laporan
+                            </button>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Title and Description */}
+                  <h3 className="font-semibold text-gray-900 mb-2 line-clamp-2 whitespace-pre-wrap break-words">
+                    {report.title}
+                  </h3>
+                  <p className="text-sm text-gray-600 mb-4 line-clamp-3 whitespace-pre-wrap break-words">
+                    {report.description}
+                  </p>
+
+                  {/* Location */}
+                  <div className="flex items-center text-sm text-gray-500 mb-4">
+                    <span className="truncate">{report.location.address}</span>
+                  </div>
+
+                  {/* Metrics */}
+                  <div className="flex items-center justify-between text-sm text-gray-500 mb-4">
+                    <div className="flex items-center space-x-4">
+                      <span className="flex items-center">
+                        <ThumbsUp className="mr-1 h-4 w-4" />
+                        {report.upvoteCount}
+                      </span>
+                      <span className="flex items-center">
+                        <MessageCircle className="mr-1 h-4 w-4" />
+                        {report.commentCount}
+                      </span>
+                      <span className="flex items-center">
+                        <ThumbsUp className="mr-1 h-4 w-4" />
+                        {report.upvoteCount}
+                      </span>
+                    </div>
+
+                    {report.attachments.length > 0 && (
+                      <span className="text-xs">
+                        📎 {report.attachments.length}
+                      </span>
+                    )}
+                  </div>
+
+                  {/* Dates */}
+                  <div className="flex items-center justify-between text-xs text-gray-400 mb-4">
+                    <span className="flex items-center">
+                      <Calendar className="mr-1 h-3 w-3" />
+                      Dibuat: {formatDate(report.createdAt)}
+                    </span>
+                    {report.updatedAt !== report.createdAt && (
+                      <span className="flex items-center">
+                        <Clock className="mr-1 h-3 w-3" />
+                        Update: {formatDate(report.updatedAt)}
+                      </span>
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
+            );
+          })}
         </div>
       )}
+
+      {/* Load More / Pagination (if needed) */}
+      {!isLoading &&
+        !isError &&
+        filteredReports.length > 0 &&
+        totalPages > 1 && (
+          <div className="text-center">
+            <div className="flex justify-center gap-2">
+              {page > 1 && (
+                <Button
+                  variant="outline"
+                  onClick={() => handlePageChange(page - 1)}
+                >
+                  Sebelumnya
+                </Button>
+              )}
+              <span className="px-4 py-2 text-sm text-gray-600">
+                Halaman {page} dari {totalPages}
+              </span>
+              {page < totalPages && (
+                <Button
+                  variant="outline"
+                  onClick={() => handlePageChange(page + 1)}
+                >
+                  Selanjutnya
+                </Button>
+              )}
+            </div>
+          </div>
+        )}
     </div>
   );
 };

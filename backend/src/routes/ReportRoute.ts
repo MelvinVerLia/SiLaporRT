@@ -9,10 +9,19 @@ const router = Router();
 // === CORE REPORT ROUTES ===
 router.get("/", ReportController.getAllReports);
 router.get("/get-recent", ReportController.getRecentReports);
+router.get("/my-reports", authenticateJWT, ReportController.getUserReports);
 router.get("/:reportId", ReportController.getReportById);
 // router.get("/:userId", ReportController.getReportById);
 
 router.post("/add", authenticateJWT, ReportController.createReport);
+
+// === USER REPORT MANAGEMENT ===
+router.delete("/:reportId", authenticateJWT, ReportController.deleteReport);
+router.put(
+  "/:reportId/visibility",
+  authenticateJWT,
+  ReportController.toggleReportVisibility
+);
 
 // === COMMUNITY INTERACTION ROUTES ===
 router.post("/:reportId/comment", authenticateJWT, ReportController.addComment);

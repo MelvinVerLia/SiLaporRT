@@ -275,7 +275,7 @@ export default function ManageReportsPage() {
       </div>
 
       {/* Statistics Cards */}
-      <div className="grid grid-cols-2 lg:grid-cols-5 gap-4">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         <Card>
           <CardContent className="p-4">
             <div className="flex items-center">
@@ -331,27 +331,18 @@ export default function ManageReportsPage() {
             </div>
           </CardContent>
         </Card>
-
-        <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center">
-              <FileText className="h-8 w-8 text-gray-500" />
-              <div className="ml-3">
-                <p className="text-sm font-medium text-gray-500">Total</p>
-                <p className="text-lg font-semibold">
-                  {statsData?.TOTAL || total}
-                </p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
       </div>
 
       {/* Reports List */}
       <Card>
         <CardHeader>
           <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4">
-            <CardTitle>Daftar Laporan</CardTitle>
+            <div className="flex items-center gap-3">
+              <CardTitle>Daftar Laporan</CardTitle>
+              <Badge variant="default" size="sm">
+                {total} total
+              </Badge>
+            </div>
 
             {/* Filters */}
             <div className="flex flex-col md:flex-row gap-4 w-full lg:w-auto">
@@ -420,12 +411,12 @@ export default function ManageReportsPage() {
               <div className="hidden lg:block overflow-x-auto">
                 <table className="min-w-full table-fixed">
                   <colgroup>
-                    <col className="w-2/5" /> {/* Laporan - 40% */}
+                    <col className="w-35/100" /> {/* Laporan - 35% */}
                     <col className="w-1/10" /> {/* Kategori - 10% */}
-                    <col className="w-1/10" /> {/* Status - 10% */}
                     <col className="w-1/10" /> {/* Prioritas - 10% */}
-                    <col className="w-1/10" /> {/* Upvotes - 10% */}
-                    <col className="w-1/5" /> {/* Tanggal - 20% */}
+                    <col className="w-1/10" /> {/* Visibilitas - 10% */}
+                    <col className="w-2/10" /> {/* Tanggal - 20% */}
+                    <col className="w-15/100" /> {/* Status - 15% */}
                   </colgroup>
                   <thead>
                     <tr className="border-b border-gray-200">
@@ -436,16 +427,16 @@ export default function ManageReportsPage() {
                         Kategori
                       </th>
                       <th className="text-left py-4 pr-4 text-sm font-medium text-gray-600">
-                        Status
-                      </th>
-                      <th className="text-left py-4 pr-4 text-sm font-medium text-gray-600">
                         Prioritas
                       </th>
                       <th className="text-left py-4 pr-4 text-sm font-medium text-gray-600">
-                        Interaksi
+                        Visibilitas
                       </th>
                       <th className="text-left py-4 text-sm font-medium text-gray-600">
                         Tanggal
+                      </th>
+                      <th className="text-left py-4 pr-4 text-sm font-medium text-gray-600">
+                        Status
                       </th>
                     </tr>
                   </thead>
@@ -499,23 +490,6 @@ export default function ManageReportsPage() {
                             </Badge>
                           </td>
                           <td className="py-5 pr-4">
-                            <select
-                              value={report.status}
-                              onChange={(e) => {
-                                e.stopPropagation();
-                                handleStatusChange(report.id, e.target.value);
-                              }}
-                              className="text-xs border rounded px-2 py-1"
-                              onClick={(e) => e.stopPropagation()}
-                            >
-                              <option value="PENDING">Menunggu</option>
-                              <option value="IN_PROGRESS">Dalam Proses</option>
-                              <option value="RESOLVED">Selesai</option>
-                              <option value="REJECTED">Ditolak</option>
-                              <option value="CLOSED">Ditutup</option>
-                            </select>
-                          </td>
-                          <td className="py-5 pr-4">
                             <Badge variant="default" size="sm">
                               <span
                                 className={`block truncate text-xs ${priority.color}`}
@@ -525,16 +499,14 @@ export default function ManageReportsPage() {
                             </Badge>
                           </td>
                           <td className="py-5 pr-4">
-                            <div className="flex items-center space-x-3 text-xs text-gray-500">
-                              <div className="flex items-center">
-                                <ThumbsUp className="h-3 w-3 mr-1" />
-                                <span>{report.upvoteCount}</span>
-                              </div>
-                              <div className="flex items-center">
-                                <MessageCircle className="h-3 w-3 mr-1" />
-                                <span>{report.commentCount}</span>
-                              </div>
-                            </div>
+                            <Badge
+                              variant={report.isPublic ? "success" : "warning"}
+                              size="sm"
+                            >
+                              <span className="block truncate text-xs">
+                                {report.isPublic ? "Publik" : "Privat"}
+                              </span>
+                            </Badge>
                           </td>
                           <td className="py-5">
                             <div className="text-xs text-gray-600">
@@ -550,6 +522,23 @@ export default function ManageReportsPage() {
                                 <p className="text-gray-500">Anonim</p>
                               )}
                             </div>
+                          </td>
+                          <td className="py-5 pr-4">
+                            <select
+                              value={report.status}
+                              onChange={(e) => {
+                                e.stopPropagation();
+                                handleStatusChange(report.id, e.target.value);
+                              }}
+                              className="text-xs border rounded px-2 py-1"
+                              onClick={(e) => e.stopPropagation()}
+                            >
+                              <option value="PENDING">Menunggu</option>
+                              <option value="IN_PROGRESS">Dalam Proses</option>
+                              <option value="RESOLVED">Selesai</option>
+                              <option value="REJECTED">Ditolak</option>
+                              <option value="CLOSED">Ditutup</option>
+                            </select>
                           </td>
                         </tr>
                       );
@@ -604,6 +593,12 @@ export default function ManageReportsPage() {
                               <span className={priority.color}>
                                 {priority.label}
                               </span>
+                            </Badge>
+                            <Badge
+                              variant={report.isPublic ? "success" : "warning"}
+                              size="sm"
+                            >
+                              {report.isPublic ? "Publik" : "Privat"}
                             </Badge>
                           </div>
 

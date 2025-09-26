@@ -69,6 +69,10 @@ const ReportDetailPage: React.FC = () => {
     location.pathname.includes("/admin") ||
     document.referrer.includes("/admin/reports");
 
+  const isFromMyReports =
+    location.state?.from === "my-reports" ||
+    document.referrer.includes("/my-reports");
+
   const {
     data: report,
     isLoading,
@@ -328,6 +332,16 @@ const ReportDetailPage: React.FC = () => {
     ? [
         { label: "Dashboard", href: "/admin" },
         { label: "Kelola Laporan", href: "/admin/reports" },
+        {
+          label:
+            report.title.length > 50
+              ? report.title.substring(0, 50) + "..."
+              : report.title,
+        },
+      ]
+    : isFromMyReports
+    ? [
+        { label: "Laporan Saya", href: "/my-reports" },
         {
           label:
             report.title.length > 50

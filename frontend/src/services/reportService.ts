@@ -158,6 +158,41 @@ export async function getUserUpvoteStatus(reportId: string) {
   return res.data;
 }
 
+// Get user's own reports
+export async function getUserReports(params: {
+  page?: number;
+  pageSize?: number;
+  q?: string;
+  category?: string;
+  status?: string;
+}) {
+  const res = await request("/reports/my-reports", {
+    method: "GET",
+    params,
+  });
+  return res.data;
+}
+
+// Delete user's own report
+export async function deleteUserReport(reportId: string) {
+  const res = await request(`/reports/${reportId}`, { method: "DELETE" });
+  return res.data;
+}
+
+// Toggle report visibility (public/private)
+export async function toggleReportVisibility(reportId: string) {
+  const res = await request(`/reports/${reportId}/visibility`, {
+    method: "PUT",
+  });
+  return res.data;
+}
+
+// Get user report statistics
+export async function getUserReportStatistics() {
+  const res = await request("/reports/my-reports/stats", { method: "GET" });
+  return res.data;
+}
+
 // export async function getRecentReports(search: string, category: string, status:string) {
 //   const res = await request("/reports/get-recent", { method: "GET" });
 //   return res.data;

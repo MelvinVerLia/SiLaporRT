@@ -306,6 +306,63 @@ class ReportController {
       });
     }
   }
+
+  static async getUserReports(req: Request, res: Response) {
+    try {
+      const user = req.user as { id: string };
+      const params = { ...req.query, userId: user.id };
+
+      const reports = await ReportService.getAllReports(params);
+      res.json({
+        success: true,
+        message: `Retrieved ${reports.total} user reports`,
+        data: reports,
+      });
+    } catch (error: any) {
+      res.status(500).json({
+        success: false,
+        message: error.message || "Failed to fetch user reports",
+      });
+    }
+  }
+
+  static async deleteReport(req: Request, res: Response) {
+    try {
+      const user = req.user as { id: string };
+      const { reportId } = req.params;
+
+      const result = await ReportService.deleteReport(reportId, user.id);
+      res.json({
+        success: true,
+        message: "Report deleted successfully",
+        data: result,
+      });
+    } catch (error: any) {
+      res.status(500).json({
+        success: false,
+        message: error.message || "Failed to delete report",
+      });
+    }
+  }
+
+  static async toggleReportVisibility(req: Request, res: Response) {
+    try {
+      const user = req.user as { id: string };
+      const { reportId } = req.params;
+
+      const result = await ReportService.toggleVisibility(reportId, user.id);
+      res.json({
+        success: true,
+        message: "Report visibility updated successfully",
+        data: result,
+      });
+    } catch (error: any) {
+      res.status(500).json({
+        success: false,
+        message: error.message || "Failed to update report visibility",
+      });
+    }
+  }
 }
 
 export default ReportController;
