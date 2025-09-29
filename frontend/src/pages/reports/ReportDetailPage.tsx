@@ -411,8 +411,8 @@ const ReportDetailPage: React.FC = () => {
                 </LoadScript>
               </div>
               <div className="flex flex-col sm:flex-row sm:items-center gap-4 text-sm text-gray-600">
-                <div className="flex items-center">
-                  {isAuthenticated && (
+                {isAuthenticated && (
+                  <div className="flex items-center">
                     <Button
                       variant={hasUpvoted ? "primary" : "outline"}
                       size="sm"
@@ -434,8 +434,8 @@ const ReportDetailPage: React.FC = () => {
                       />
                       {report.upvoteCount}
                     </Button>
-                  )}
-                </div>
+                  </div>
+                )}
                 <div className="flex items-center">
                   <User className="mr-1 h-4 w-4" />
                   <span>

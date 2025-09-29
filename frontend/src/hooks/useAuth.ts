@@ -15,7 +15,9 @@ import {
   deleteAccount as apiDelete,
   updateProfile as apiUpdateProfile,
   changePassword as apiChangePassword,
-  // verifyOTP as verifyOtp,
+  validateForgotPasswordToken,
+  changeForgotPassword,
+  forgotPassword as sendForgotPassword,
 } from "../services/authService";
 
 export const useAuth = () => {
@@ -191,6 +193,46 @@ export const useAuth = () => {
     }
   }, []);
 
+  const verifyForgotPasswordToken = useCallback(
+    async (token: string, email: string) => {
+      setError(null);
+      try {
+        await validateForgotPasswordToken(token, email);
+        return true;
+      } catch (error) {
+        console.log(error);
+        setError({ message: "Token tidak valid" });
+        return false;
+      }
+    },
+    []
+  );
+
+  const forgotPasswordChange = useCallback(
+    async (email: string, password: string) => {
+      setError(null);
+      try {
+        await changeForgotPassword(email, password);
+      } catch (error) {
+        console.log(error);
+        setError({ message: "Gagal mengubah password" });
+      }
+    },
+    []
+  );
+
+  const forgotPassword = useCallback(async (email: string) => {
+    setError(null);
+    try {
+      await sendForgotPassword(email);
+      return true;
+    } catch (error) {
+      console.log(error);
+      setError({ message: "Gagal mengirim email" });
+      return false;
+    }
+  }, []);
+
   return {
     user,
     isLoading,
@@ -200,13 +242,15 @@ export const useAuth = () => {
     login,
     logout,
     register,
-    updateProfile, // TODO
+    updateProfile,
     error,
     clearError: () => setError(null),
-    sendOtp, // TODO
-    resendOTP, // TODO
+    sendOtp,
+    resendOTP,
     deleteAccount,
     changePassword,
-    // verifyOTP,
+    verifyForgotPasswordToken,
+    forgotPasswordChange,
+    forgotPassword,
   };
 };

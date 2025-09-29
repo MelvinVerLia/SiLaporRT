@@ -1,4 +1,4 @@
-import { transporter } from "./mailer";
+import { EmailService } from "./EmailService";
 
 export const sendOTPEmail = async (
   email: string,
@@ -167,6 +167,7 @@ export const sendOTPEmail = async (
   </body>
   `;
   try {
+    const transporter = await EmailService.transporter();
     await transporter.sendMail({
       from: process.env.MAIL_FROM,
       to: email,

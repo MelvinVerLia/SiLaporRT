@@ -24,6 +24,11 @@ router.get(
 
 router.post("/forgot-password", AuthController.forgotPassword);
 router.post("/validate-token", AuthController.validateToken);
+
+//route buat change password di forgot password
+router.put("/forgot-password-change", AuthController.changeForgotPassword);
+
+//route buat change password in profile page
 router.put("/change-password", authenticateJWT, AuthController.changePassword);
 
 router.get("/profile", authenticateJWT, AuthController.getProfile);

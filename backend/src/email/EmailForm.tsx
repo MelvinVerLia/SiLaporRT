@@ -1,4 +1,4 @@
-import { transporter } from "./mailer";
+import { EmailService } from "./EmailService";
 
 export const sendPasswordResetEmail = async (
   email: string,
@@ -141,6 +141,7 @@ export const sendPasswordResetEmail = async (
   `;
 
   try {
+    const transporter = await EmailService.transporter();
     await transporter.sendMail({
       from: process.env.MAIL_FROM,
       to: email,

@@ -1,15 +1,10 @@
 import React, { useState, useEffect } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { Eye, EyeOff, Lock, Check, X } from "lucide-react";
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "../../components/ui/Card";
+import { Card, CardContent, CardTitle } from "../../components/ui/Card";
 import Button from "../../components/ui/Button";
 import Input from "../../components/ui/Input";
-import { AuthFinder } from "../../api/AuthFinder";
+import { useAuthContext } from "../../contexts/AuthContext";
 
 const ResetPasswordPage: React.FC = () => {
   const navigate = useNavigate();
@@ -23,6 +18,7 @@ const ResetPasswordPage: React.FC = () => {
   const [isTokenValid, setIsTokenValid] = useState<boolean | null>(null);
   const [error, setError] = useState<string>("");
   const [isResetSuccessful, setIsResetSuccessful] = useState(false);
+  const { verifyForgotPasswordToken, forgotPasswordChange } = useAuthContext();
 
   // Password validation criteria
   const [passwordCriteria, setPasswordCriteria] = useState({
@@ -33,31 +29,23 @@ const ResetPasswordPage: React.FC = () => {
     hasSpecial: false,
   });
 
-  // Validate token on component mount
+  const validateToken = async () => {
+    if (!token || !email) return setIsTokenValid(false);
+
+    try {
+      const response = await verifyForgotPasswordToken(token, email);
+      if (!response) return setIsTokenValid(false);
+      console.log(response);
+      setIsTokenValid(true);
+    } catch (err) {
+      console.log(err);
+      setIsTokenValid(false);
+    }
+  };
+
   useEffect(() => {
-    const validateToken = async () => {
-      if (!token) {
-        setIsTokenValid(false);
-        return;
-      }
-      // Simulate token validation API call
-      console.log("hello");
-      console.log(`token: ${token}`);
-      try {
-        const response = await AuthFinder.post("/validate-token", {
-          token,
-        });
-        console.log("response", response);
-
-        setIsTokenValid(true);
-      } catch (err) {
-        console.log("somethingw ontg");
-        setIsTokenValid(false);
-      }
-    };
-
     validateToken();
-  }, [token]);
+  }, []);
 
   // Validate password criteria
   useEffect(() => {
@@ -90,16 +78,9 @@ const ResetPasswordPage: React.FC = () => {
     setIsLoading(true);
 
     try {
-      // Simulate API call untuk reset password
-      // await new Promise((resolve) => setTimeout(resolve, 2000));
-      const response = await AuthFinder.put("/change-password", {
-        email,
-        password,
-      });
-      console.log(response)
+      await forgotPasswordChange(email!, password);
       setIsResetSuccessful(true);
 
-      // Redirect to login after 3 seconds
       setTimeout(() => {
         navigate("/login", {
           state: {
@@ -109,6 +90,7 @@ const ResetPasswordPage: React.FC = () => {
         });
       }, 2000);
     } catch (err) {
+      console.log(err);
       setError("Terjadi kesalahan saat mengubah password. Silakan coba lagi.");
     } finally {
       setIsLoading(false);

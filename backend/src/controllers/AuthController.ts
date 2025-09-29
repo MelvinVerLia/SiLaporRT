@@ -176,7 +176,7 @@ export class AuthController {
 
   static async validateToken(req: Request, res: Response) {
     try {
-      const { token } = req.body;
+      const { token, email } = req.body;
       if (!token) {
         return res.status(400).json({
           success: false,
@@ -184,7 +184,14 @@ export class AuthController {
         });
       }
 
-      const result = await AuthService.validateToken(token);
+      if (!email) {
+        return res.status(400).json({
+          success: false,
+          message: "Email is required",
+        });
+      }
+
+      const result = await AuthService.validateToken(token, email);
       console.log("result", result);
       res.status(200).json({
         success: true,
@@ -201,10 +208,38 @@ export class AuthController {
     }
   }
 
+  static async changeForgotPassword(req: Request, res: Response) {
+    try {
+      const { email, password } = req.body;
+      console.log(email, password);
+      if (!password) {
+        return res.status(400).json({
+          success: false,
+          message: "Password is required",
+        });
+      }
+
+      await AuthService.changeForgotPassword(email, password);
+
+      res.json({
+        success: true,
+        message: "Password changed successfully",
+      });
+    } catch (error) {
+      res.status(400).json({
+        success: false,
+        message:
+          error instanceof Error ? error.message : "Failed to change password",
+      });
+    }
+  }
+
   static async changePassword(req: Request, res: Response) {
     try {
       const { password } = req.body;
       const userId = JSON.parse(JSON.stringify(req.user)).id;
+      console.log("userId", userId);
+
       if (!password) {
         return res.status(400).json({
           success: false,

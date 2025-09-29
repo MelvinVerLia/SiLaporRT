@@ -1,15 +1,10 @@
 import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import { Mail, ArrowLeft, Check } from "lucide-react";
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "../../components/ui/Card";
+import { Card, CardContent, CardTitle } from "../../components/ui/Card";
 import Button from "../../components/ui/Button";
 import Input from "../../components/ui/Input";
-import { AuthFinder } from "../../api/AuthFinder";
+import { forgotPassword } from "../../services/authService";
 
 const ForgotPasswordPage: React.FC = () => {
   const [email, setEmail] = useState("");
@@ -22,22 +17,20 @@ const ForgotPasswordPage: React.FC = () => {
     setError("");
     setIsLoading(true);
 
-    // Simulate API call untuk forgot password
     try {
-      // Simulate email validation
       if (!email.includes("@")) {
         setError("Alamat email tidak valid");
         return;
       }
+      const response = await forgotPassword(email);
 
-      const response = await AuthFinder.post("/forgot-password", { email });
+      if (response === false) {
+        setError("Terjadi kesalahan. Silakan coba lagi.");
+      }
 
-      // Simulate API delay
-      await new Promise((resolve) => setTimeout(resolve, 2000));
-
-      // Simulate success
       setIsEmailSent(true);
     } catch (err) {
+      console.log(err);
       setError("Terjadi kesalahan. Silakan coba lagi.");
     } finally {
       setIsLoading(false);
@@ -48,16 +41,18 @@ const ForgotPasswordPage: React.FC = () => {
     setIsLoading(true);
     setError("");
     if (!email.includes("@")) {
-        setError("Alamat email tidak valid");
-        return;
-      }
+      setError("Alamat email tidak valid");
+      return;
+    }
 
-      const response = await AuthFinder.post("/forgot-password", { email });
-    // Simulate resend email
-    setIsLoading(false);  
+    const response = await forgotPassword(email);
+
+    if (response === false) {
+      setError("Terjadi kesalahan. Silakan coba lagi.");
+    }
+    setIsLoading(false);
   };
 
-  // Success state - Email telah dikirim
   if (isEmailSent) {
     return (
       <div className="min-h-screen bg-gradient-to-l from-blue-200 to-white flex flex-col justify-center py-12 px-4 sm:px-6 lg:px-8">

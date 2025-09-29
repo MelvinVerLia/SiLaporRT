@@ -14,16 +14,6 @@ export async function login(payload: LoginCredentials): Promise<AuthUser> {
   return res.data as AuthUser; // { user, token }
 }
 
-// export async function register(
-//   payload: Omit<RegisterData, "confirmPassword">
-// ): Promise<AuthUser> {
-//   const res = await request("/auth/register", {
-//     method: "POST",
-//     data: payload, // ⬅️
-//   });
-//   return res.data as AuthUser; // { user, token }
-// }
-
 export async function getProfile(): Promise<User> {
   const res = await request("/auth/profile", { method: "GET" });
   return (res.data as { user: User }).user;
@@ -80,6 +70,33 @@ export async function changePassword(password: string) {
   const res = await request(`/auth/change-password`, {
     method: "put",
     data: { password },
+  });
+  return res;
+}
+
+export async function validateForgotPasswordToken(
+  token: string,
+  email: string
+) {
+  const res = await request(`/auth/validate-token`, {
+    method: "POST",
+    data: { token, email },
+  });
+  return res;
+}
+
+export async function changeForgotPassword(email: string, password: string) {
+  const res = await request(`/auth/forgot-password-change`, {
+    method: "PUT",
+    data: { email, password },
+  });
+  return res;
+}
+
+export async function forgotPassword(email: string) {
+  const res = await request(`/auth/forgot-password`, {
+    method: "POST",
+    data: { email },
   });
   return res;
 }

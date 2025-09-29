@@ -207,18 +207,41 @@ export class AuthService {
     return jwt.sign(payload, jwtSecret, options);
   }
 
-  static async validateToken(token: string) {
+  //untuk forgotpassword
+  static async validateToken(token: string, email: string) {
+    const user = await AuthRepository.getUserByEmail(email);
+    if (!user) throw new Error("User not found");
+    const userId = user.id;
+
     const redis = RedisClient.instance;
     const hashedToken = crypto.createHash("sha256").update(token).digest("hex");
-    const userId = await redis.get(`reset:${hashedToken}`);
+    const savedToken = await redis.get(`reset:${userId}`);
+    console.log("savedToken", savedToken);
+    console.log("hashedToken", hashedToken);
+    if (hashedToken !== savedToken) throw new Error("Invalid token");
 
-    if (!userId) {
-      throw new Error("Invalid or expired token");
+    return { success: true };
+  }
+
+  static async changeForgotPassword(email: string, password: string) {
+    const user = await AuthRepository.getUserByEmail(email);
+
+    if (!user) {
+      throw new Error("User not found");
     }
 
-    await redis.del(`reset:${hashedToken}`);
-    console.log("hello");
-    return { success: true };
+    const userId = user.id;
+    const hashedPassword = await bcrypt.hash(password, 10);
+    const response = await AuthRepository.changePassword(
+      userId,
+      hashedPassword
+    );
+
+    const redis = RedisClient.instance;
+
+    await redis.del(`reset:${userId}`);
+
+    return response;
   }
 
   static async forgotPassword(email: string) {
@@ -234,7 +257,7 @@ export class AuthService {
       .digest("hex");
 
     const redis = RedisClient.instance;
-    await redis.set(`reset:${hashedToken}`, user.id, "EX", 300);
+    await redis.set(`reset:${user.id}`, hashedToken, "EX", 300);
 
     const resetPasswordUrl = `${process.env.FRONTEND_URL}/reset/${rawToken}/${user.email}`;
 
@@ -247,6 +270,7 @@ export class AuthService {
       userId,
       hashedPassword
     );
+
     return response;
   }
 
