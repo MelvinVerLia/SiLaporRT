@@ -332,32 +332,11 @@ const ReportDetailPage: React.FC = () => {
     ? [
         { label: "Dashboard", href: "/admin" },
         { label: "Kelola Laporan", href: "/admin/reports" },
-        {
-          label:
-            report.title.length > 50
-              ? report.title.substring(0, 50) + "..."
-              : report.title,
-        },
+        { label: report.title },
       ]
     : isFromMyReports
-    ? [
-        { label: "Laporan Saya", href: "/my-reports" },
-        {
-          label:
-            report.title.length > 50
-              ? report.title.substring(0, 50) + "..."
-              : report.title,
-        },
-      ]
-    : [
-        { label: "Laporan", href: "/reports" },
-        {
-          label:
-            report.title.length > 50
-              ? report.title.substring(0, 50) + "..."
-              : report.title,
-        },
-      ];
+    ? [{ label: "Laporan Saya", href: "/my-reports" }, { label: report.title }]
+    : [{ label: "Laporan", href: "/reports" }, { label: report.title }];
 
   return (
     <div className="space-y-6">
