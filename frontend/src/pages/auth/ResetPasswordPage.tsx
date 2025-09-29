@@ -23,10 +23,6 @@ const ResetPasswordPage: React.FC = () => {
   // Password validation criteria
   const [passwordCriteria, setPasswordCriteria] = useState({
     minLength: false,
-    hasUpper: false,
-    hasLower: false,
-    hasNumber: false,
-    hasSpecial: false,
   });
 
   const validateToken = async () => {
@@ -50,11 +46,7 @@ const ResetPasswordPage: React.FC = () => {
   // Validate password criteria
   useEffect(() => {
     setPasswordCriteria({
-      minLength: password.length >= 8,
-      hasUpper: /[A-Z]/.test(password),
-      hasLower: /[a-z]/.test(password),
-      hasNumber: /\d/.test(password),
-      hasSpecial: /[!@#$%^&*(),.?":{}|<>]/.test(password),
+      minLength: password.length >= 6,
     });
   }, [password]);
 
@@ -246,16 +238,12 @@ const ResetPasswordPage: React.FC = () => {
 
               {/* Password Criteria */}
               {password && (
-                <div className="bg-gray-50 rounded-lg p-4 space-y-2">
-                  <p className="text-sm font-medium text-gray-700 mb-2">
+                <div className="bg-gray-50 rounded-lg p-2">
+                  <p className="text-sm font-medium text-gray-500 mb-2">
                     Kriteria Password:
                   </p>
                   {Object.entries({
-                    minLength: "Minimal 8 karakter",
-                    hasUpper: "Huruf besar (A-Z)",
-                    hasLower: "Huruf kecil (a-z)",
-                    hasNumber: "Angka (0-9)",
-                    hasSpecial: "Karakter khusus (!@#$%^&*)",
+                    minLength: "Minimal 6 karakter",
                   }).map(([key, label]) => (
                     <div key={key} className="flex items-center text-sm">
                       {passwordCriteria[
