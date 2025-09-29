@@ -8,18 +8,20 @@ import {
   Trash2,
   Eye,
   EyeOff,
-  Calendar,
   TrendingUp,
   MessageCircle,
   ThumbsUp,
   Clock,
   AlertTriangle,
+  MapPin,
+  Paperclip,
 } from "lucide-react";
 import { Card, CardContent } from "../../components/ui/Card";
 import Button from "../../components/ui/Button";
 import Input from "../../components/ui/Input";
 import Select from "../../components/ui/Select";
 import Badge from "../../components/ui/Badge";
+import Pagination from "../../components/ui/Pagination";
 import { useAuthContext } from "../../contexts/AuthContext";
 import {
   getUserReports,
@@ -27,6 +29,8 @@ import {
   toggleReportVisibility,
 } from "../../services/reportService";
 import { Report } from "../../types/report.types";
+import { formatDistanceToNow } from "date-fns";
+import { id } from "date-fns/locale";
 
 const MyReportsPage: React.FC = () => {
   const { user } = useAuthContext();
@@ -36,8 +40,8 @@ const MyReportsPage: React.FC = () => {
   const [selectedStatus, setSelectedStatus] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("");
   const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(5);
   const [openDropdown, setOpenDropdown] = useState<string | null>(null);
-  const pageSize = 6; // Fixed page size for now
 
   // Clear cache when user changes (fixes cache issue when switching accounts)
   useEffect(() => {
@@ -272,14 +276,6 @@ const MyReportsPage: React.FC = () => {
     return labels[category as keyof typeof labels] || category;
   };
 
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString("id-ID", {
-      year: "numeric",
-      month: "short",
-      day: "numeric",
-    });
-  };
-
   const handleDeleteReport = (reportId: string) => {
     if (window.confirm("Yakin ingin menghapus laporan ini?")) {
       deleteMutation.mutate(reportId);
@@ -303,6 +299,11 @@ const MyReportsPage: React.FC = () => {
 
   const handlePageChange = (newPage: number) => {
     setPage(newPage);
+  };
+
+  const handlePageSizeChange = (newPageSize: number) => {
+    setPageSize(newPageSize);
+    setPage(1); // Reset to first page when page size changes
   };
 
   // No client-side filtering needed since API handles it
@@ -422,15 +423,24 @@ const MyReportsPage: React.FC = () => {
 
       {/* Reports List */}
       {isLoading ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {[...Array(6)].map((_, i) => (
+        <div className="space-y-4">
+          {[...Array(pageSize)].map((_, i) => (
             <Card key={i} className="animate-pulse">
               <CardContent className="p-6">
-                <div className="h-4 bg-gray-200 rounded w-3/4 mb-2"></div>
-                <div className="h-3 bg-gray-200 rounded w-1/2 mb-4"></div>
-                <div className="space-y-2">
-                  <div className="h-2 bg-gray-200 rounded"></div>
-                  <div className="h-2 bg-gray-200 rounded w-5/6"></div>
+                <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-4">
+                  <div className="flex-1 space-y-2 min-w-0">
+                    <div className="h-5 bg-gray-200 rounded w-3/4 mb-2"></div>
+                    <div className="flex gap-2 mb-2">
+                      <div className="h-5 bg-gray-200 rounded w-20"></div>
+                      <div className="h-5 bg-gray-200 rounded w-16"></div>
+                    </div>
+                    <div className="space-y-2">
+                      <div className="h-3 bg-gray-200 rounded"></div>
+                      <div className="h-3 bg-gray-200 rounded w-5/6"></div>
+                    </div>
+                    <div className="h-3 bg-gray-200 rounded w-1/2"></div>
+                  </div>
+                  <div className="h-8 w-8 bg-gray-200 rounded"></div>
                 </div>
               </CardContent>
             </Card>
@@ -474,43 +484,97 @@ const MyReportsPage: React.FC = () => {
           </CardContent>
         </Card>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="space-y-4">
           {filteredReports.map((report: Report) => {
             const statusInfo = getStatusBadge(report.status);
 
             return (
               <Card
                 key={report.id}
-                className="hover:shadow-lg transition-shadow cursor-pointer relative"
+                className="hover:shadow-md transition-shadow"
               >
-                <CardContent
-                  className="p-6"
-                  onClick={() => handleCardClick(report.id)}
-                >
-                  {/* Header with actions */}
-                  <div className="flex justify-between items-start mb-3">
-                    <div className="flex flex-wrap gap-2">
-                      <Badge variant="default" size="sm">
-                        {getCategoryLabel(report.category)}
-                      </Badge>
-                      <Badge variant={statusInfo.variant} size="sm">
-                        {statusInfo.label}
-                      </Badge>
-                      {report.isAnonymous && (
-                        <Badge variant="default" size="sm">
-                          Anonim
-                        </Badge>
-                      )}
-                      {!report.isPublic && (
-                        <Badge variant="default" size="sm">
-                          <EyeOff className="mr-1 h-3 w-3" />
-                          Privat
-                        </Badge>
-                      )}
+                <CardContent className="p-6">
+                  <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-4">
+                    {/* Main Content */}
+                    <div
+                      className="flex-1 space-y-2 min-w-0 cursor-pointer"
+                      onClick={() => handleCardClick(report.id)}
+                    >
+                      {/* Title and Badges */}
+                      <div className="space-y-2">
+                        <h3 className="text-lg font-semibold text-gray-900 whitespace-pre-wrap break-words line-clamp-1">
+                          {report.title}
+                        </h3>
+                        <div className="flex flex-wrap gap-2">
+                          <Badge variant="default" size="sm">
+                            {getCategoryLabel(report.category)}
+                          </Badge>
+                          <Badge variant={statusInfo.variant} size="sm">
+                            {statusInfo.label}
+                          </Badge>
+                          {report.isAnonymous && (
+                            <Badge variant="default" size="sm">
+                              Anonim
+                            </Badge>
+                          )}
+                          {!report.isPublic && (
+                            <Badge variant="default" size="sm">
+                              <EyeOff className="mr-1 h-3 w-3" />
+                              Privat
+                            </Badge>
+                          )}
+                        </div>
+                      </div>
+
+                      {/* Description */}
+                      <p className="text-gray-600 text-sm line-clamp-3 break-words whitespace-pre-wrap">
+                        {report.description}
+                      </p>
+
+                      {/* Location */}
+                      <div className="flex items-center text-sm text-gray-500">
+                        <MapPin className="mr-1 h-4 w-4" />
+                        <span>{report.location.address}</span>
+                      </div>
+
+                      {/* Meta Info */}
+                      <div className="flex items-center justify-between text-sm text-gray-500">
+                        <div className="flex items-center space-x-4">
+                          <span className="flex items-center">
+                            <ThumbsUp className="mr-1 h-4 w-4" />
+                            {report.upvoteCount}
+                          </span>
+                          <span className="flex items-center">
+                            <MessageCircle className="mr-1 h-4 w-4" />
+                            {report.commentCount}
+                          </span>
+                          {report.attachments.length > 0 && (
+                            <span className="flex items-center">
+                              <Paperclip className="mr-1 h-4 w-4" />
+                              {report.attachments.length} file
+                            </span>
+                          )}
+                        </div>
+
+                        <div className="flex items-center">
+                          <Clock className="mr-1 h-4 w-4" />
+                          <span>
+                            {formatDistanceToNow(new Date(report.createdAt), {
+                              addSuffix: true,
+                              locale: id,
+                            })}
+                          </span>
+                        </div>
+                      </div>
+
+                      {/* Author */}
+                      <div className="text-sm text-gray-500">
+                        Dilaporkan oleh: Anda
+                      </div>
                     </div>
 
                     {/* Action Menu */}
-                    <div className="relative">
+                    <div className="relative flex-shrink-0">
                       <Button
                         variant="ghost"
                         size="sm"
@@ -569,57 +633,6 @@ const MyReportsPage: React.FC = () => {
                       )}
                     </div>
                   </div>
-
-                  {/* Title and Description */}
-                  <h3 className="font-semibold text-gray-900 mb-2 line-clamp-2 whitespace-pre-wrap break-words">
-                    {report.title}
-                  </h3>
-                  <p className="text-sm text-gray-600 mb-4 line-clamp-3 whitespace-pre-wrap break-words">
-                    {report.description}
-                  </p>
-
-                  {/* Location */}
-                  <div className="flex items-center text-sm text-gray-500 mb-4">
-                    <span className="truncate">{report.location.address}</span>
-                  </div>
-
-                  {/* Metrics */}
-                  <div className="flex items-center justify-between text-sm text-gray-500 mb-4">
-                    <div className="flex items-center space-x-4">
-                      <span className="flex items-center">
-                        <ThumbsUp className="mr-1 h-4 w-4" />
-                        {report.upvoteCount}
-                      </span>
-                      <span className="flex items-center">
-                        <MessageCircle className="mr-1 h-4 w-4" />
-                        {report.commentCount}
-                      </span>
-                      <span className="flex items-center">
-                        <ThumbsUp className="mr-1 h-4 w-4" />
-                        {report.upvoteCount}
-                      </span>
-                    </div>
-
-                    {report.attachments.length > 0 && (
-                      <span className="text-xs">
-                        📎 {report.attachments.length}
-                      </span>
-                    )}
-                  </div>
-
-                  {/* Dates */}
-                  <div className="flex items-center justify-between text-xs text-gray-400 mb-4">
-                    <span className="flex items-center">
-                      <Calendar className="mr-1 h-3 w-3" />
-                      Dibuat: {formatDate(report.createdAt)}
-                    </span>
-                    {report.updatedAt !== report.createdAt && (
-                      <span className="flex items-center">
-                        <Clock className="mr-1 h-3 w-3" />
-                        Update: {formatDate(report.updatedAt)}
-                      </span>
-                    )}
-                  </div>
                 </CardContent>
               </Card>
             );
@@ -627,35 +640,19 @@ const MyReportsPage: React.FC = () => {
         </div>
       )}
 
-      {/* Load More / Pagination (if needed) */}
-      {!isLoading &&
-        !isError &&
-        filteredReports.length > 0 &&
-        totalPages > 1 && (
-          <div className="text-center">
-            <div className="flex justify-center gap-2">
-              {page > 1 && (
-                <Button
-                  variant="outline"
-                  onClick={() => handlePageChange(page - 1)}
-                >
-                  Sebelumnya
-                </Button>
-              )}
-              <span className="px-4 py-2 text-sm text-gray-600">
-                Halaman {page} dari {totalPages}
-              </span>
-              {page < totalPages && (
-                <Button
-                  variant="outline"
-                  onClick={() => handlePageChange(page + 1)}
-                >
-                  Selanjutnya
-                </Button>
-              )}
-            </div>
-          </div>
-        )}
+      {/* Pagination */}
+      {!isLoading && !isError && totalPages > 0 && (
+        <Pagination
+          currentPage={page}
+          totalPages={totalPages}
+          pageSize={pageSize}
+          totalItems={total}
+          onPageChange={handlePageChange}
+          onPageSizeChange={handlePageSizeChange}
+          showPageSizeSelector={true}
+          className="mt-6"
+        />
+      )}
     </div>
   );
 };

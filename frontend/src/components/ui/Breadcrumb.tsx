@@ -10,9 +10,18 @@ interface BreadcrumbItem {
 interface BreadcrumbProps {
   items: BreadcrumbItem[];
   className?: string;
+  maxLabelLength?: number;
 }
 
-export default function Breadcrumb({ items, className = "" }: BreadcrumbProps) {
+export default function Breadcrumb({
+  items,
+  className = "",
+  maxLabelLength = 25,
+}: BreadcrumbProps) {
+  const truncateText = (label: string, maxLength: number) => {
+    if (label.length <= maxLength) return label;
+    return label.substring(0, maxLength) + "...";
+  };
   return (
     <nav className={`flex items-center space-x-2 text-sm ${className}`}>
       {items.map((item, index) => (
@@ -25,8 +34,9 @@ export default function Breadcrumb({ items, className = "" }: BreadcrumbProps) {
             <Link
               to={item.href}
               className="text-gray-600 hover:text-gray-900 transition-colors"
+              title={item.label} // Show full label on hover
             >
-              {item.label}
+              {truncateText(item.label, maxLabelLength)}
             </Link>
           ) : (
             <span
@@ -35,8 +45,9 @@ export default function Breadcrumb({ items, className = "" }: BreadcrumbProps) {
                   ? "text-gray-900 font-medium"
                   : "text-gray-600"
               }
+              title={item.label} // Show full label on hover
             >
-              {item.label}
+              {truncateText(item.label, maxLabelLength)}
             </span>
           )}
         </React.Fragment>

@@ -60,18 +60,9 @@ export default function AnnouncementDetailPage() {
     ? [
         { label: "Dashboard", href: "/admin" },
         { label: "Kelola Pengumuman", href: "/admin/announcements" },
-        {
-          label:
-            a.title.length > 50 ? a.title.substring(0, 50) + "..." : a.title,
-        },
+        { label: a.title },
       ]
-    : [
-        { label: "Pengumuman", href: "/announcements" },
-        {
-          label:
-            a.title.length > 50 ? a.title.substring(0, 50) + "..." : a.title,
-        },
-      ];
+    : [{ label: "Pengumuman", href: "/announcements" }, { label: a.title }];
 
   return (
     <div className="space-y-6">
