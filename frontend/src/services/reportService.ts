@@ -197,3 +197,139 @@ export async function getUserReportStatistics() {
 //   const res = await request("/reports/get-recent", { method: "GET" });
 //   return res.data;
 // }
+
+// Dashboard Statistics Interface and Functions
+export interface DashboardStats {
+  totalReports: number;
+  pendingReports: number;
+  inProgressReports: number;
+  resolvedReports: number;
+  rejectedReports: number;
+  activeUsers: number;
+  categoryStats: Array<{
+    category: string;
+    count: number;
+    percentage: number;
+  }>;
+}
+
+export async function getReportsByStatus(status: string): Promise<Report[]> {
+  try {
+    const res = await request(`/reports/status/${status}`, {
+      method: "GET"
+    });
+       
+    const statusData = res.data;
+    if (statusData && statusData.reports && Array.isArray(statusData.reports)) {
+      return statusData.reports;
+    } else {
+      console.warn('Unexpected API response structure for status:', status, res);
+      return [];
+    }
+  } catch (error) {
+    console.error(`Error fetching reports by status ${status}:`, error);
+    return [];
+  }
+}
+
+// Get reports by category
+export async function getReportsByCategory(category: string): Promise<Report[]> {
+  try {
+    console.log(`🔄 Fetching reports for category: ${category}`);
+    
+    const res = await request(`/reports/category/${category}`, {
+      method: "GET"
+    });
+    
+    const categoryData = res.data;
+    if (categoryData && categoryData.reports && Array.isArray(categoryData.reports)) {
+      console.log(`✅ Found ${categoryData.reports.length} reports for category ${category}`);
+      return categoryData.reports;
+    } else {
+      console.warn('⚠️ Unexpected API response structure for category:', category, res);
+      return [];
+    }
+  } catch (error) {
+    console.error(`❌ Error fetching reports by category ${category}:`, error);
+    return [];
+  }
+}
+
+export async function getDashboardStats(): Promise<DashboardStats> {
+  try {
+    console.log('🚀 Starting dashboard stats calculation...');
+    
+    // Fetch status data (exclude CLOSED reports)
+    const [pendingReports, inProgressReports, resolvedReports, rejectedReports] = await Promise.all([
+      getReportsByStatus('PENDING'),
+      getReportsByStatus('IN_PROGRESS'),
+      getReportsByStatus('RESOLVED'),
+      getReportsByStatus('REJECTED')
+      // Note: CLOSED reports are intentionally excluded from dashboard stats
+    ]);
+
+    console.log('📊 Status data fetched (excluding CLOSED):');
+    console.log('- Pending:', pendingReports.length);
+    console.log('- In Progress:', inProgressReports.length);
+    console.log('- Resolved:', resolvedReports.length);
+    console.log('- Rejected:', rejectedReports.length);
+    
+    // Combine all active reports (non-CLOSED) for category calculation
+    const allActiveReports = [...pendingReports, ...inProgressReports, ...resolvedReports, ...rejectedReports];
+    
+    // Calculate category stats from active reports only (ignore CLOSED status)
+    const categoryCount = allActiveReports.reduce((acc: Record<string, number>, report: Report) => {
+      if (report && report.category) {
+        acc[report.category] = (acc[report.category] || 0) + 1;
+      }
+      return acc;
+    }, {});
+
+    const statusSum = pendingReports.length + inProgressReports.length + resolvedReports.length + rejectedReports.length;
+    const totalReports = statusSum; // Use status sum as authoritative total
+    
+    console.log('✅ Using total reports (excluding CLOSED):', totalReports);
+
+    // Create category stats showing ALL categories (even if count is 0)
+    const allCategories = ['INFRASTRUCTURE', 'CLEANLINESS', 'LIGHTING', 'SECURITY', 'UTILITIES', 'ENVIRONMENT', 'SUGGESTION', 'OTHER'];
+    
+    const categoryStats = allCategories.map(category => {
+      const count = categoryCount[category] || 0;
+      return {
+        category,
+        count,
+        percentage: totalReports > 0 ? Math.round((count / totalReports) * 100) : 0
+      };
+    }).filter(item => item.count > 0); // Only show categories that have reports
+
+    // Get unique users from all active reports
+    console.log('👥 Calculating active users...');
+    
+    // Filter reports that have user data (non-anonymous reports)
+    const reportsWithUsers = allActiveReports.filter(r => r && r.user && r.user.id);
+    console.log('- Reports with user data:', reportsWithUsers.length);
+    
+    // Extract unique user IDs
+    const userIds = reportsWithUsers.map(r => r.user!.id);
+    const uniqueUsers = new Set(userIds);
+    console.log('- Active users count:', uniqueUsers.size);
+
+    const stats: DashboardStats = {
+      totalReports,
+      pendingReports: pendingReports.length,
+      inProgressReports: inProgressReports.length,
+      resolvedReports: resolvedReports.length,
+      rejectedReports: rejectedReports.length,
+      activeUsers: uniqueUsers.size,
+      categoryStats
+    };
+
+    console.log('🎯 Final dashboard stats (CLOSED reports excluded):', stats);
+    
+    return stats;
+
+  } catch (error) {
+    console.error('❌ Error calculating dashboard stats:', error);
+    throw error;
+  }
+}
