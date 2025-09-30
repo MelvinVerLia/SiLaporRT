@@ -24,7 +24,7 @@ import StatusDonutChart from "./components/StatusDonutChart";
 import CategoryBarChart from "./components/CategoryBarChart";
 import { useAuthContext } from "../../contexts/AuthContext";
 import { getDashboardStats, type DashboardStats } from "../../services/reportService";
-import { listAnnouncements } from "../../services/announcementService";
+import { getAnnouncementsCount } from "../../services/announcementService";
 
 const AdminDashboard: React.FC = () => {
   const { user } = useAuthContext();
@@ -43,13 +43,16 @@ const AdminDashboard: React.FC = () => {
         setLoading(true);
         setError(null);
         
-        const [stats, announcements] = await Promise.all([
-          getDashboardStats(),
-          listAnnouncements({ page: 1, pageSize: 1 }) // Just to get total count
+        // Convert selectedPeriod to days for filtering
+        const daysBack = selectedPeriod ? parseInt(selectedPeriod) : undefined;
+        
+        const [stats, announcementsCount] = await Promise.all([
+          getDashboardStats(daysBack),
+          getAnnouncementsCount(daysBack)
         ]);
         
         setDashboardData(stats);
-        setTotalAnnouncements(announcements.total || 0);
+        setTotalAnnouncements(announcementsCount);
       } catch (err) {
         console.error('Error fetching dashboard data:', err);
         setError(err instanceof Error ? err.message : 'Failed to load dashboard data');

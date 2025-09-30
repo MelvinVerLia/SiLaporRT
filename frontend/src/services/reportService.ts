@@ -255,9 +255,10 @@ export async function getReportsByCategory(category: string): Promise<Report[]> 
   }
 }
 
-export async function getDashboardStats(): Promise<DashboardStats> {
+export async function getDashboardStats(daysBack?: number): Promise<DashboardStats> {
   try {
     console.log('🚀 Starting dashboard stats calculation...');
+    console.log('📅 Time period filter:', daysBack ? `${daysBack} days` : 'All time');
     
     // Fetch status data (exclude CLOSED reports)
     const [pendingReports, inProgressReports, resolvedReports, rejectedReports] = await Promise.all([
@@ -268,14 +269,31 @@ export async function getDashboardStats(): Promise<DashboardStats> {
       // Note: CLOSED reports are intentionally excluded from dashboard stats
     ]);
 
+    // Apply time filtering if specified
+    let filteredPending = pendingReports;
+    let filteredInProgress = inProgressReports;
+    let filteredResolved = resolvedReports;
+    let filteredRejected = rejectedReports;
+
+    if (daysBack) {
+      const cutoffDate = new Date();
+      cutoffDate.setDate(cutoffDate.getDate() - daysBack);
+      console.log('📅 Filtering reports after:', cutoffDate.toISOString());
+
+      filteredPending = pendingReports.filter(r => new Date(r.createdAt) >= cutoffDate);
+      filteredInProgress = inProgressReports.filter(r => new Date(r.createdAt) >= cutoffDate);
+      filteredResolved = resolvedReports.filter(r => new Date(r.createdAt) >= cutoffDate);
+      filteredRejected = rejectedReports.filter(r => new Date(r.createdAt) >= cutoffDate);
+    }
+
     console.log('📊 Status data fetched (excluding CLOSED):');
-    console.log('- Pending:', pendingReports.length);
-    console.log('- In Progress:', inProgressReports.length);
-    console.log('- Resolved:', resolvedReports.length);
-    console.log('- Rejected:', rejectedReports.length);
+    console.log('- Pending:', filteredPending.length);
+    console.log('- In Progress:', filteredInProgress.length);
+    console.log('- Resolved:', filteredResolved.length);
+    console.log('- Rejected:', filteredRejected.length);
     
     // Combine all active reports (non-CLOSED) for category calculation
-    const allActiveReports = [...pendingReports, ...inProgressReports, ...resolvedReports, ...rejectedReports];
+    const allActiveReports = [...filteredPending, ...filteredInProgress, ...filteredResolved, ...filteredRejected];
     
     // Calculate category stats from active reports only (ignore CLOSED status)
     const categoryCount = allActiveReports.reduce((acc: Record<string, number>, report: Report) => {
@@ -285,7 +303,7 @@ export async function getDashboardStats(): Promise<DashboardStats> {
       return acc;
     }, {});
 
-    const statusSum = pendingReports.length + inProgressReports.length + resolvedReports.length + rejectedReports.length;
+    const statusSum = filteredPending.length + filteredInProgress.length + filteredResolved.length + filteredRejected.length;
     const totalReports = statusSum; // Use status sum as authoritative total
     
     console.log('✅ Using total reports (excluding CLOSED):', totalReports);
@@ -316,10 +334,10 @@ export async function getDashboardStats(): Promise<DashboardStats> {
 
     const stats: DashboardStats = {
       totalReports,
-      pendingReports: pendingReports.length,
-      inProgressReports: inProgressReports.length,
-      resolvedReports: resolvedReports.length,
-      rejectedReports: rejectedReports.length,
+      pendingReports: filteredPending.length,
+      inProgressReports: filteredInProgress.length,
+      resolvedReports: filteredResolved.length,
+      rejectedReports: filteredRejected.length,
       activeUsers: uniqueUsers.size,
       categoryStats
     };
