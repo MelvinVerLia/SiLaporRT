@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { Link } from "react-router-dom";
 import {
   FileText,
@@ -10,7 +10,6 @@ import {
   ArrowRight,
   Megaphone,
   Activity,
-  Loader2,
 } from "lucide-react";
 import {
   Card,
@@ -22,6 +21,7 @@ import Button from "../../components/ui/Button";
 import Select from "../../components/ui/Select";
 import StatusDonutChart from "./components/StatusDonutChart";
 import CategoryBarChart from "./components/CategoryBarChart";
+import AdminDashboardSkeleton from "./components/AdminDashboardSkeleton";
 import { useAuthContext } from "../../contexts/AuthContext";
 import { getDashboardStats, type DashboardStats } from "../../services/reportService";
 import { getAnnouncementsCount } from "../../services/announcementService";
@@ -30,39 +30,39 @@ const AdminDashboard: React.FC = () => {
   const { user } = useAuthContext();
   const [selectedPeriod, setSelectedPeriod] = useState("30");
   
-  // State for real data
+  // State for real data - simple approach like AnnouncementsPage
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [dashboardData, setDashboardData] = useState<DashboardStats | null>(null);
   const [totalAnnouncements, setTotalAnnouncements] = useState<number>(0);
 
-  // Fetch dashboard data
-  useEffect(() => {
-    const fetchDashboardData = async () => {
-      try {
-        setLoading(true);
-        setError(null);
-        
-        // Convert selectedPeriod to days for filtering
-        const daysBack = selectedPeriod ? parseInt(selectedPeriod) : undefined;
-        
-        const [stats, announcementsCount] = await Promise.all([
-          getDashboardStats(daysBack),
-          getAnnouncementsCount(daysBack)
-        ]);
-        
-        setDashboardData(stats);
-        setTotalAnnouncements(announcementsCount);
-      } catch (err) {
-        console.error('Error fetching dashboard data:', err);
-        setError(err instanceof Error ? err.message : 'Failed to load dashboard data');
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchDashboardData();
+  // Fetch dashboard data - simple approach like AnnouncementsPage
+  const fetchDashboardData = useCallback(async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      
+      // Convert selectedPeriod to days for filtering
+      const daysBack = selectedPeriod ? parseInt(selectedPeriod) : undefined;
+      
+      const [stats, announcementsCount] = await Promise.all([
+        getDashboardStats(daysBack),
+        getAnnouncementsCount(daysBack)
+      ]);
+      
+      setDashboardData(stats);
+      setTotalAnnouncements(announcementsCount);
+    } catch (err) {
+      console.error('Error fetching dashboard data:', err);
+      setError(err instanceof Error ? err.message : 'Failed to load dashboard data');
+    } finally {
+      setLoading(false);
+    }
   }, [selectedPeriod]);
+
+  useEffect(() => {
+    fetchDashboardData();
+  }, [selectedPeriod, fetchDashboardData]);
 
   // Generate statistics cards from real data
   const getStats = () => {
@@ -83,7 +83,7 @@ const AdminDashboard: React.FC = () => {
         icon: Clock,
         color: "text-orange-600",
         bgColor: "bg-orange-100",
-        href: "/admin/reports?status=pending",
+        href: "/admin/reports",
       },
       {
         title: "Total Pengumuman",
@@ -235,12 +235,12 @@ const AdminDashboard: React.FC = () => {
         </div>
       </div>
 
-      {/* Loading State */}
+      {/* Loading State - Simple approach like AnnouncementsPage */}
       {loading && (
-        <div className="flex justify-center items-center py-12">
-          <Loader2 className="h-8 w-8 animate-spin text-blue-600" />
-          <span className="ml-2 text-gray-600">Memuat data dashboard...</span>
-        </div>
+        <>
+          {/* Show skeleton items while loading */}
+          <AdminDashboardSkeleton />
+        </>
       )}
 
       {/* Error State */}
@@ -261,9 +261,9 @@ const AdminDashboard: React.FC = () => {
         </Card>
       )}
 
-      {/* Main Content - Only show when not loading and no error */}
+      {/* Main Content - Simple approach like AnnouncementsPage */}
       {!loading && !error && dashboardData && (
-        <>
+        <div>
           {/* Statistics Cards - Clickable for navigation */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
             {getStats().map((stat, index) => {
@@ -293,7 +293,7 @@ const AdminDashboard: React.FC = () => {
           </div>
 
           {/* Quick Actions & Overview */}
-          <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+          <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 mt-8">
             {/* Status Chart */}
             <Card className="lg:col-span-2">
               <CardHeader>
@@ -366,7 +366,7 @@ const AdminDashboard: React.FC = () => {
               </CardContent>
             </Card>
           </div>
-        </>
+        </div>
       )}
     </div>
   );
