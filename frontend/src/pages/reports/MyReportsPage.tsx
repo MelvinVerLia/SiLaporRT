@@ -15,6 +15,7 @@ import {
   AlertTriangle,
   MapPin,
   Paperclip,
+  HatGlasses,
 } from "lucide-react";
 import { Card, CardContent } from "../../components/ui/Card";
 import Button from "../../components/ui/Button";
@@ -40,7 +41,7 @@ const MyReportsPage: React.FC = () => {
   const [selectedStatus, setSelectedStatus] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("");
   const [page, setPage] = useState(1);
-  const [pageSize, setPageSize] = useState(5);
+  const [pageSize, setPageSize] = useState(6);
   const [openDropdown, setOpenDropdown] = useState<string | null>(null);
 
   // Clear cache when user changes (fixes cache issue when switching accounts)
@@ -316,7 +317,8 @@ const MyReportsPage: React.FC = () => {
         <div>
           <h1 className="text-3xl font-bold text-gray-900">Laporan Saya</h1>
           <p className="text-gray-600 mt-1">
-            Kelola dan pantau semua laporan yang telah Anda buat
+            Kelola dan pantau semua laporan yang telah Anda buat • {total}{" "}
+            laporan
           </p>
         </div>
 
@@ -329,16 +331,7 @@ const MyReportsPage: React.FC = () => {
       </div>
 
       {/* Statistics Cards */}
-      <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
-        <Card>
-          <CardContent className="p-4">
-            <div className="text-center">
-              <p className="text-2xl font-bold text-gray-900">{stats.total}</p>
-              <p className="text-sm text-gray-600">Total Laporan</p>
-            </div>
-          </CardContent>
-        </Card>
-
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         <Card>
           <CardContent className="p-4">
             <div className="text-center">
@@ -423,25 +416,20 @@ const MyReportsPage: React.FC = () => {
 
       {/* Reports List */}
       {isLoading ? (
-        <div className="space-y-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {[...Array(pageSize)].map((_, i) => (
             <Card key={i} className="animate-pulse">
               <CardContent className="p-6">
-                <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-4">
-                  <div className="flex-1 space-y-2 min-w-0">
-                    <div className="h-5 bg-gray-200 rounded w-3/4 mb-2"></div>
-                    <div className="flex gap-2 mb-2">
-                      <div className="h-5 bg-gray-200 rounded w-20"></div>
-                      <div className="h-5 bg-gray-200 rounded w-16"></div>
-                    </div>
-                    <div className="space-y-2">
-                      <div className="h-3 bg-gray-200 rounded"></div>
-                      <div className="h-3 bg-gray-200 rounded w-5/6"></div>
-                    </div>
-                    <div className="h-3 bg-gray-200 rounded w-1/2"></div>
-                  </div>
-                  <div className="h-8 w-8 bg-gray-200 rounded"></div>
+                <div className="h-5 bg-gray-200 rounded w-3/4 mb-2"></div>
+                <div className="flex gap-2 mb-2">
+                  <div className="h-5 bg-gray-200 rounded w-20"></div>
+                  <div className="h-5 bg-gray-200 rounded w-16"></div>
                 </div>
+                <div className="space-y-2">
+                  <div className="h-3 bg-gray-200 rounded"></div>
+                  <div className="h-3 bg-gray-200 rounded w-5/6"></div>
+                </div>
+                <div className="h-3 bg-gray-200 rounded w-1/2"></div>
               </CardContent>
             </Card>
           ))}
@@ -484,93 +472,26 @@ const MyReportsPage: React.FC = () => {
           </CardContent>
         </Card>
       ) : (
-        <div className="space-y-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {filteredReports.map((report: Report) => {
             const statusInfo = getStatusBadge(report.status);
 
             return (
               <Card
                 key={report.id}
-                className="hover:shadow-md transition-shadow"
+                className="hover:shadow-md transition-shadow cursor-pointer relative flex flex-col"
+                onClick={() => handleCardClick(report.id)}
               >
-                <CardContent className="p-6">
-                  <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-4">
-                    {/* Main Content */}
-                    <div
-                      className="flex-1 space-y-2 min-w-0 cursor-pointer"
-                      onClick={() => handleCardClick(report.id)}
-                    >
-                      {/* Title and Badges */}
-                      <div className="space-y-2">
-                        <h3 className="text-lg font-semibold text-gray-900 whitespace-pre-wrap break-words line-clamp-1">
-                          {report.title}
-                        </h3>
-                        <div className="flex flex-wrap gap-2">
-                          <Badge variant="default" size="sm">
-                            {getCategoryLabel(report.category)}
-                          </Badge>
-                          <Badge variant={statusInfo.variant} size="sm">
-                            {statusInfo.label}
-                          </Badge>
-                          {report.isAnonymous && (
-                            <Badge variant="default" size="sm">
-                              Anonim
-                            </Badge>
-                          )}
-                          {!report.isPublic && (
-                            <Badge variant="default" size="sm">
-                              <EyeOff className="mr-1 h-3 w-3" />
-                              Privat
-                            </Badge>
-                          )}
-                        </div>
-                      </div>
-
-                      {/* Description */}
-                      <p className="text-gray-600 text-sm line-clamp-3 break-words whitespace-pre-wrap">
-                        {report.description}
-                      </p>
-
-                      {/* Location */}
-                      <div className="flex items-center text-sm text-gray-500">
-                        <MapPin className="mr-1 h-4 w-4" />
-                        <span>{report.location.address}</span>
-                      </div>
-
-                      {/* Meta Info */}
-                      <div className="flex items-center justify-between text-sm text-gray-500">
-                        <div className="flex items-center space-x-4">
-                          <span className="flex items-center">
-                            <ThumbsUp className="mr-1 h-4 w-4" />
-                            {report.upvoteCount}
-                          </span>
-                          <span className="flex items-center">
-                            <MessageCircle className="mr-1 h-4 w-4" />
-                            {report.commentCount}
-                          </span>
-                          {report.attachments.length > 0 && (
-                            <span className="flex items-center">
-                              <Paperclip className="mr-1 h-4 w-4" />
-                              {report.attachments.length} file
-                            </span>
-                          )}
-                        </div>
-
-                        <div className="flex items-center">
-                          <Clock className="mr-1 h-4 w-4" />
-                          <span>
-                            {formatDistanceToNow(new Date(report.createdAt), {
-                              addSuffix: true,
-                              locale: id,
-                            })}
-                          </span>
-                        </div>
-                      </div>
-
-                      {/* Author */}
-                      <div className="text-sm text-gray-500">
-                        Dilaporkan oleh: Anda
-                      </div>
+                <CardContent className="p-6 flex flex-col h-full">
+                  {/* Header with actions */}
+                  <div className="flex justify-between items-center mb-3">
+                    <div className="flex flex-wrap gap-2">
+                      <Badge variant="default" size="sm">
+                        {getCategoryLabel(report.category)}
+                      </Badge>
+                      <Badge variant={statusInfo.variant} size="sm">
+                        {statusInfo.label}
+                      </Badge>
                     </div>
 
                     {/* Action Menu */}
@@ -633,6 +554,82 @@ const MyReportsPage: React.FC = () => {
                       )}
                     </div>
                   </div>
+
+                  {/* Main content - grows to fill available space */}
+                  <div className="flex-1 flex flex-col">
+                    {/* Title and Description */}
+                    <h3 className="text-lg font-semibold text-gray-900 mb-2 line-clamp-1 whitespace-pre-wrap break-words">
+                      {report.title}
+                    </h3>
+                    <p className="text-gray-600 text-sm line-clamp-3 break-words whitespace-pre-wrap mb-4">
+                      {report.description}
+                    </p>
+                  </div>
+
+                  {/* Bottom section - always at bottom */}
+                  <div className="mt-auto space-y-3">
+                    {/* Location */}
+                    <div className="flex items-center text-sm text-gray-500">
+                      <MapPin className="mr-1 h-4 w-4 flex-shrink-0" />
+                      <span className="truncate">
+                        {report.location.address}
+                      </span>
+                    </div>
+
+                    {/* Meta Info */}
+                    <div className="flex items-center justify-between text-sm text-gray-500">
+                      <div className="flex items-center space-x-3">
+                        <span className="flex items-center">
+                          <ThumbsUp className="mr-1 h-4 w-4" />
+                          {report.upvoteCount}
+                        </span>
+                        <span className="flex items-center">
+                          <MessageCircle className="mr-1 h-4 w-4" />
+                          {report.commentCount}
+                        </span>
+                        {report.attachments.length > 0 && (
+                          <span className="flex items-center">
+                            <Paperclip className="mr-1 h-4 w-4" />
+                            {report.attachments.length}
+                          </span>
+                        )}
+                        {report.isAnonymous && (
+                          <span
+                            className="flex items-center"
+                            title="Laporan Anonim"
+                          >
+                            <HatGlasses className="h-4 w-4" />
+                          </span>
+                        )}
+                        {!report.isPublic && (
+                          <span
+                            className="flex items-center"
+                            title="Laporan Privat"
+                          >
+                            <EyeOff className="h-4 w-4" />
+                          </span>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Footer */}
+                    <div className="pt-2 border-t border-gray-100">
+                      <div className="flex flex-col gap-1 text-xs text-gray-400">
+                        <div className="flex items-center">
+                          <Clock className="mr-1 h-3 w-3" />
+                          <span>
+                            {formatDistanceToNow(new Date(report.createdAt), {
+                              addSuffix: true,
+                              locale: id,
+                            })}
+                          </span>
+                        </div>
+                        <div className="text-xs text-gray-500">
+                          Dilaporkan oleh: Anda
+                        </div>
+                      </div>
+                    </div>
+                  </div>
                 </CardContent>
               </Card>
             );
@@ -649,6 +646,13 @@ const MyReportsPage: React.FC = () => {
           totalItems={total}
           onPageChange={handlePageChange}
           onPageSizeChange={handlePageSizeChange}
+          pageSizeOptions={[
+            { value: "6", label: "Tampilkan 6" },
+            { value: "12", label: "Tampilkan 12" },
+            { value: "18", label: "Tampilkan 18" },
+            { value: "24", label: "Tampilkan 24" },
+            { value: "30", label: "Tampilkan 30" },
+          ]}
           showPageSizeSelector={true}
           className="mt-6"
         />
