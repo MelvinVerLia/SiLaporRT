@@ -16,6 +16,9 @@ import {
   MapPin,
   Paperclip,
   HatGlasses,
+  CheckCircle,
+  XCircle,
+  Pause,
 } from "lucide-react";
 import { Card, CardContent } from "../../components/ui/Card";
 import Button from "../../components/ui/Button";
@@ -331,47 +334,75 @@ const MyReportsPage: React.FC = () => {
       </div>
 
       {/* Statistics Cards */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <Card>
-          <CardContent className="p-4">
-            <div className="text-center">
-              <p className="text-2xl font-bold text-yellow-600">
-                {stats.pending}
-              </p>
-              <p className="text-sm text-gray-600">Menunggu</p>
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+        <Card className="hover:shadow-md transition-shadow">
+          <CardContent className="p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-gray-600 mb-1">
+                  Laporan Menunggu
+                </p>
+                <p className="text-3xl font-bold text-gray-900">
+                  {stats.pending}
+                </p>
+              </div>
+              <div className="p-3 rounded-full bg-yellow-100">
+                <Clock className="h-6 w-6 text-yellow-600" />
+              </div>
             </div>
           </CardContent>
         </Card>
 
-        <Card>
-          <CardContent className="p-4">
-            <div className="text-center">
-              <p className="text-2xl font-bold text-blue-600">
-                {stats.inProgress}
-              </p>
-              <p className="text-sm text-gray-600">Proses</p>
+        <Card className="hover:shadow-md transition-shadow">
+          <CardContent className="p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-gray-600 mb-1">
+                  Laporan Dalam Proses
+                </p>
+                <p className="text-3xl font-bold text-gray-900">
+                  {stats.inProgress}
+                </p>
+              </div>
+              <div className="p-3 rounded-full bg-blue-100">
+                <Pause className="h-6 w-6 text-blue-600" />
+              </div>
             </div>
           </CardContent>
         </Card>
 
-        <Card>
-          <CardContent className="p-4">
-            <div className="text-center">
-              <p className="text-2xl font-bold text-green-600">
-                {stats.resolved}
-              </p>
-              <p className="text-sm text-gray-600">Selesai</p>
+        <Card className="hover:shadow-md transition-shadow">
+          <CardContent className="p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-gray-600 mb-1">
+                  Laporan Selesai
+                </p>
+                <p className="text-3xl font-bold text-gray-900">
+                  {stats.resolved}
+                </p>
+              </div>
+              <div className="p-3 rounded-full bg-green-100">
+                <CheckCircle className="h-6 w-6 text-green-600" />
+              </div>
             </div>
           </CardContent>
         </Card>
 
-        <Card>
-          <CardContent className="p-4">
-            <div className="text-center">
-              <p className="text-2xl font-bold text-red-600">
-                {stats.rejected}
-              </p>
-              <p className="text-sm text-gray-600">Ditolak</p>
+        <Card className="hover:shadow-md transition-shadow">
+          <CardContent className="p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-gray-600 mb-1">
+                  Laporan Ditolak
+                </p>
+                <p className="text-3xl font-bold text-gray-900">
+                  {stats.rejected}
+                </p>
+              </div>
+              <div className="p-3 rounded-full bg-red-100">
+                <XCircle className="h-6 w-6 text-red-600" />
+              </div>
             </div>
           </CardContent>
         </Card>
