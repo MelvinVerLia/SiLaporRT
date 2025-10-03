@@ -2,7 +2,8 @@ import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 
-import Layout from "./components/layout/Layout";
+import CitizenLayout from "./components/layout/CitizenLayout";
+import AdminLayout from "./components/layout/AdminLayout";
 import { ToastProvider } from "./contexts/ToastContext";
 
 // Pages
@@ -30,7 +31,6 @@ import NotFoundPage from "./pages/NotFoundPage";
 import PublicOnlyRoute from "./routes/PublicOnlyRoute";
 import ProtectedRoute from "./routes/ProtectedRoute";
 import { AuthProvider } from "./contexts/AuthContext";
-import ScrollToTop from "./utils/ScrollToTop";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -47,7 +47,6 @@ function App() {
       <AuthProvider>
         <ToastProvider>
           <Router>
-            <ScrollToTop />
             <div className="bg-gray-50">
               <Routes>
                 {/* Public-only routes (redirect ke "/" jika sudah login) */}
@@ -101,7 +100,7 @@ function App() {
                 />
 
                 {/* Routes with layout */}
-                <Route path="/" element={<Layout />}>
+                <Route path="/" element={<CitizenLayout />}>
                   <Route index element={<HomePage />} />
                   <Route path="reports" element={<ReportsPage />} />
                   <Route path="reports/:id" element={<ReportDetailPage />} />
@@ -135,46 +134,37 @@ function App() {
                       </ProtectedRoute>
                     }
                   />
-                  {/* Admin only */}
+                </Route>
+
+                {/* Admin routes with AdminLayout */}
+                <Route
+                  path="/admin"
+                  element={
+                    <ProtectedRoute requiredRole="RT_ADMIN">
+                      <AdminLayout />
+                    </ProtectedRoute>
+                  }
+                >
+                  <Route index element={<AdminDashboard />} />
+                  <Route path="profile" element={<ProfilePage />} />
+                  <Route path="create-report" element={<CreateReportPage />} />
+                  <Route path="reports" element={<ManageReportsPage />} />
+                  <Route path="reports/:id" element={<ReportDetailPage />} />
                   <Route
-                    path="admin"
-                    element={
-                      <ProtectedRoute requiredRole="RT_ADMIN">
-                        <AdminDashboard />
-                      </ProtectedRoute>
-                    }
+                    path="announcements"
+                    element={<ManageAnnouncementsPage />}
                   />
                   <Route
-                    path="admin/announcements"
-                    element={
-                      <ProtectedRoute requiredRole="RT_ADMIN">
-                        <ManageAnnouncementsPage />
-                      </ProtectedRoute>
-                    }
+                    path="announcements/:id"
+                    element={<AnnouncementDetailPage />}
                   />
                   <Route
-                    path="admin/reports"
-                    element={
-                      <ProtectedRoute requiredRole="RT_ADMIN">
-                        <ManageReportsPage />
-                      </ProtectedRoute>
-                    }
+                    path="announcements/create"
+                    element={<CreateAnnouncementPage />}
                   />
                   <Route
-                    path="admin/announcements/create"
-                    element={
-                      <ProtectedRoute requiredRole="RT_ADMIN">
-                        <CreateAnnouncementPage />
-                      </ProtectedRoute>
-                    }
-                  />
-                  <Route
-                    path="admin/announcements/edit/:id"
-                    element={
-                      <ProtectedRoute requiredRole="RT_ADMIN">
-                        <EditAnnouncementPage />
-                      </ProtectedRoute>
-                    }
+                    path="announcements/edit/:id"
+                    element={<EditAnnouncementPage />}
                   />
                 </Route>
 

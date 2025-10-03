@@ -58,7 +58,6 @@ export default function AnnouncementDetailPage() {
   // Dynamic breadcrumb based on where user came from
   const breadcrumbItems = isFromAdmin
     ? [
-        { label: "Dashboard", href: "/admin" },
         { label: "Kelola Pengumuman", href: "/admin/announcements" },
         { label: a.title },
       ]

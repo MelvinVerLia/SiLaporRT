@@ -105,16 +105,6 @@ const Header: React.FC = () => {
     ...(user?.role === Role.RT_ADMIN
       ? [
           {
-            path: "/admin/reports",
-            label: "Kelola Laporan",
-            icon: FileText,
-          },
-          {
-            path: "/admin/announcements",
-            label: "Kelola Pengumuman",
-            icon: Megaphone,
-          },
-          {
             path: "/admin",
             label: "Admin Panel",
             icon: Shield,

@@ -14,7 +14,6 @@ export default function CreateAnnouncementPage() {
   const navigate = useNavigate();
 
   const breadcrumbItems = [
-    { label: "Dashboard", href: "/admin" },
     { label: "Kelola Pengumuman", href: "/admin/announcements" },
     { label: "Buat Pengumuman" },
   ];
