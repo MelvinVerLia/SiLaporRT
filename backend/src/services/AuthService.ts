@@ -104,11 +104,10 @@ export class AuthService {
         phone,
       });
 
-      const token = this.generateToken(user.id);
       const { password: _pw, googleId: _gi, ...safeUser } = user;
       await redis.del(`reg:${regId}`);
       await redis.del(`otp:${regId}`);
-      return { user: safeUser, token };
+      return { user: safeUser };
     } else {
       throw new Error("Invalid OTP");
     }
@@ -129,13 +128,15 @@ export class AuthService {
       throw new Error("Invalid email or password");
     }
 
-    const token = this.generateToken(user.id);
+    const accessToken = this.generateAccessToken(user.id);
+    const refreshToken = await this.generateRefreshToken(user.id);
 
     const { password: _, ...userWithoutPassword } = user;
 
     return {
       user: userWithoutPassword,
-      token,
+      accessToken,
+      refreshToken,
     };
   }
 
@@ -173,11 +174,13 @@ export class AuthService {
       throw new Error("User not found after Google authentication");
     }
 
-    const token = this.generateToken(user.id);
+    const accessToken = this.generateAccessToken(user.id);
+    const refreshToken = await this.generateRefreshToken(user.id);
 
     return {
       user,
-      token,
+      accessToken,
+      refreshToken,
     };
   }
 
@@ -193,18 +196,44 @@ export class AuthService {
     }
   }
 
-  private static generateToken(userId: string): string {
+  private static generateAccessToken(userId: string): string {
     const jwtSecret = process.env.JWT_SECRET;
-    if (!jwtSecret) {
+    if (!jwtSecret)
       throw new Error("JWT_SECRET is not defined in environment variables");
-    }
+    return jwt.sign({ userId }, jwtSecret, { expiresIn: "15m" });
+  }
 
-    const payload = { userId };
-    const options: jwt.SignOptions = {
-      // expiresIn: process.env.JWT_EXPIRES_IN || "7d"
-    };
+  private static async generateRefreshToken(userId: string): Promise<string> {
+    const rawToken = crypto.randomBytes(32).toString("hex");
+    const hashedToken = crypto
+      .createHash("sha256")
+      .update(rawToken)
+      .digest("hex");
 
-    return jwt.sign(payload, jwtSecret, options);
+    await RedisClient.instance.set(
+      `refresh:${hashedToken}`,
+      JSON.stringify({ userId }),
+      "EX",
+      7 * 24 * 60 * 60
+    );
+
+    return rawToken;
+  }
+
+  static async refreshToken(cookieRefreshToken: string) {
+    const hashedCookieRefreshToken = crypto
+      .createHash("sha256")
+      .update(cookieRefreshToken)
+      .digest("hex");
+
+    const redisRefreshToken = await RedisClient.instance.get(
+      `refresh:${hashedCookieRefreshToken}`
+    );
+
+    const userId = JSON.parse(redisRefreshToken!).userId;
+    const newAccessToken = this.generateAccessToken(userId);
+
+    return newAccessToken;
   }
 
   //untuk forgotpassword
@@ -216,8 +245,7 @@ export class AuthService {
     const redis = RedisClient.instance;
     const hashedToken = crypto.createHash("sha256").update(token).digest("hex");
     const savedToken = await redis.get(`reset:${userId}`);
-    console.log("savedToken", savedToken);
-    console.log("hashedToken", hashedToken);
+
     if (hashedToken !== savedToken) throw new Error("Invalid token");
 
     return { success: true };
@@ -282,5 +310,13 @@ export class AuthService {
   static async updateProfile(userId: string, data: User) {
     const user = await AuthRepository.updateProfile(userId, data);
     return user;
+  }
+
+  static async logout(token: string) {
+    const hashedToken = crypto.createHash("sha256").update(token).digest("hex");
+    
+    await RedisClient.instance.del(`refresh:${hashedToken}`);
+
+    return true;
   }
 }

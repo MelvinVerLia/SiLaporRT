@@ -12,15 +12,24 @@ export class AuthController {
           .json({ success: false, message: "Email and password are required" });
       }
 
-      const result = await AuthService.login({ email, password }); // { user, token }
+      const result = await AuthService.login({ email, password });
 
-      res.cookie("auth", result.token, {
+      res.cookie("access_token", result.accessToken, {
         httpOnly: true,
         secure: process.env.NODE_ENV === "production",
         sameSite: "lax",
         path: "/",
-        // kalau remember me, bikin lebih lama. kalau tidak, pakai sesi (tanpa maxAge).
-        ...(rememberMe ? { maxAge: 7 * 24 * 60 * 60 * 1000 } : {}),
+        maxAge: 60 * 1000,
+      });
+
+      res.cookie("refresh_token", result.refreshToken, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === "production",
+        sameSite: "lax",
+        path: "/",
+        maxAge: rememberMe
+          ? 7 * 24 * 60 * 60 * 1000 // 7 days
+          : 24 * 60 * 60 * 1000,
       });
 
       return res.status(200).json({
@@ -37,88 +46,63 @@ export class AuthController {
     }
   }
 
-  // static async register(req: Request, res: Response) {
-  //   try {
-  //     const { email, password, name } = req.body;
+  static async logout(req: Request, res: Response) {
+    const refreshToken = req.cookies.refresh_token;
+    await AuthService.logout(refreshToken);
 
-  //     // Validation
-  //     if (!email || !password) {
-  //       return res.status(400).json({
-  //         success: false,
-  //         message: "Email and password are required",
-  //       });
-  //     }
+    res.clearCookie("refresh_token", {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "lax",
+      path: "/",
+    });
+    res.clearCookie("access_token", {
+      httpOnly: true,
+      sameSite: "lax",
+      secure: process.env.NODE_ENV === "production",
+      path: "/",
+    });
 
-  //     const result = await AuthService.register({ email, password, name });
-
-  //     // Auto-login: set HttpOnly cookie valid 7 hari
-  //     res.cookie("auth", result.token, {
-  //       httpOnly: true,
-  //       secure: process.env.NODE_ENV === "production",
-  //       sameSite: "lax",
-  //       path: "/",
-  //       maxAge: 7 * 24 * 60 * 60 * 1000, // 7 hari
-  //     });
-
-  //     res.status(201).json({
-  //       success: true,
-  //       message: "User registered successfully",
-  //       data: result,
-  //     });
-  //   } catch (error) {
-  //     res.status(400).json({
-  //       success: false,
-  //       message:
-  //         error instanceof Error ? error.message : "Failed to register user",
-  //     });
-  //   }
-  // }
-
-  static async logout(_req: Request, res: Response) {
-    res.clearCookie("auth", { path: "/" });
     return res.status(200).json({ success: true, message: "Logged out" });
   }
 
   static async googleCallback(req: Request, res: Response) {
     try {
-      const result = req.user as { user: any; token: string };
-      if (!result?.token) {
+      const result = req.user as {
+        user: any;
+        accessToken: string;
+        refreshToken: string;
+      };
+      console.log("result", result);
+      if (!result?.accessToken) {
         return res
           .status(400)
           .json({ success: false, message: "Google authentication failed" });
       }
-      res.cookie("auth", result.token, {
+
+      res.cookie("access_token", result.accessToken, {
         httpOnly: true,
         secure: process.env.NODE_ENV === "production",
         sameSite: "lax",
         path: "/",
-        maxAge: 7 * 24 * 60 * 60 * 1000, // 7 hari
+        maxAge: 60 * 1000,
+      });
+
+      res.cookie("refresh_token", result.refreshToken, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === "production",
+        sameSite: "lax",
+        path: "/",
+        maxAge: 24 * 60 * 60 * 1000,
       });
 
       // redirect bersih ke home FE
       res.redirect(process.env.FRONTEND_URL || "/");
     } catch (error) {
+      console.log(error);
       res.status(500).json({ success: false, message: "Google auth failed" });
     }
   }
-
-  // static async getProfile(req: Request, res: Response) {
-  //   try {
-  //     // User should be attached by auth middleware
-  //     const user = req.user;
-  //     console.log(user);
-  //     res.status(200).json({
-  //       success: true,
-  //       data: { user },
-  //     });
-  //   } catch (error) {
-  //     res.status(500).json({
-  //       success: false,
-  //       message:
-  //         error instanceof Error ? error.message : "Failed to get profile",
-  //     });
-  //   }
-  // }
 
   static async getProfile(req: Request, res: Response) {
     try {
@@ -375,6 +359,32 @@ export class AuthController {
         message:
           error instanceof Error ? error.message : "Failed to update user",
       });
+    }
+  }
+
+  static async refresh(req: Request, res: Response) {
+    try {
+      const refreshToken = req.cookies.refresh_token;
+
+      if (!refreshToken) {
+        return res
+          .status(401)
+          .json({ success: false, message: "No refresh token" });
+      }
+
+      const newAccessToken = await AuthService.refreshToken(refreshToken);
+
+      // set new cookies
+      res.cookie("access_token", newAccessToken, {
+        httpOnly: true,
+        maxAge: 60 * 1000,
+      });
+
+      return res.json({ success: true, message: "Token refreshed" });
+    } catch (err) {
+      return res
+        .status(401)
+        .json({ success: false, message: "Invalid refresh token" });
     }
   }
 }
