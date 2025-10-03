@@ -80,7 +80,7 @@ const Header: React.FC = () => {
   const getNavigationItems = () => {
     const publicItems = [
       { path: "/", label: "Beranda", icon: Home },
-      { path: "/reports", label: "Forum", icon: FileText },
+      { path: "/reports", label: "Laporan", icon: FileText },
       { path: "/announcements", label: "Pengumuman", icon: Megaphone },
     ];
 
