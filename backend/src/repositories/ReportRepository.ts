@@ -338,7 +338,7 @@ class ReportRepository {
         },
         include: {
           location: true,
-          user: { select: { name: true, role: true } },
+          user: { select: { id: true, name: true, role: true } },
           _count: { select: { reportUpvotes: true, reportComments: true } },
         },
         orderBy: { createdAt: "desc" },
@@ -354,7 +354,7 @@ class ReportRepository {
         where: { status },
         include: {
           location: true,
-          user: { select: { name: true, role: true } },
+          user: { select: { id: true, name: true, role: true } },
           _count: { select: { reportUpvotes: true, reportComments: true } },
         },
         orderBy: { createdAt: "desc" },

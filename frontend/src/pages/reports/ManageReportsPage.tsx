@@ -275,58 +275,74 @@ export default function ManageReportsPage() {
       </div>
 
       {/* Statistics Cards */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center">
-              <Clock className="h-8 w-8 text-yellow-500" />
-              <div className="ml-3">
-                <p className="text-sm font-medium text-gray-500">Menunggu</p>
-                <p className="text-lg font-semibold">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+        <Card className="hover:shadow-md transition-shadow">
+          <CardContent className="p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-gray-600 mb-1">
+                  Laporan Menunggu
+                </p>
+                <p className="text-3xl font-bold text-gray-900">
                   {statusCounts.PENDING || 0}
                 </p>
               </div>
+              <div className="p-3 rounded-full bg-yellow-100">
+                <Clock className="h-6 w-6 text-yellow-600" />
+              </div>
             </div>
           </CardContent>
         </Card>
 
-        <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center">
-              <Pause className="h-8 w-8 text-blue-500" />
-              <div className="ml-3">
-                <p className="text-sm font-medium text-gray-500">Proses</p>
-                <p className="text-lg font-semibold">
+        <Card className="hover:shadow-md transition-shadow">
+          <CardContent className="p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-gray-600 mb-1">
+                  Laporan Dalam Proses
+                </p>
+                <p className="text-3xl font-bold text-gray-900">
                   {statusCounts.IN_PROGRESS || 0}
                 </p>
               </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center">
-              <CheckCircle className="h-8 w-8 text-green-500" />
-              <div className="ml-3">
-                <p className="text-sm font-medium text-gray-500">Selesai</p>
-                <p className="text-lg font-semibold">
-                  {statusCounts.RESOLVED || 0}
-                </p>
+              <div className="p-3 rounded-full bg-blue-100">
+                <Pause className="h-6 w-6 text-blue-600" />
               </div>
             </div>
           </CardContent>
         </Card>
 
-        <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center">
-              <XCircle className="h-8 w-8 text-red-500" />
-              <div className="ml-3">
-                <p className="text-sm font-medium text-gray-500">Ditolak</p>
-                <p className="text-lg font-semibold">
+        <Card className="hover:shadow-md transition-shadow">
+          <CardContent className="p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-gray-600 mb-1">
+                  Laporan Selesai
+                </p>
+                <p className="text-3xl font-bold text-gray-900">
+                  {statusCounts.RESOLVED || 0}
+                </p>
+              </div>
+              <div className="p-3 rounded-full bg-green-100">
+                <CheckCircle className="h-6 w-6 text-green-600" />
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card className="hover:shadow-md transition-shadow">
+          <CardContent className="p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-gray-600 mb-1">
+                  Laporan Ditolak
+                </p>
+                <p className="text-3xl font-bold text-gray-900">
                   {statusCounts.REJECTED || 0}
                 </p>
+              </div>
+              <div className="p-3 rounded-full bg-red-100">
+                <XCircle className="h-6 w-6 text-red-600" />
               </div>
             </div>
           </CardContent>
