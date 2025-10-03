@@ -1,4 +1,4 @@
-import { request } from "./api";
+import { publicRequest, request } from "./api";
 import {
   LoginCredentials,
   RegisterData,
@@ -7,7 +7,7 @@ import {
 } from "../types/auth.types";
 
 export async function login(payload: LoginCredentials): Promise<AuthUser> {
-  const res = await request("/auth/login", {
+  const res = await publicRequest("/auth/login", {
     method: "POST",
     data: payload,
   });
@@ -20,13 +20,13 @@ export async function getProfile(): Promise<User> {
 }
 
 export async function logout() {
-  await request("/auth/logout", { method: "POST" }); // clear cookie di BE
+  await publicRequest("/auth/logout", { method: "POST" }); // clear cookie di BE
 }
 
 export async function sendOTP(
   payload: Omit<RegisterData, "confirmPassword">
 ): Promise<AuthUser> {
-  const res = await request("/auth/send-otp", {
+  const res = await publicRequest("/auth/send-otp", {
     method: "POST",
     data: payload,
   });
@@ -35,7 +35,7 @@ export async function sendOTP(
 
 export async function resendOTP(token: string) {
   console.log("regID", token);
-  const res = await request(`/auth/resend-otp`, {
+  const res = await publicRequest(`/auth/resend-otp`, {
     method: "POST",
     data: { token },
   });
@@ -44,7 +44,7 @@ export async function resendOTP(token: string) {
 }
 
 export async function register(token: string, otp: string) {
-  const res = await request(`/auth/register`, {
+  const res = await publicRequest(`/auth/register`, {
     method: "POST",
     data: { token, otp },
   });
@@ -78,7 +78,7 @@ export async function validateForgotPasswordToken(
   token: string,
   email: string
 ) {
-  const res = await request(`/auth/validate-token`, {
+  const res = await publicRequest(`/auth/validate-token`, {
     method: "POST",
     data: { token, email },
   });
@@ -86,7 +86,7 @@ export async function validateForgotPasswordToken(
 }
 
 export async function changeForgotPassword(email: string, password: string) {
-  const res = await request(`/auth/forgot-password-change`, {
+  const res = await publicRequest(`/auth/forgot-password-change`, {
     method: "PUT",
     data: { email, password },
   });
@@ -94,7 +94,7 @@ export async function changeForgotPassword(email: string, password: string) {
 }
 
 export async function forgotPassword(email: string) {
-  const res = await request(`/auth/forgot-password`, {
+  const res = await publicRequest(`/auth/forgot-password`, {
     method: "POST",
     data: { email },
   });

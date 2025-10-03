@@ -38,10 +38,16 @@ const HomePage: React.FC = () => {
   const toast = useToast();
 
   useEffect(() => {
-    toast.success("Selamat datang di Aplikasi Pengaduan Masyarakat", "Selamat Datang");
+    console.log("authentication", isAuthenticated);
+  }, []);
+  
+  useEffect(() => {
+    toast.success(
+      "Selamat datang di Aplikasi Pengaduan Masyarakat",
+      "Selamat Datang"
+    );
     // toast.error("Selamat datang di Aplikasi Pengaduan Masyarakat", "Selamat Datang");
     // toast.info("Selamat datang di Aplikasi Pengaduan Masyarakat", "Selamat Datang");
-
   }, []);
   const items = data?.items ?? [];
 

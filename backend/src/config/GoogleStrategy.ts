@@ -4,7 +4,7 @@ import passport from "passport";
 import { AuthRepository } from "../repositories/AuthRepository";
 import { AuthService } from "../services/AuthService";
 
-const cookieExtractor = (req: any) => req?.cookies?.auth || null;
+const cookieExtractor = (req: any) => req?.cookies?.access_token || null;
 
 passport.use(
   new GoogleStrategy(
@@ -24,14 +24,10 @@ passport.use(
   )
 );
 
-// JWT Strategy for protecting routes
 passport.use(
   new JwtStrategy(
     {
-      jwtFromRequest: ExtractJwt.fromExtractors([
-        ExtractJwt.fromAuthHeaderAsBearerToken(),
-        cookieExtractor,
-      ]),
+      jwtFromRequest: ExtractJwt.fromExtractors([cookieExtractor]),
       secretOrKey: process.env.JWT_SECRET as string,
     },
     async (payload, done) => {

@@ -5,10 +5,7 @@ import { authenticateJWT } from "../middleware/AuthMiddleware";
 
 const router = Router();
 
-router.post("/login", AuthController.login);
-router.post("/register", AuthController.register);
-router.post("/logout", AuthController.logout);
-
+//public routes
 router.get(
   "/google",
   passport.authenticate("google", {
@@ -21,23 +18,21 @@ router.get(
   passport.authenticate("google", { session: false }),
   AuthController.googleCallback
 );
-
-router.post("/forgot-password", AuthController.forgotPassword);
-router.post("/validate-token", AuthController.validateToken);
-
-//route buat change password di forgot password
-router.put("/forgot-password-change", AuthController.changeForgotPassword);
-
-//route buat change password in profile page
-router.put("/change-password", authenticateJWT, AuthController.changePassword);
-
-router.get("/profile", authenticateJWT, AuthController.getProfile);
-
+router.post("/login", AuthController.login);
+router.post("/register", AuthController.register);
+router.post("/logout", AuthController.logout);
 router.post("/send-otp", AuthController.sendOtp);
 router.post("/resend-otp", AuthController.resendOtp);
+router.post("/refresh", AuthController.refresh);
+router.post("/forgot-password", AuthController.forgotPassword);
+// forgot password in forgot password page
+router.put("/forgot-password-change", AuthController.changeForgotPassword);
+router.post("/validate-token", AuthController.validateToken);
 
+//protected routes
+router.get("/profile", authenticateJWT, AuthController.getProfile);
 router.delete("/delete-account", authenticateJWT, AuthController.deleteAccount);
-
 router.put("/update/profile", authenticateJWT, AuthController.updateProfile);
+router.put("/change-password", authenticateJWT, AuthController.changePassword);
 
 export default router;
