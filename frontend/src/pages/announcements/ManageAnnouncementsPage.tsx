@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
 import {
@@ -27,6 +27,9 @@ import Badge from "../../components/ui/Badge";
 import Pagination from "../../components/ui/Pagination";
 import AnnouncementManageTableSkeleton from "./components/AnnouncementManageTableSkeleton";
 import { Announcement } from "../../types/announcement.types";
+import AdvancedFilter, {
+  FilterField,
+} from "../../components/common/AdvancedFilter";
 
 export default function ManageAnnouncementsPage() {
   const navigate = useNavigate();
@@ -34,15 +37,34 @@ export default function ManageAnnouncementsPage() {
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(5);
   const [showInactiveOnly, setShowInactiveOnly] = useState(false);
+  const [selectedType, setSelectedType] = useState("");
+  const [selectedPriority, setSelectedPriority] = useState("");
+  const [dateRange, setDateRange] = useState<{ from?: string; to?: string }>(
+    {}
+  );
 
   const { data, isLoading, isError } = useQuery({
-    queryKey: ["admin-announcements", { page, pageSize, showInactiveOnly }],
+    queryKey: [
+      "admin-announcements",
+      {
+        page,
+        pageSize,
+        showInactiveOnly,
+        selectedType,
+        selectedPriority,
+        dateRange,
+      },
+    ],
     queryFn: () =>
       adminListAnnouncements({
         page,
         pageSize,
         showInactiveOnly,
         pinnedFirst: true,
+        type: selectedType,
+        priority: selectedPriority,
+        dateFrom: dateRange.from,
+        dateTo: dateRange.to,
       }),
     staleTime: 0,
   });
@@ -57,12 +79,29 @@ export default function ManageAnnouncementsPage() {
       // Snapshot the previous value for rollback
       const previousData = qc.getQueryData([
         "admin-announcements",
-        { page, pageSize, showInactiveOnly },
+        {
+          page,
+          pageSize,
+          showInactiveOnly,
+          selectedType,
+          selectedPriority,
+          dateRange,
+        },
       ]);
 
       // Optimistically update the cache
       qc.setQueryData(
-        ["admin-announcements", { page, pageSize, showInactiveOnly }],
+        [
+          "admin-announcements",
+          {
+            page,
+            pageSize,
+            showInactiveOnly,
+            selectedType,
+            selectedPriority,
+            dateRange,
+          },
+        ],
         (old: unknown) => {
           if (!old || typeof old !== "object") return old;
           const data = old as { items: Announcement[]; total: number };
@@ -81,7 +120,17 @@ export default function ManageAnnouncementsPage() {
       // Rollback on error
       if (context?.previousData) {
         qc.setQueryData(
-          ["admin-announcements", { page, pageSize, showInactiveOnly }],
+          [
+            "admin-announcements",
+            {
+              page,
+              pageSize,
+              showInactiveOnly,
+              selectedType,
+              selectedPriority,
+              dateRange,
+            },
+          ],
           context.previousData
         );
       }
@@ -105,12 +154,29 @@ export default function ManageAnnouncementsPage() {
       // Snapshot the previous value for rollback
       const previousData = qc.getQueryData([
         "admin-announcements",
-        { page, pageSize, showInactiveOnly },
+        {
+          page,
+          pageSize,
+          showInactiveOnly,
+          selectedType,
+          selectedPriority,
+          dateRange,
+        },
       ]);
 
       // Optimistically update the cache
       qc.setQueryData(
-        ["admin-announcements", { page, pageSize, showInactiveOnly }],
+        [
+          "admin-announcements",
+          {
+            page,
+            pageSize,
+            showInactiveOnly,
+            selectedType,
+            selectedPriority,
+            dateRange,
+          },
+        ],
         (old: unknown) => {
           if (!old || typeof old !== "object") return old;
           const data = old as { items: Announcement[]; total: number };
@@ -129,7 +195,17 @@ export default function ManageAnnouncementsPage() {
       // Rollback on error
       if (context?.previousData) {
         qc.setQueryData(
-          ["admin-announcements", { page, pageSize, showInactiveOnly }],
+          [
+            "admin-announcements",
+            {
+              page,
+              pageSize,
+              showInactiveOnly,
+              selectedType,
+              selectedPriority,
+              dateRange,
+            },
+          ],
           context.previousData
         );
       }
@@ -199,6 +275,87 @@ export default function ManageAnnouncementsPage() {
     setPage(newPage);
   };
 
+  const handleResetFilters = () => {
+    setSelectedType("");
+    setSelectedPriority("");
+    setShowInactiveOnly(false);
+    setDateRange({});
+    setPage(1);
+  };
+
+  // Calculate active filter count
+  const activeFilterCount = useMemo(() => {
+    let count = 0;
+    if (selectedType) count++;
+    if (selectedPriority) count++;
+    if (showInactiveOnly) count++;
+    if (dateRange.from || dateRange.to) count++;
+    return count;
+  }, [selectedType, selectedPriority, showInactiveOnly, dateRange]);
+
+  // Define filter fields for AdvancedFilter
+  const filterFields: FilterField[] = [
+    {
+      name: "type",
+      label: "Jenis",
+      type: "select",
+      value: selectedType,
+      onChange: (value) => {
+        setSelectedType(value as string);
+        setPage(1);
+      },
+      options: [
+        { value: "", label: "Semua Jenis" },
+        { value: "GENERAL", label: "Umum" },
+        { value: "URGENT", label: "Mendesak" },
+        { value: "EVENT", label: "Acara" },
+        { value: "MAINTENANCE", label: "Pemeliharaan" },
+        { value: "REGULATION", label: "Peraturan" },
+      ],
+    },
+    {
+      name: "priority",
+      label: "Prioritas",
+      type: "select",
+      value: selectedPriority,
+      onChange: (value) => {
+        setSelectedPriority(value as string);
+        setPage(1);
+      },
+      options: [
+        { value: "", label: "Semua Prioritas" },
+        { value: "LOW", label: "Rendah" },
+        { value: "NORMAL", label: "Normal" },
+        { value: "HIGH", label: "Tinggi" },
+        { value: "URGENT", label: "Urgent" },
+      ],
+    },
+    {
+      name: "status",
+      label: "Status",
+      type: "select",
+      value: showInactiveOnly ? "inactive" : "active",
+      onChange: (value) => {
+        setShowInactiveOnly(value === "inactive");
+        setPage(1);
+      },
+      options: [
+        { value: "active", label: "Aktif" },
+        { value: "inactive", label: "Tidak Aktif" },
+      ],
+    },
+    {
+      name: "dateRange",
+      label: "Rentang Tanggal Tayang",
+      type: "daterange",
+      value: dateRange,
+      onChange: (value) => {
+        setDateRange(value as { from?: string; to?: string });
+        setPage(1);
+      },
+    },
+  ];
+
   return (
     <div className="space-y-6">
       {/* Page Header */}
@@ -231,18 +388,11 @@ export default function ManageAnnouncementsPage() {
 
             {/* Filters */}
             <div className="flex items-center gap-4">
-              <label className="flex items-center gap-2 text-sm font-medium text-gray-600 whitespace-nowrap">
-                <input
-                  type="checkbox"
-                  checked={showInactiveOnly}
-                  onChange={(e) => {
-                    setShowInactiveOnly(e.target.checked);
-                    setPage(1);
-                  }}
-                  className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-                />
-                Tampilkan tidak aktif saja
-              </label>
+              <AdvancedFilter
+                fields={filterFields}
+                activeFilterCount={activeFilterCount}
+                onReset={handleResetFilters}
+              />
             </div>
           </div>
         </CardHeader>

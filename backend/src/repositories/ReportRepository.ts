@@ -80,14 +80,25 @@ class ReportRepository {
     pageSize,
     q,
     category,
+    priority,
     status,
     userId,
     includePrivate = false,
+    isPublic,
+    dateFrom,
+    dateTo,
   }: any) {
     try {
       // If userId is provided, user should see all their own reports (public and private)
       // Otherwise, apply visibility filter
       const where: any = userId ? {} : { ...visibleWhere(includePrivate) };
+
+      // Handle specific isPublic filter (for admin filtering)
+      if (isPublic === "true" || isPublic === true) {
+        where.isPublic = true;
+      } else if (isPublic === "false" || isPublic === false) {
+        where.isPublic = false;
+      }
 
       if (q && q.trim()) {
         where.OR = [
@@ -97,7 +108,22 @@ class ReportRepository {
         ];
       }
       if (category) where.category = category;
+      if (priority) where.priority = priority;
       if (status) where.status = status;
+
+      // Add date range filter
+      if (dateFrom || dateTo) {
+        where.createdAt = {};
+        if (dateFrom) {
+          where.createdAt.gte = new Date(dateFrom);
+        }
+        if (dateTo) {
+          // Set to end of day for dateTo
+          const endDate = new Date(dateTo);
+          endDate.setHours(23, 59, 59, 999);
+          where.createdAt.lte = endDate;
+        }
+      }
       if (userId) where.userId = userId;
 
       const skip = (page - 1) * pageSize;

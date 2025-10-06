@@ -35,9 +35,11 @@ export async function adminListAnnouncements(params: {
   includeInactive?: boolean;
   showInactiveOnly?: boolean;
   q?: string;
-  type?: AnnouncementType;
-  priority?: Priority;
+  type?: AnnouncementType | string;
+  priority?: Priority | string;
   pinnedFirst?: boolean;
+  dateFrom?: string;
+  dateTo?: string;
 }) {
   const res = await request("/announcements/admin/list", {
     method: "GET",

@@ -7,6 +7,8 @@ type ListParams = {
   type?: string;
   priority?: string;
   pinnedFirst?: boolean;
+  dateFrom?: string;
+  dateTo?: string;
 };
 
 const visibleWhere = () => {
@@ -19,6 +21,18 @@ const visibleWhere = () => {
 };
 
 export class AnnouncementRepository {
+  // Helper method to auto-deactivate expired announcements
+  private static async autoDeactivateExpired() {
+    const now = new Date();
+    await prisma.announcement.updateMany({
+      where: {
+        isActive: true,
+        expireAt: { not: null, lte: now },
+      },
+      data: { isActive: false },
+    });
+  }
+
   // ==== PUBLIC (citizen) ====
   static async listVisible({
     page,
@@ -28,6 +42,9 @@ export class AnnouncementRepository {
     priority,
     pinnedFirst,
   }: ListParams) {
+    // Auto-deactivate expired announcements before fetching
+    await this.autoDeactivateExpired();
+
     const where: any = { ...visibleWhere() };
     if (q && q.trim()) {
       where.OR = [
@@ -72,6 +89,9 @@ export class AnnouncementRepository {
   }
 
   static async getVisibleById(id: string) {
+    // Auto-deactivate expired announcements before fetching
+    await this.autoDeactivateExpired();
+
     const where = { AND: [{ id }, visibleWhere()] } as any;
     return prisma.announcement.findFirst({
       where,
@@ -94,7 +114,12 @@ export class AnnouncementRepository {
     pinnedFirst,
     includeInactive,
     showInactiveOnly,
+    dateFrom,
+    dateTo,
   }: ListParams & { includeInactive?: boolean; showInactiveOnly?: boolean }) {
+    // Auto-deactivate expired announcements before fetching (admin juga perlu melihat status yang akurat)
+    await this.autoDeactivateExpired();
+
     const where: any = {};
 
     // Logika untuk status active/inactive
@@ -113,6 +138,21 @@ export class AnnouncementRepository {
     }
     if (type) where.type = type;
     if (priority) where.priority = priority;
+
+    // Add date range filter for createdAt (lebih konsisten karena semua announcement pasti punya createdAt)
+    // publishAt bisa null, jadi lebih baik filter berdasarkan kapan announcement dibuat
+    if (dateFrom || dateTo) {
+      where.createdAt = {};
+      if (dateFrom) {
+        where.createdAt.gte = new Date(dateFrom);
+      }
+      if (dateTo) {
+        // Set to end of day for dateTo
+        const endDate = new Date(dateTo);
+        endDate.setHours(23, 59, 59, 999);
+        where.createdAt.lte = endDate;
+      }
+    }
 
     const skip = (page - 1) * pageSize;
 
@@ -146,6 +186,9 @@ export class AnnouncementRepository {
   }
 
   static async getByIdAdmin(id: string) {
+    // Auto-deactivate expired announcements before fetching
+    await this.autoDeactivateExpired();
+
     return prisma.announcement.findUnique({
       where: { id },
       include: {
