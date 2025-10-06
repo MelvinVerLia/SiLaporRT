@@ -28,7 +28,6 @@ export default function EditAnnouncementPage() {
   });
 
   const breadcrumbItems = [
-    { label: "Dashboard", href: "/admin" },
     { label: "Kelola Pengumuman", href: "/admin/announcements" },
     { label: "Edit Pengumuman" },
   ];

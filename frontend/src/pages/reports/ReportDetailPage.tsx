@@ -330,7 +330,6 @@ const ReportDetailPage: React.FC = () => {
   // Dynamic breadcrumb based on where user came from
   const breadcrumbItems = isFromAdmin
     ? [
-        { label: "Dashboard", href: "/admin" },
         { label: "Kelola Laporan", href: "/admin/reports" },
         { label: report.title },
       ]

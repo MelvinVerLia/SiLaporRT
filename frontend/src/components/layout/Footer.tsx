@@ -1,6 +1,5 @@
 import React from "react";
-import { MapPin, Mail, Phone, Clock } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Mail, Phone, Clock } from "lucide-react";
 
 const Footer: React.FC = () => {
   return (

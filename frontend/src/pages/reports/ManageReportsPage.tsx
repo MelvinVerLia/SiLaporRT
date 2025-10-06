@@ -12,6 +12,7 @@ import {
   CheckCircle,
   XCircle,
   Pause,
+  Plus,
 } from "lucide-react";
 import {
   adminListReports,
@@ -26,7 +27,6 @@ import {
   CardTitle,
 } from "../../components/ui/Card";
 import Badge from "../../components/ui/Badge";
-import Breadcrumb from "../../components/ui/Breadcrumb";
 import Pagination from "../../components/ui/Pagination";
 import Input from "../../components/ui/Input";
 import Select from "../../components/ui/Select";
@@ -151,11 +151,6 @@ export default function ManageReportsPage() {
       return acc;
     }, {});
 
-  const breadcrumbItems = [
-    { label: "Dashboard", href: "/admin" },
-    { label: "Kelola Laporan" },
-  ];
-
   const categoryOptions = [
     { value: "", label: "Semua Kategori" },
     { value: "INFRASTRUCTURE", label: "Infrastruktur" },
@@ -231,9 +226,11 @@ export default function ManageReportsPage() {
   };
 
   const handleViewClick = (report: Report) => {
-    navigate(`/reports/${report.id}`, {
-      state: { from: "admin" },
-    });
+    navigate(`/admin/reports/${report.id}`);
+  };
+
+  const handleCreateClick = () => {
+    navigate("/admin/create-report");
   };
 
   const handleStatusChange = (reportId: string, newStatus: string) => {
@@ -261,9 +258,6 @@ export default function ManageReportsPage() {
 
   return (
     <div className="space-y-6">
-      {/* Breadcrumb */}
-      <Breadcrumb items={breadcrumbItems} />
-
       {/* Page Header */}
       <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4">
         <div>
@@ -272,6 +266,11 @@ export default function ManageReportsPage() {
             Kelola dan tanggapi laporan dari warga RT
           </p>
         </div>
+
+        <Button onClick={handleCreateClick} className="w-full lg:w-auto">
+          <Plus className="mr-2 h-4 w-4" />
+          Buat Laporan
+        </Button>
       </div>
 
       {/* Statistics Cards */}

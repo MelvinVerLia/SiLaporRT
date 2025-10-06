@@ -1,9 +1,16 @@
-import React from "react";
-import { Outlet } from "react-router-dom";
+import React, { useEffect } from "react";
+import { Outlet, useLocation } from "react-router-dom";
 import Header from "./Header";
 import Footer from "./Footer";
 
-const Layout: React.FC = () => {
+const CitizenLayout: React.FC = () => {
+  const { pathname } = useLocation();
+
+  // Scroll to top when route changes
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [pathname]);
+
   return (
     <div className="min-h-screen flex flex-col bg-gradient-to-b from-blue-50 to-gray-50">
       <Header />
@@ -15,4 +22,4 @@ const Layout: React.FC = () => {
   );
 };
 
-export default Layout;
+export default CitizenLayout;

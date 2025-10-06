@@ -81,7 +81,7 @@ const ReportsPage: React.FC = () => {
         <CardContent className="p-6">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div className="relative">
-              <Search className="absolute left-3 top-2.5 h-4 w-4 text-gray-400" />
+              <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400 z-10" />
               <Input
                 placeholder="Cari laporan..."
                 value={q}

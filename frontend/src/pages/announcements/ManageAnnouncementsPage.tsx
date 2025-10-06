@@ -24,7 +24,6 @@ import {
   CardTitle,
 } from "../../components/ui/Card";
 import Badge from "../../components/ui/Badge";
-import Breadcrumb from "../../components/ui/Breadcrumb";
 import Pagination from "../../components/ui/Pagination";
 import AnnouncementManageTableSkeleton from "./components/AnnouncementManageTableSkeleton";
 import { Announcement } from "../../types/announcement.types";
@@ -148,11 +147,6 @@ export default function ManageAnnouncementsPage() {
   const total = data?.total ?? 0;
   const totalPages = Math.max(1, Math.ceil(total / pageSize));
 
-  const breadcrumbItems = [
-    { label: "Dashboard", href: "/admin" },
-    { label: "Kelola Pengumuman" },
-  ];
-
   const getTypeBadge = (type: string) => {
     const variants = {
       GENERAL: { variant: "default" as const, label: "Umum" },
@@ -193,9 +187,7 @@ export default function ManageAnnouncementsPage() {
   };
 
   const handleViewClick = (announcement: Announcement) => {
-    navigate(`/announcements/${announcement.id}`, {
-      state: { from: "admin" },
-    });
+    navigate(`/admin/announcements/${announcement.id}`);
   };
 
   const handlePageSizeChange = (newPageSize: number) => {
@@ -209,9 +201,6 @@ export default function ManageAnnouncementsPage() {
 
   return (
     <div className="space-y-6">
-      {/* Breadcrumb */}
-      <Breadcrumb items={breadcrumbItems} />
-
       {/* Page Header */}
       <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4">
         <div>
