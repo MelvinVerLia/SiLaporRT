@@ -1,7 +1,7 @@
 import { useEffect } from "react";
 import { X, CheckCircle, AlertCircle, AlertTriangle, Info } from "lucide-react";
 import { cn } from "../../utils/cn";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 
 export type ToastType = "success" | "error" | "warning" | "info";
 
