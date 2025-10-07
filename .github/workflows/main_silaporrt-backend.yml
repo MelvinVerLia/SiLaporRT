@@ -3,9 +3,6 @@ name: Build and deploy Node.js app to Azure Web App - vetch-backend
 on:
   push:
     branches: [main]
-    # optional: trigger only when backend changes
-    # paths:
-    #   - "vetch-backend/"
   workflow_dispatch:
 
 jobs:
@@ -13,7 +10,6 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: read
-
     defaults:
       run:
         working-directory: backend
@@ -26,18 +22,37 @@ jobs:
         with:
           node-version: "22.x"
 
-      - name: Install / Build / Test
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Generate Prisma Client
+        run: npx prisma generate
+
+      - name: Build
+        run: npm run build --if-present
+
+      - name: Test
+        run: npm test --if-present
+
+      - name: Prepare deployment package
         run: |
-          npm ci
-          npm run build --if-present
-          npm test --if-present
+          # Create a clean deployment directory
+          mkdir -p ../deploy-package
+          
+          # Copy necessary files
+          cp -r dist ../deploy-package/ || echo "No dist folder"
+          cp -r node_modules ../deploy-package/
+          cp -r prisma ../deploy-package/
+          cp package*.json ../deploy-package/
+          
+          # Copy any other needed files (env templates, configs, etc)
+          # cp .env.example ../deploy-package/ || true
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
           name: silaport-backend
-          # Upload only the backend folder (including node_modules if needed)
-          path: backend
+          path: deploy-package
 
   deploy:
     runs-on: ubuntu-latest
@@ -53,11 +68,12 @@ jobs:
           name: silaport-backend
           path: ./deploy
 
-      - name: List files
+      - name: List deployment files
         run: |
           pwd
           ls -la
           ls -la ./deploy
+          ls -la ./deploy/node_modules/.prisma/client || echo "No .prisma/client found"
 
       - name: Login to Azure
         uses: azure/login@v2
@@ -71,7 +87,4 @@ jobs:
         with:
           app-name: "SiLaporRT-Backend"
           slot-name: "Production"
-          package: ./deploy    # deploy only this folder
-
-
-
+          package: ./deploy
