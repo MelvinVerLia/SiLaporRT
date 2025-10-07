@@ -46,17 +46,6 @@ export default function AnnouncementsPage() {
             Informasi resmi dari Admin RT • {total} pengumuman
           </p>
         </div>
-
-        {/* Simple refresh button for live updates */}
-        <Button
-          variant="outline"
-          onClick={() => refetch()}
-          loading={isFetching}
-          className="w-full sm:w-auto"
-        >
-          <RefreshCw className="mr-2 h-4 w-4" />
-          Perbarui
-        </Button>
       </div>
 
       {/* Announcement Feed */}

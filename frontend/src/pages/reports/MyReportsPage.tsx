@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
@@ -23,10 +23,12 @@ import {
 import { Card, CardContent } from "../../components/ui/Card";
 import Button from "../../components/ui/Button";
 import Input from "../../components/ui/Input";
-import Select from "../../components/ui/Select";
 import Badge from "../../components/ui/Badge";
 import Pagination from "../../components/ui/Pagination";
 import { useAuthContext } from "../../contexts/AuthContext";
+import AdvancedFilter, {
+  FilterField,
+} from "../../components/common/AdvancedFilter";
 import {
   getUserReports,
   deleteUserReport,
@@ -256,6 +258,47 @@ const MyReportsPage: React.FC = () => {
     { value: "SUGGESTION", label: "Saran" },
   ];
 
+  // Calculate active filter count
+  const activeFilterCount = useMemo(() => {
+    let count = 0;
+    if (selectedStatus) count++;
+    if (selectedCategory) count++;
+    return count;
+  }, [selectedStatus, selectedCategory]);
+
+  // Reset all filters
+  const handleResetFilters = () => {
+    setSelectedStatus("");
+    setSelectedCategory("");
+    setPage(1);
+  };
+
+  // Filter fields configuration
+  const filterFields: FilterField[] = [
+    {
+      name: "status",
+      label: "Status",
+      type: "select",
+      value: selectedStatus,
+      onChange: (value) => {
+        setSelectedStatus(value as string);
+        setPage(1);
+      },
+      options: statusOptions,
+    },
+    {
+      name: "category",
+      label: "Kategori",
+      type: "select",
+      value: selectedCategory,
+      onChange: (value) => {
+        setSelectedCategory(value as string);
+        setPage(1);
+      },
+      options: categoryOptions,
+    },
+  ];
+
   const getStatusBadge = (status: string) => {
     const variants = {
       PENDING: { variant: "warning" as const, label: "Menunggu" },
@@ -411,8 +454,8 @@ const MyReportsPage: React.FC = () => {
       {/* Filters */}
       <Card>
         <CardContent className="p-6">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <form onSubmit={handleSearch} className="relative">
+          <div className="flex items-center gap-4">
+            <form onSubmit={handleSearch} className="relative flex-1">
               <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400 z-10" />
               <Input
                 placeholder="Cari laporan..."
@@ -422,24 +465,10 @@ const MyReportsPage: React.FC = () => {
               />
             </form>
 
-            <Select
-              options={statusOptions}
-              value={selectedStatus}
-              onChange={(e) => {
-                setSelectedStatus(e.target.value);
-                setPage(1);
-              }}
-              placeholder="Filter status"
-            />
-
-            <Select
-              options={categoryOptions}
-              value={selectedCategory}
-              onChange={(e) => {
-                setSelectedCategory(e.target.value);
-                setPage(1);
-              }}
-              placeholder="Filter kategori"
+            <AdvancedFilter
+              fields={filterFields}
+              activeFilterCount={activeFilterCount}
+              onReset={handleResetFilters}
             />
           </div>
         </CardContent>
