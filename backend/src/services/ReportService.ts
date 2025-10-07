@@ -22,8 +22,12 @@ class ReportService {
     pageSize?: any;
     q?: string;
     category?: string;
+    priority?: string;
     status?: string;
     includePrivate?: string | boolean;
+    isPublic?: string | boolean;
+    dateFrom?: string;
+    dateTo?: string;
     userId?: string;
   }) {
     const page = Math.max(1, parseInt(params.page ?? "1", 10) || 1);
@@ -38,10 +42,14 @@ class ReportService {
         pageSize,
         q: params.q,
         category: params.category,
+        priority: params.priority,
         status: params.status,
         userId: params.userId,
         includePrivate:
           params.includePrivate === true || params.includePrivate === "true",
+        isPublic: params.isPublic,
+        dateFrom: params.dateFrom,
+        dateTo: params.dateTo,
       });
       return { page, pageSize, total, items };
     } catch (error) {

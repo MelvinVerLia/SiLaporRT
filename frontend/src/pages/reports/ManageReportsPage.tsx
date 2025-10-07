@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import {
@@ -17,7 +17,6 @@ import {
 import {
   adminListReports,
   updateReportStatus,
-  getReportStatistics,
 } from "../../services/reportAdminService";
 import Button from "../../components/ui/Button";
 import {
@@ -29,8 +28,10 @@ import {
 import Badge from "../../components/ui/Badge";
 import Pagination from "../../components/ui/Pagination";
 import Input from "../../components/ui/Input";
-import Select from "../../components/ui/Select";
 import { Report } from "../../types/report.types";
+import AdvancedFilter, {
+  FilterField,
+} from "../../components/common/AdvancedFilter";
 
 export default function ManageReportsPage() {
   const navigate = useNavigate();
@@ -41,9 +42,14 @@ export default function ManageReportsPage() {
   const [pageSize, setPageSize] = useState(5);
   const [q, setQ] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("");
+  const [selectedPriority, setSelectedPriority] = useState("");
   const [selectedStatus, setSelectedStatus] = useState(
     searchParams.get("status") || ""
   );
+  const [dateRange, setDateRange] = useState<{ from?: string; to?: string }>(
+    {}
+  );
+  const [selectedVisibility, setSelectedVisibility] = useState("");
 
   // Update selected status when URL params change
   useEffect(() => {
@@ -56,7 +62,16 @@ export default function ManageReportsPage() {
   const { data, isLoading, isError } = useQuery({
     queryKey: [
       "admin-reports",
-      { page, pageSize, q, selectedCategory, selectedStatus },
+      {
+        page,
+        pageSize,
+        q,
+        selectedCategory,
+        selectedPriority,
+        selectedStatus,
+        selectedVisibility,
+        dateRange,
+      },
     ],
     queryFn: () =>
       adminListReports({
@@ -64,16 +79,13 @@ export default function ManageReportsPage() {
         pageSize,
         q,
         category: selectedCategory,
+        priority: selectedPriority,
         status: selectedStatus,
+        visibility: selectedVisibility,
+        dateFrom: dateRange.from,
+        dateTo: dateRange.to,
       }),
     staleTime: 0,
-  });
-
-  // Separate query for statistics that's not affected by pagination
-  const { data: statsData } = useQuery({
-    queryKey: ["report-statistics"],
-    queryFn: () => getReportStatistics(),
-    staleTime: 5 * 60 * 1000, // Cache for 5 minutes
   });
 
   const statusMutation = useMutation({
@@ -93,14 +105,32 @@ export default function ManageReportsPage() {
       // Snapshot previous data
       const previousData = qc.getQueryData([
         "admin-reports",
-        { page, pageSize, q, selectedCategory, selectedStatus },
+        {
+          page,
+          pageSize,
+          q,
+          selectedCategory,
+          selectedPriority,
+          selectedStatus,
+          selectedVisibility,
+          dateRange,
+        },
       ]);
 
       // Optimistically update
       qc.setQueryData(
         [
           "admin-reports",
-          { page, pageSize, q, selectedCategory, selectedStatus },
+          {
+            page,
+            pageSize,
+            q,
+            selectedCategory,
+            selectedPriority,
+            selectedStatus,
+            selectedVisibility,
+            dateRange,
+          },
         ],
         (old: unknown) => {
           if (!old || typeof old !== "object") return old;
@@ -124,7 +154,16 @@ export default function ManageReportsPage() {
         qc.setQueryData(
           [
             "admin-reports",
-            { page, pageSize, q, selectedCategory, selectedStatus },
+            {
+              page,
+              pageSize,
+              q,
+              selectedCategory,
+              selectedPriority,
+              selectedStatus,
+              selectedVisibility,
+              dateRange,
+            },
           ],
           context.previousData
         );
@@ -142,14 +181,6 @@ export default function ManageReportsPage() {
   const items = data?.items ?? [];
   const total = data?.total ?? 0;
   const totalPages = Math.max(1, Math.ceil(total / pageSize));
-
-  // Use stats data for statistics cards, fallback to local counting if not available
-  const statusCounts =
-    statsData ||
-    items.reduce((acc: Record<string, number>, report: Report) => {
-      acc[report.status] = (acc[report.status] || 0) + 1;
-      return acc;
-    }, {});
 
   const categoryOptions = [
     { value: "", label: "Semua Kategori" },
@@ -256,6 +287,100 @@ export default function ManageReportsPage() {
     setPage(1); // Reset to first page when searching
   };
 
+  const handleResetFilters = () => {
+    setSelectedCategory("");
+    setSelectedPriority("");
+    setSelectedStatus("");
+    setSelectedVisibility("");
+    setDateRange({});
+    setPage(1);
+  };
+
+  // Calculate active filter count
+  const activeFilterCount = useMemo(() => {
+    let count = 0;
+    if (selectedCategory) count++;
+    if (selectedPriority) count++;
+    if (selectedStatus) count++;
+    if (selectedVisibility) count++;
+    if (dateRange.from || dateRange.to) count++;
+    return count;
+  }, [
+    selectedCategory,
+    selectedPriority,
+    selectedStatus,
+    selectedVisibility,
+    dateRange,
+  ]);
+
+  // Define filter fields for AdvancedFilter
+  const filterFields: FilterField[] = [
+    {
+      name: "category",
+      label: "Kategori",
+      type: "select",
+      value: selectedCategory,
+      onChange: (value) => {
+        setSelectedCategory(value as string);
+        setPage(1);
+      },
+      options: categoryOptions,
+    },
+    {
+      name: "priority",
+      label: "Prioritas",
+      type: "select",
+      value: selectedPriority,
+      onChange: (value) => {
+        setSelectedPriority(value as string);
+        setPage(1);
+      },
+      options: [
+        { value: "", label: "Semua Prioritas" },
+        { value: "LOW", label: "Rendah" },
+        { value: "NORMAL", label: "Normal" },
+        { value: "HIGH", label: "Tinggi" },
+        { value: "URGENT", label: "Urgent" },
+      ],
+    },
+    {
+      name: "status",
+      label: "Status",
+      type: "select",
+      value: selectedStatus,
+      onChange: (value) => {
+        setSelectedStatus(value as string);
+        setPage(1);
+      },
+      options: statusOptions,
+    },
+    {
+      name: "visibility",
+      label: "Visibilitas",
+      type: "select",
+      value: selectedVisibility,
+      onChange: (value) => {
+        setSelectedVisibility(value as string);
+        setPage(1);
+      },
+      options: [
+        { value: "", label: "Semua" },
+        { value: "public", label: "Publik" },
+        { value: "private", label: "Privat" },
+      ],
+    },
+    {
+      name: "dateRange",
+      label: "Rentang Tanggal",
+      type: "daterange",
+      value: dateRange,
+      onChange: (value) => {
+        setDateRange(value as { from?: string; to?: string });
+        setPage(1);
+      },
+    },
+  ];
+
   return (
     <div className="space-y-6">
       {/* Page Header */}
@@ -271,81 +396,6 @@ export default function ManageReportsPage() {
           <Plus className="mr-2 h-4 w-4" />
           Buat Laporan
         </Button>
-      </div>
-
-      {/* Statistics Cards */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-        <Card className="hover:shadow-md transition-shadow">
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-gray-600 mb-1">
-                  Laporan Menunggu
-                </p>
-                <p className="text-3xl font-bold text-gray-900">
-                  {statusCounts.PENDING || 0}
-                </p>
-              </div>
-              <div className="p-3 rounded-full bg-yellow-100">
-                <Clock className="h-6 w-6 text-yellow-600" />
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card className="hover:shadow-md transition-shadow">
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-gray-600 mb-1">
-                  Laporan Dalam Proses
-                </p>
-                <p className="text-3xl font-bold text-gray-900">
-                  {statusCounts.IN_PROGRESS || 0}
-                </p>
-              </div>
-              <div className="p-3 rounded-full bg-blue-100">
-                <Pause className="h-6 w-6 text-blue-600" />
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card className="hover:shadow-md transition-shadow">
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-gray-600 mb-1">
-                  Laporan Selesai
-                </p>
-                <p className="text-3xl font-bold text-gray-900">
-                  {statusCounts.RESOLVED || 0}
-                </p>
-              </div>
-              <div className="p-3 rounded-full bg-green-100">
-                <CheckCircle className="h-6 w-6 text-green-600" />
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card className="hover:shadow-md transition-shadow">
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-gray-600 mb-1">
-                  Laporan Ditolak
-                </p>
-                <p className="text-3xl font-bold text-gray-900">
-                  {statusCounts.REJECTED || 0}
-                </p>
-              </div>
-              <div className="p-3 rounded-full bg-red-100">
-                <XCircle className="h-6 w-6 text-red-600" />
-              </div>
-            </div>
-          </CardContent>
-        </Card>
       </div>
 
       {/* Reports List */}
@@ -373,24 +423,10 @@ export default function ManageReportsPage() {
                 </Button>
               </form>
 
-              <Select
-                value={selectedCategory}
-                onChange={(e) => {
-                  setSelectedCategory(e.target.value);
-                  setPage(1);
-                }}
-                options={categoryOptions}
-                className="w-full md:w-48"
-              />
-
-              <Select
-                value={selectedStatus}
-                onChange={(e) => {
-                  setSelectedStatus(e.target.value);
-                  setPage(1);
-                }}
-                options={statusOptions}
-                className="w-full md:w-48"
+              <AdvancedFilter
+                fields={filterFields}
+                activeFilterCount={activeFilterCount}
+                onReset={handleResetFilters}
               />
             </div>
           </div>

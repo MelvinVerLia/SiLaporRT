@@ -7,17 +7,35 @@ export async function adminListReports(params: {
   pageSize?: number;
   q?: string;
   category?: string;
+  priority?: string;
   status?: string;
+  visibility?: string;
+  dateFrom?: string;
+  dateTo?: string;
   sortBy?: "created" | "upvotes" | "priority";
   sortOrder?: "asc" | "desc";
 }) {
+  const queryParams: Record<string, string | number | boolean | undefined> = {
+    ...params,
+    // Admin can see all reports including non-public ones by default
+    includePrivate: true,
+  };
+
+  // Handle visibility filter
+  if (params.visibility === "public") {
+    queryParams.isPublic = "true";
+    delete queryParams.includePrivate;
+  } else if (params.visibility === "private") {
+    queryParams.isPublic = "false";
+    delete queryParams.includePrivate;
+  }
+
+  // Remove visibility from query params as it's converted to isPublic
+  delete queryParams.visibility;
+
   const res = await request("/reports", {
     method: "GET",
-    params: {
-      ...params,
-      // Admin can see all reports including non-public ones
-      includePrivate: true,
-    },
+    params: queryParams,
   });
   return res.data;
 }
