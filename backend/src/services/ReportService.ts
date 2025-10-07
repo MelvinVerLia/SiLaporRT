@@ -1,5 +1,5 @@
 import ReportRepository from "../repositories/ReportRepository";
-import { ReportStatus, ReportCategory, Role } from "@prisma/client";
+import { ReportStatus, ReportCategory, Role } from "../generated/prisma";
 import { CreateReportData } from "../types/reportTypes";
 
 interface UserContext {
