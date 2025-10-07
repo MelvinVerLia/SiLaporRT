@@ -1,4 +1,4 @@
-import { ReportStatus, ReportCategory, Role } from "../generated/prisma";
+import { ReportStatus, ReportCategory, Role } from "@prisma/client";
 
 interface CreateReportData {
   title: string;

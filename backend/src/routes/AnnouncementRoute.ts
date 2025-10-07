@@ -2,7 +2,7 @@ import { Router } from "express";
 import { AnnouncementController } from "../controllers/AnnouncementController";
 import { authenticateJWT } from "../middleware/AuthMiddleware";
 import { requireRole } from "../middleware/RoleMiddleware";
-import { Role } from "../generated/prisma";
+import { Role } from "@prisma/client";
 
 const router = Router();
 

@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction } from "express";
-import { Role } from "../generated/prisma"; // pakai enum dari Prisma
+import { Role } from "@prisma/client"; // pakai enum dari Prisma
 
 export function requireRole(required: Role) {
   return (req: Request, res: Response, next: NextFunction) => {

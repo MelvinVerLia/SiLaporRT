@@ -1,5 +1,5 @@
 import prisma from "../config/prisma";
-import { ReportStatus } from "../generated/prisma";
+import { ReportStatus } from "@prisma/client";
 import { CreateReportData } from "../types/reportTypes";
 
 const visibleWhere = (includePrivate: boolean = false) => {

@@ -1,6 +1,6 @@
 import { Request, Response } from "express";
 import { UploadService } from "../services/UploadService";
-import { Role } from "../generated/prisma";
+import { Role } from "@prisma/client";
 // import cloudinary from "../config/cloudinary";
 // import { AttachmentRepository } from "../repositories/AttachmentRepository";
 // import { validateUpload } from "../config/uploadPolicy";
@@ -8,7 +8,7 @@ import { Role } from "../generated/prisma";
 export class UploadController {
   // FE minta tanda tangan upload
   static async sign(req: Request, res: Response) {
-    console.log("chupapimunayyao");
+    console.log('chupapimunayyao');
     try {
       const { folder, resourceType } = req.body;
       // Guard: semua user login boleh sign; kalau folder "announcements" minta RT_ADMIN
