@@ -55,6 +55,8 @@ export class AnnouncementService {
     pinnedFirst?: any;
     includeInactive?: any;
     showInactiveOnly?: any;
+    dateFrom?: string;
+    dateTo?: string;
   }) {
     const page = Math.max(1, parseInt(params.page ?? "1", 10) || 1);
     const pageSize = Math.min(
@@ -74,6 +76,8 @@ export class AnnouncementService {
       pinnedFirst,
       includeInactive,
       showInactiveOnly,
+      dateFrom: params.dateFrom,
+      dateTo: params.dateTo,
     });
     return { page, pageSize, total, items };
   }
