@@ -6,7 +6,12 @@ import announcementRouter from "./routes/AnnouncementRoute";
 import uploadRouter from "./routes/UploadRoute";
 import cookieParser from "cookie-parser";
 import passport from "./config/GoogleStrategy";
+import dotenv from "dotenv";
+
+dotenv.config();
+
 const app = express();
+
 app.use(
   cors({
     // origin: process.env.FRONTEND_URL,
