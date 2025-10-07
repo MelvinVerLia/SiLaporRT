@@ -6,8 +6,7 @@ import { sendPasswordResetEmail } from "../email/EmailForm";
 import { RedisClient } from "../config/RedisClient";
 import otpGenerator from "otp-generator";
 import { sendOTPEmail } from "../email/OTP";
-import { log } from "console";
-import { User } from "@prisma/client";
+import { User } from "../generated/prisma";
 
 export interface RegisterData {
   email: string;
