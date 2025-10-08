@@ -97,7 +97,9 @@ export class AuthController {
       });
 
       // redirect bersih ke home FE
-      res.redirect(process.env.FRONTEND_URL || "/");
+      // res.redirect(process.env.FRONTEND_URL || "/");
+      res.redirect(process.env.FRONTEND_URL_PROD || "/");
+
     } catch (error) {
       console.log(error);
       res.status(500).json({ success: false, message: "Google auth failed" });
