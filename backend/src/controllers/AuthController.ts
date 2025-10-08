@@ -53,12 +53,12 @@ export class AuthController {
     res.clearCookie("refresh_token", {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
-      sameSite: "lax",
+      sameSite: "none",
       path: "/",
     });
     res.clearCookie("access_token", {
       httpOnly: true,
-      sameSite: "lax",
+      sameSite: "none",
       secure: process.env.NODE_ENV === "production",
       path: "/",
     });
@@ -83,7 +83,7 @@ export class AuthController {
       res.cookie("access_token", result.accessToken, {
         httpOnly: true,
         secure: process.env.NODE_ENV === "production",
-        sameSite: "lax",
+        sameSite: "none",
         path: "/",
         maxAge: 60 * 1000,
       });
@@ -91,7 +91,7 @@ export class AuthController {
       res.cookie("refresh_token", result.refreshToken, {
         httpOnly: true,
         secure: process.env.NODE_ENV === "production",
-        sameSite: "lax",
+        sameSite: "none",
         path: "/",
         maxAge: 24 * 60 * 60 * 1000,
       });
@@ -99,7 +99,6 @@ export class AuthController {
       // redirect bersih ke home FE
       // res.redirect(process.env.FRONTEND_URL || "/");
       res.redirect(process.env.FRONTEND_URL_PROD || "/");
-
     } catch (error) {
       console.log(error);
       res.status(500).json({ success: false, message: "Google auth failed" });
@@ -379,6 +378,9 @@ export class AuthController {
       // set new cookies
       res.cookie("access_token", newAccessToken, {
         httpOnly: true,
+        sameSite: "none",
+        secure: process.env.NODE_ENV === "production",
+        path: "/",
         maxAge: 60 * 1000,
       });
 
