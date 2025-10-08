@@ -88,3 +88,4 @@ jobs:
           app-name: "SiLaporRT-Backend"
           slot-name: "Production"
           package: ./deploy
+
