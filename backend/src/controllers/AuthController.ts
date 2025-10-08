@@ -17,7 +17,7 @@ export class AuthController {
       res.cookie("access_token", result.accessToken, {
         httpOnly: true,
         secure: process.env.NODE_ENV === "production",
-        sameSite: "lax",
+        sameSite: "none",
         path: "/",
         maxAge: 60 * 1000,
       });
@@ -25,7 +25,7 @@ export class AuthController {
       res.cookie("refresh_token", result.refreshToken, {
         httpOnly: true,
         secure: process.env.NODE_ENV === "production",
-        sameSite: "lax",
+        sameSite: "none",
         path: "/",
         maxAge: rememberMe
           ? 7 * 24 * 60 * 60 * 1000 // 7 days
