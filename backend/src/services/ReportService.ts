@@ -182,6 +182,15 @@ class ReportService {
       throw new Error(`Failed to toggle visibility: ${error}`);
     }
   }
+
+  static async getUserReportStatistics(userId: string) {
+    try {
+      const stats = await ReportRepository.getUserReportStatistics(userId);
+      return stats;
+    } catch (error) {
+      throw new Error(`Failed to fetch user report statistics: ${error}`);
+    }
+  }
 }
 
 export default ReportService;

@@ -363,6 +363,24 @@ class ReportController {
       });
     }
   }
+
+  static async getUserReportStatistics(req: Request, res: Response) {
+    try {
+      const user = req.user as { id: string };
+
+      const stats = await ReportService.getUserReportStatistics(user.id);
+      res.json({
+        success: true,
+        message: "User report statistics retrieved successfully",
+        data: stats,
+      });
+    } catch (error: any) {
+      res.status(500).json({
+        success: false,
+        message: error.message || "Failed to fetch user report statistics",
+      });
+    }
+  }
 }
 
 export default ReportController;
