@@ -28,4 +28,8 @@ app.use("/api/auth", authRouter);
 app.use("/api/announcements", announcementRouter);
 app.use("/api/uploads", uploadRouter);
 
+app.get("/", (req, res) => {
+  res.send("Hello World!");
+});
+
 export default app;
