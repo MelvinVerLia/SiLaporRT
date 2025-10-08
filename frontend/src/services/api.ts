@@ -12,7 +12,6 @@ const api = axios.create({
 
 export async function request(path: string, config: AxiosRequestConfig = {}) {
   try {
-    console.log("url", path)
     const res = await api.request({ url: path, ...config });
     const data = res?.data ?? {};
     if (data?.success === false) {
