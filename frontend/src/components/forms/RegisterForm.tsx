@@ -39,14 +39,9 @@ const RegisterForm: React.FC = () => {
     }
   };
 
-  useEffect(() => {
-    console.log(import.meta.env.VITE_API_BASE_URL_PROD + "/auth/google")
-
-  }, [])
   const handleGoogleRegister = () => {
-    // window.location.href = import.meta.env.VITE_API_BASE_URL + "/auth/google";
-    console.log("hey")
-    window.location.href = import.meta.env.VITE_API_BASE_URL_PROD + "/auth/google";
+    window.location.href = import.meta.env.VITE_API_BASE_URL + "/auth/google";
+    // window.location.href = import.meta.env.VITE_API_BASE_URL_PROD + "/auth/google";
 
     console.log("Google login clicked");
   };

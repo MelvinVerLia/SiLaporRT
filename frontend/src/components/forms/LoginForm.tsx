@@ -28,8 +28,8 @@ const LoginForm: React.FC = () => {
   };
 
   const handleGoogleLogin = () => {
-    // window.location.href = import.meta.env.VITE_API_BASE_URL + "/auth/google";
-    window.location.href = import.meta.env.VITE_API_BASE_URL_PROD + "/auth/google";
+    window.location.href = import.meta.env.VITE_API_BASE_URL + "/auth/google";
+    // window.location.href = import.meta.env.VITE_API_BASE_URL_PROD + "/auth/google";
 
     console.log("Google login clicked");
   };

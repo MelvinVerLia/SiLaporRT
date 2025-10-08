@@ -1,11 +1,11 @@
 import axios, { type AxiosRequestConfig } from "axios";
 
-// const API_BASE = import.meta.env.VITE_API_BASE_URL || "";
-const API_BASE_DEV = import.meta.env.VITE_API_BASE_URL_PROD || "";
+const API_BASE = import.meta.env.VITE_API_BASE_URL || "";
+// const API_BASE_DEV = import.meta.env.VITE_API_BASE_URL_PROD || "";
 
 const api = axios.create({
-  // baseURL: API_BASE,
-  baseURL: API_BASE_DEV,
+  baseURL: API_BASE,
+  // baseURL: API_BASE_DEV,
   withCredentials: true,
   headers: { "Content-Type": "application/json" },
 });
