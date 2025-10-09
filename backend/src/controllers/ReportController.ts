@@ -1,6 +1,5 @@
 import { Request, Response } from "express";
 import ReportService from "../services/ReportService";
-import { Role } from "@prisma/client";
 
 // interface AuthenticatedRequest extends Request {
 //   user?: {

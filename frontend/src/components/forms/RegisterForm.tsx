@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Eye, EyeOff, UserPlus, Check } from "lucide-react";
 import { Card, CardContent, CardTitle } from "../ui/Card";
@@ -40,7 +40,9 @@ const RegisterForm: React.FC = () => {
   };
 
   const handleGoogleRegister = () => {
-    window.location.href = "http://localhost:5000/api/auth/google";
+    window.location.href = import.meta.env.VITE_API_BASE_URL + "/auth/google";
+    // window.location.href = import.meta.env.VITE_API_BASE_URL_PROD + "/auth/google";
+
     console.log("Google login clicked");
   };
 

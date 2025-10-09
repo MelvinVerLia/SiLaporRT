@@ -28,7 +28,9 @@ const LoginForm: React.FC = () => {
   };
 
   const handleGoogleLogin = () => {
-    window.location.href = "http://localhost:5000/api/auth/google";
+    window.location.href = import.meta.env.VITE_API_BASE_URL + "/auth/google";
+    // window.location.href = import.meta.env.VITE_API_BASE_URL_PROD + "/auth/google";
+
     console.log("Google login clicked");
   };
 

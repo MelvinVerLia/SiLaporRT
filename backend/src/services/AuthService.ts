@@ -6,7 +6,6 @@ import { sendPasswordResetEmail } from "../email/EmailForm";
 import { RedisClient } from "../config/RedisClient";
 import otpGenerator from "otp-generator";
 import { sendOTPEmail } from "../email/OTP";
-import { log } from "console";
 import { User } from "@prisma/client";
 
 export interface RegisterData {
@@ -288,6 +287,8 @@ export class AuthService {
     await redis.set(`reset:${user.id}`, hashedToken, "EX", 300);
 
     const resetPasswordUrl = `${process.env.FRONTEND_URL}/reset/${rawToken}/${user.email}`;
+    // const resetPasswordUrl = `${process.env.FRONTEND_URL_PROD}/reset/${rawToken}/${user.email}`;
+
 
     await sendPasswordResetEmail(email, resetPasswordUrl, 5);
   }
