@@ -23,17 +23,22 @@ import StatusDonutChart from "./components/StatusDonutChart";
 import CategoryBarChart from "./components/CategoryBarChart";
 import AdminDashboardSkeleton from "./components/AdminDashboardSkeleton";
 import { useAuthContext } from "../../contexts/AuthContext";
-import { getDashboardStats, type DashboardStats } from "../../services/reportService";
+import {
+  getDashboardStats,
+  type DashboardStats,
+} from "../../services/reportService";
 import { getAnnouncementsCount } from "../../services/announcementService";
 
 const AdminDashboard: React.FC = () => {
   const { user } = useAuthContext();
   const [selectedPeriod, setSelectedPeriod] = useState("30");
-  
+
   // State for real data - simple approach like AnnouncementsPage
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [dashboardData, setDashboardData] = useState<DashboardStats | null>(null);
+  const [dashboardData, setDashboardData] = useState<DashboardStats | null>(
+    null
+  );
   const [totalAnnouncements, setTotalAnnouncements] = useState<number>(0);
 
   // Fetch dashboard data - simple approach like AnnouncementsPage
@@ -41,20 +46,22 @@ const AdminDashboard: React.FC = () => {
     try {
       setLoading(true);
       setError(null);
-      
+
       // Convert selectedPeriod to days for filtering
       const daysBack = selectedPeriod ? parseInt(selectedPeriod) : undefined;
-      
+
       const [stats, announcementsCount] = await Promise.all([
         getDashboardStats(daysBack),
-        getAnnouncementsCount(daysBack)
+        getAnnouncementsCount(daysBack),
       ]);
-      
+
       setDashboardData(stats);
       setTotalAnnouncements(announcementsCount);
     } catch (err) {
-      console.error('Error fetching dashboard data:', err);
-      setError(err instanceof Error ? err.message : 'Failed to load dashboard data');
+      console.error("Error fetching dashboard data:", err);
+      setError(
+        err instanceof Error ? err.message : "Failed to load dashboard data"
+      );
     } finally {
       setLoading(false);
     }
@@ -67,7 +74,7 @@ const AdminDashboard: React.FC = () => {
   // Generate statistics cards from real data
   const getStats = () => {
     if (!dashboardData) return [];
-    
+
     return [
       {
         title: "Total Laporan",
@@ -107,7 +114,7 @@ const AdminDashboard: React.FC = () => {
   // Generate status chart data from real data (excludes CLOSED reports)
   const getStatusChartData = () => {
     if (!dashboardData) return [];
-    
+
     return [
       {
         name: "Pending",
@@ -116,7 +123,7 @@ const AdminDashboard: React.FC = () => {
         bgColor: "bg-yellow-100",
       },
       {
-        name: "Proses", 
+        name: "Proses",
         value: dashboardData.inProgressReports || 0,
         color: "#3b82f6",
         bgColor: "bg-blue-100",
@@ -139,33 +146,37 @@ const AdminDashboard: React.FC = () => {
   // Generate category chart data from real data (excludes CLOSED reports, shows all categories regardless of isPublic)
   const getCategoryChartData = () => {
     if (!dashboardData) return [];
-    
+
     const categoryColors = {
-      'INFRASTRUCTURE': "#3b82f6",
-      'CLEANLINESS': "#10b981", 
-      'LIGHTING': "#f59e0b",
-      'SECURITY': "#ef4444",
-      'UTILITIES': "#8b5cf6",
-      'ENVIRONMENT': "#06b6d4",
-      'SUGGESTION': "#f97316",
-      'OTHER': "#6b7280"
+      INFRASTRUCTURE: "#3b82f6",
+      CLEANLINESS: "#10b981",
+      LIGHTING: "#f59e0b",
+      SECURITY: "#ef4444",
+      UTILITIES: "#8b5cf6",
+      ENVIRONMENT: "#06b6d4",
+      SUGGESTION: "#f97316",
+      OTHER: "#6b7280",
     };
 
     const categoryLabels = {
-      'INFRASTRUCTURE': "Infrastruktur",
-      'CLEANLINESS': "Kebersihan",
-      'LIGHTING': "Penerangan", 
-      'SECURITY': "Keamanan",
-      'UTILITIES': "Utilitas",
-      'ENVIRONMENT': "Lingkungan",
-      'SUGGESTION': "Saran",
-      'OTHER': "Lainnya"
+      INFRASTRUCTURE: "Infrastruktur",
+      CLEANLINESS: "Kebersihan",
+      LIGHTING: "Penerangan",
+      SECURITY: "Keamanan",
+      UTILITIES: "Utilitas",
+      ENVIRONMENT: "Lingkungan",
+      SUGGESTION: "Saran",
+      OTHER: "Lainnya",
     };
-    
-    return dashboardData.categoryStats.map(item => ({
-      name: categoryLabels[item.category as keyof typeof categoryLabels] || item.category,
+
+    return dashboardData.categoryStats.map((item) => ({
+      name:
+        categoryLabels[item.category as keyof typeof categoryLabels] ||
+        item.category,
       count: item.count,
-      color: categoryColors[item.category as keyof typeof categoryColors] || "#6b7280"
+      color:
+        categoryColors[item.category as keyof typeof categoryColors] ||
+        "#6b7280",
     }));
   };
 
@@ -250,10 +261,7 @@ const AdminDashboard: React.FC = () => {
             <div className="text-center text-red-600">
               <AlertTriangle className="h-8 w-8 mx-auto mb-2" />
               <p>Terjadi kesalahan saat memuat data: {error}</p>
-              <Button 
-                className="mt-4" 
-                onClick={() => window.location.reload()}
-              >
+              <Button className="mt-4" onClick={() => window.location.reload()}>
                 Muat Ulang
               </Button>
             </div>
@@ -293,9 +301,9 @@ const AdminDashboard: React.FC = () => {
           </div>
 
           {/* Quick Actions & Overview */}
-          <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 mt-8">
+          <div className="grid grid-cols-1 xl:grid-cols-4 gap-6 mt-8">
             {/* Status Chart */}
-            <Card className="lg:col-span-2">
+            <Card className="xl:col-span-2">
               <CardHeader>
                 <CardTitle className="flex items-center">
                   <AlertTriangle className="mr-2 h-5 w-5 text-orange-500" />
@@ -308,7 +316,7 @@ const AdminDashboard: React.FC = () => {
             </Card>
 
             {/* Category Chart */}
-            <Card className="lg:col-span-2">
+            <Card className="xl:col-span-2">
               <CardHeader>
                 <CardTitle className="flex items-center">
                   <FileText className="mr-2 h-5 w-5 text-blue-500" />
@@ -321,7 +329,7 @@ const AdminDashboard: React.FC = () => {
             </Card>
 
             {/* Recent Activities */}
-            <Card className="lg:col-span-4">
+            <Card className="xl:col-span-4">
               <CardHeader>
                 <CardTitle className="flex items-center">
                   <Activity className="mr-2 h-5 w-5 text-green-500" />
@@ -334,7 +342,10 @@ const AdminDashboard: React.FC = () => {
                     const Icon = activity.icon;
 
                     return (
-                      <div key={activity.id} className="flex items-start space-x-3">
+                      <div
+                        key={activity.id}
+                        className="flex items-start space-x-3"
+                      >
                         <div className="flex-shrink-0">
                           <div className="w-8 h-8 bg-gray-100 rounded-full flex items-center justify-center">
                             <Icon className="h-4 w-4 text-gray-600" />
