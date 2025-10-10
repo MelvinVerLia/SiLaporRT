@@ -12,7 +12,6 @@ import {
   CheckCircle,
   XCircle,
   Pause,
-  Plus,
 } from "lucide-react";
 import {
   adminListReports,
@@ -260,10 +259,6 @@ export default function ManageReportsPage() {
     navigate(`/admin/reports/${report.id}`);
   };
 
-  const handleCreateClick = () => {
-    navigate("/admin/create-report");
-  };
-
   const handleStatusChange = (reportId: string, newStatus: string) => {
     const report = items.find((r: Report) => r.id === reportId);
     if (!report) return;
@@ -391,11 +386,6 @@ export default function ManageReportsPage() {
             Kelola dan tanggapi laporan dari warga RT
           </p>
         </div>
-
-        <Button onClick={handleCreateClick} className="w-full lg:w-auto">
-          <Plus className="mr-2 h-4 w-4" />
-          Buat Laporan
-        </Button>
       </div>
 
       {/* Reports List */}

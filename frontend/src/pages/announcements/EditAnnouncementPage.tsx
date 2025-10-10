@@ -113,7 +113,6 @@ export default function EditAnnouncementPage() {
             <AdminAnnouncementForm
               initial={announcement}
               onSuccess={handleSuccess}
-              onCancel={handleCancel}
             />
           </CardContent>
         </Card>

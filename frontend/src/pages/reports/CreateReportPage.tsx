@@ -1,5 +1,4 @@
 import React, { useState } from "react";
-import { useLocation, useNavigate } from "react-router-dom";
 import {
   ArrowLeft,
   ArrowRight,
@@ -19,15 +18,16 @@ import Input from "../../components/ui/Input";
 import Textarea from "../../components/ui/Textarea";
 import Select from "../../components/ui/Select";
 import Badge from "../../components/ui/Badge";
-import Breadcrumb from "../../components/ui/Breadcrumb";
 import LocationPicker from "../../components/features/maps/LocationPicker";
 import CloudinaryUpload from "../../components/upload/CloudinaryUpload";
 import { useCreateReport } from "../../hooks/useCreateReport";
-import { CreateReportFormData, ReportCategory } from "../../types/report.types";
+import {
+  CreateReportFormData,
+  ReportCategory,
+  Location,
+} from "../../types/report.types";
 import { CloudinaryFile } from "../../types/announcement.types";
 import { useToast } from "../../hooks/useToast";
-import { useAuthContext } from "../../contexts/AuthContext";
-import { Role } from "../../types/auth.types";
 
 // Extended CloudinaryFile untuk keperluan form data
 interface ExtendedCloudinaryFile extends CloudinaryFile {
@@ -60,21 +60,10 @@ interface LocationFormData {
 
 const CreateReportPage: React.FC = () => {
   const createReportMutation = useCreateReport();
-  const navigate = useNavigate();
-  const location = useLocation();
-  const { user } = useAuthContext();
   const toast = useToast();
   const [currentStep, setCurrentStep] = useState(1);
   const [errors, setErrors] = useState<FormErrors>({});
   const [isUploading, setIsUploading] = useState(false);
-
-  const isAdmin = user?.role === Role.RT_ADMIN;
-
-  // Detect where user came from based on location state or current URL context
-  const isFromAdmin =
-    location.state?.from === "admin" ||
-    location.pathname.includes("/admin") ||
-    document.referrer.includes("/admin/reports");
 
   const [formData, setFormData] = useState<CreateReportFormData>({
     title: "",
@@ -232,7 +221,7 @@ const CreateReportPage: React.FC = () => {
     }
   };
 
-  const handleLocationSelect = (location: any) => {
+  const handleLocationSelect = (location: Location | null) => {
     setFormData((prev) => ({ ...prev, location }));
     // Clear location error when location is selected
     if (errors.location) {
@@ -592,45 +581,12 @@ const CreateReportPage: React.FC = () => {
     }
   };
 
-  const handleCancel = () => {
-    // Navigate back based on where user came from
-    if (isFromAdmin) {
-      navigate("/admin/reports");
-    } else {
-      navigate("/reports");
-    }
-  };
-
-  // Dynamic breadcrumb based on user role and origin
-  const breadcrumbItems =
-    isAdmin && isFromAdmin
-      ? [
-          { label: "Kelola Laporan", href: "/admin/reports" },
-          { label: "Buat Laporan" },
-        ]
-      : [];
-
   return (
     <div className="space-y-6">
-      {/* Breadcrumb - only show for admin */}
-      {isAdmin && isFromAdmin && <Breadcrumb items={breadcrumbItems} />}
-
       {/* Header */}
       <div>
-        <div className="flex items-center space-x-3 mb-2">
-          {isAdmin && isFromAdmin && (
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={handleCancel}
-              className="p-2"
-            >
-              <ArrowLeft className="h-4 w-4" />
-            </Button>
-          )}
-          <h1 className="text-3xl font-bold text-gray-900">Buat Laporan</h1>
-        </div>
-        <p className="text-gray-600">Laporkan masalah di lingkungan RT Anda</p>
+        <h1 className="text-3xl font-bold text-gray-900">Buat Laporan</h1>
+        <p className="text-gray-600 mt-1">Laporkan masalah di lingkungan RT Anda</p>
       </div>
 
       {/* Progress Steps */}

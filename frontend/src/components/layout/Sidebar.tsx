@@ -8,6 +8,9 @@ import {
   Menu,
   X,
   UserCircle,
+  ChevronDown,
+  ChevronRight,
+  FilePlus,
 } from "lucide-react";
 import { cn } from "../../utils/cn";
 import { useAuthContext } from "../../contexts/AuthContext";
@@ -16,13 +19,27 @@ interface SidebarProps {
   className?: string;
 }
 
+interface SubMenuItem {
+  path: string;
+  label: string;
+  icon?: React.ComponentType<{ className?: string }>;
+}
+
+interface MenuItem {
+  path: string;
+  label: string;
+  icon: React.ComponentType<{ className?: string }>;
+  submenu?: SubMenuItem[];
+}
+
 const Sidebar: React.FC<SidebarProps> = ({ className }) => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [openMenus, setOpenMenus] = useState<string[]>([]);
   const location = useLocation();
   const navigate = useNavigate();
   const { user, isLoggingOut, logout } = useAuthContext();
 
-  const menuItems = [
+  const menuItems: MenuItem[] = [
     {
       path: "/admin",
       label: "Dashboard",
@@ -32,16 +49,53 @@ const Sidebar: React.FC<SidebarProps> = ({ className }) => {
       path: "/admin/reports",
       label: "Kelola Laporan",
       icon: FileText,
+      submenu: [
+        {
+          path: "/admin/reports",
+          label: "Daftar Laporan",
+          icon: FileText,
+        },
+        {
+          path: "/admin/reports/create",
+          label: "Buat Laporan",
+          icon: FilePlus,
+        },
+      ],
     },
     {
       path: "/admin/announcements",
       label: "Kelola Pengumuman",
       icon: Megaphone,
+      submenu: [
+        {
+          path: "/admin/announcements",
+          label: "Daftar Pengumuman",
+          icon: Megaphone,
+        },
+        {
+          path: "/admin/announcements/create",
+          label: "Buat Pengumuman",
+          icon: FilePlus,
+        },
+      ],
     },
   ];
 
   const isActivePath = (path: string) => {
     return location.pathname === path;
+  };
+
+  const isParentActive = (item: MenuItem) => {
+    if (item.submenu) {
+      return item.submenu.some((sub) => location.pathname.startsWith(sub.path));
+    }
+    return location.pathname === item.path;
+  };
+
+  const toggleMenu = (path: string) => {
+    setOpenMenus((prev) =>
+      prev.includes(path) ? prev.filter((p) => p !== path) : [...prev, path]
+    );
   };
 
   const handleLogout = async () => {
@@ -66,6 +120,14 @@ const Sidebar: React.FC<SidebarProps> = ({ className }) => {
           <Menu className="h-6 w-6" />
         )}
       </button>
+
+      {/* Overlay for mobile */}
+      {isMobileMenuOpen && (
+        <div
+          className="fixed inset-0 bg-black/50 z-30 lg:hidden transition-opacity duration-300"
+          onClick={toggleMobileMenu}
+        />
+      )}
 
       {/* Sidebar */}
       <aside
@@ -103,22 +165,78 @@ const Sidebar: React.FC<SidebarProps> = ({ className }) => {
           {menuItems.map((item) => {
             const Icon = item.icon;
             const isActive = isActivePath(item.path);
+            const hasSubmenu = item.submenu && item.submenu.length > 0;
+            const isOpen = openMenus.includes(item.path);
+            const isParentItemActive = isParentActive(item);
 
             return (
-              <Link
-                key={item.path}
-                to={item.path}
-                onClick={() => setIsMobileMenuOpen(false)}
-                className={cn(
-                  "flex items-center space-x-3 rounded-md px-3 py-2.5 text-sm font-medium transition-all duration-200",
-                  isActive
-                    ? "bg-blue-100 text-blue-700"
-                    : "text-gray-600 hover:bg-gray-100 hover:text-gray-900"
+              <div key={item.path}>
+                {/* Main Menu Item */}
+                {hasSubmenu ? (
+                  <button
+                    onClick={() => toggleMenu(item.path)}
+                    className={cn(
+                      "flex w-full items-center justify-between rounded-md px-3 py-2.5 text-sm font-medium transition-all duration-200",
+                      isParentItemActive
+                        ? "bg-blue-100 text-blue-700"
+                        : "text-gray-600 hover:bg-gray-100 hover:text-gray-900"
+                    )}
+                  >
+                    <div className="flex items-center space-x-3">
+                      <Icon className="h-5 w-5 flex-shrink-0" />
+                      <span>{item.label}</span>
+                    </div>
+                    {isOpen ? (
+                      <ChevronDown className="h-4 w-4" />
+                    ) : (
+                      <ChevronRight className="h-4 w-4" />
+                    )}
+                  </button>
+                ) : (
+                  <Link
+                    to={item.path}
+                    onClick={() => setIsMobileMenuOpen(false)}
+                    className={cn(
+                      "flex items-center space-x-3 rounded-md px-3 py-2.5 text-sm font-medium transition-all duration-200",
+                      isActive
+                        ? "bg-blue-100 text-blue-700"
+                        : "text-gray-600 hover:bg-gray-100 hover:text-gray-900"
+                    )}
+                  >
+                    <Icon className="h-5 w-5 flex-shrink-0" />
+                    <span>{item.label}</span>
+                  </Link>
                 )}
-              >
-                <Icon className="h-5 w-5 flex-shrink-0" />
-                <span>{item.label}</span>
-              </Link>
+
+                {/* Submenu */}
+                {hasSubmenu && isOpen && (
+                  <div className="mt-1 ml-4 space-y-1">
+                    {item.submenu!.map((subItem) => {
+                      const SubIcon = subItem.icon;
+                      const isSubActive = isActivePath(subItem.path);
+
+                      return (
+                        <Link
+                          key={subItem.path}
+                          to={subItem.path}
+                          onClick={() => setIsMobileMenuOpen(false)}
+                          className={cn(
+                            "flex items-center space-x-3 rounded-md px-3 py-2 text-sm transition-all duration-200",
+                            isSubActive
+                              ? "bg-blue-50 text-blue-700 font-medium"
+                              : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"
+                          )}
+                        >
+                          {SubIcon && (
+                            <SubIcon className="h-4 w-4 flex-shrink-0" />
+                          )}
+                          <span>{subItem.label}</span>
+                        </Link>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
             );
           })}
         </nav>

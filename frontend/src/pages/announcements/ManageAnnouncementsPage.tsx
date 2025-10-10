@@ -2,7 +2,6 @@ import { useState, useMemo } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
 import {
-  Plus,
   Pin,
   PinOff,
   Eye,
@@ -254,10 +253,6 @@ export default function ManageAnnouncementsPage() {
     });
   };
 
-  const handleCreateClick = () => {
-    navigate("/admin/announcements/create");
-  };
-
   const handleEditClick = (announcement: Announcement) => {
     navigate(`/admin/announcements/edit/${announcement.id}`);
   };
@@ -368,11 +363,6 @@ export default function ManageAnnouncementsPage() {
             Buat dan atur pengumuman untuk warga RT
           </p>
         </div>
-
-        <Button onClick={handleCreateClick} className="w-full lg:w-auto">
-          <Plus className="mr-2 h-4 w-4" />
-          Buat Pengumuman
-        </Button>
       </div>
 
       {/* Announcements List */}
@@ -411,13 +401,9 @@ export default function ManageAnnouncementsPage() {
               <h3 className="text-lg font-semibold text-gray-900 mb-2">
                 Belum ada pengumuman
               </h3>
-              <p className="text-gray-600 mb-6">
+              <p className="text-gray-600">
                 Buat pengumuman pertama untuk warga RT
               </p>
-              <Button onClick={handleCreateClick}>
-                <Plus className="mr-2 h-4 w-4" />
-                Buat Pengumuman
-              </Button>
             </div>
           ) : (
             <>
