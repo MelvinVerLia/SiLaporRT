@@ -73,16 +73,28 @@ class ReportController {
       const { reportId } = req.params;
 
       if (!reportId) {
-        throw new Error("Report ID is required");
+        return res.status(400).json({
+          success: false,
+          message: "Report ID is required",
+        });
       }
+
       const report = await ReportService.getReportById(reportId);
-      res.json({
+
+      if (!report) {
+        return res.status(404).json({
+          success: false,
+          message: "Report not found",
+        });
+      }
+
+      return res.status(200).json({
         success: true,
         message: "Report retrieved successfully",
         data: report,
       });
     } catch (error: any) {
-      res.status(500).json({
+      return res.status(500).json({
         success: false,
         message: error.message || "Failed to fetch report",
       });
