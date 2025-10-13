@@ -147,7 +147,7 @@ function App() {
                 >
                   <Route index element={<AdminDashboard />} />
                   <Route path="profile" element={<ProfilePage />} />
-                  <Route path="create-report" element={<CreateReportPage />} />
+                  <Route path="reports/create" element={<CreateReportPage />} />
                   <Route path="reports" element={<ManageReportsPage />} />
                   <Route path="reports/:id" element={<ReportDetailPage />} />
                   <Route

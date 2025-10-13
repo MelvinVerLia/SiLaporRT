@@ -10,6 +10,11 @@ const router = Router();
 router.get("/", ReportController.getAllReports);
 router.get("/get-recent", ReportController.getRecentReports);
 router.get("/my-reports", authenticateJWT, ReportController.getUserReports);
+router.get(
+  "/my-reports/stats",
+  authenticateJWT,
+  ReportController.getUserReportStatistics
+);
 router.get("/:reportId", ReportController.getReportById);
 // router.get("/:userId", ReportController.getReportById);
 

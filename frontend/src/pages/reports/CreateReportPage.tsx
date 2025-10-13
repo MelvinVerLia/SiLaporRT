@@ -22,7 +22,10 @@ import Textarea from "../../components/ui/Textarea";
 import LocationPicker from "../../components/features/maps/LocationPicker";
 import CloudinaryUpload from "../../components/upload/CloudinaryUpload";
 import { useCreateReport } from "../../hooks/useCreateReport";
-import { CreateReportFormData } from "../../types/report.types";
+import {
+  CreateReportFormData,
+  Location,
+} from "../../types/report.types";
 import { CloudinaryFile } from "../../types/announcement.types";
 import { useToast } from "../../hooks/useToast";
 
@@ -201,7 +204,7 @@ const CreateReportPage: React.FC = () => {
     }
   };
 
-  const handleLocationSelect = (location: any) => {
+  const handleLocationSelect = (location: Location | null) => {
     setFormData((prev) => ({ ...prev, location }));
     // Clear location error when location is selected
     if (errors.location) {
@@ -602,11 +605,11 @@ const CreateReportPage: React.FC = () => {
   };
 
   return (
-    <div className="max-w-6xl mx-auto space-y-6">
+    <div className="space-y-6">
       {/* Header */}
       <div>
         <h1 className="text-3xl font-bold text-gray-900">Buat Laporan</h1>
-        <p className="text-gray-600">Laporkan masalah di lingkungan RT Anda</p>
+        <p className="text-gray-600 mt-1">Laporkan masalah di lingkungan RT Anda</p>
       </div>
 
       {/* Progress Steps */}

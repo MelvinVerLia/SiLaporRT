@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
@@ -23,14 +23,17 @@ import {
 import { Card, CardContent } from "../../components/ui/Card";
 import Button from "../../components/ui/Button";
 import Input from "../../components/ui/Input";
-import Select from "../../components/ui/Select";
 import Badge from "../../components/ui/Badge";
 import Pagination from "../../components/ui/Pagination";
 import { useAuthContext } from "../../contexts/AuthContext";
+import AdvancedFilter, {
+  FilterField,
+} from "../../components/common/AdvancedFilter";
 import {
   getUserReports,
   deleteUserReport,
   toggleReportVisibility,
+  getUserReportStatistics,
 } from "../../services/reportService";
 import { Report } from "../../types/report.types";
 import { formatDistanceToNow } from "date-fns";
@@ -88,6 +91,14 @@ const MyReportsPage: React.FC = () => {
         category: selectedCategory || undefined,
         status: selectedStatus || undefined,
       }),
+    enabled: !!user,
+    staleTime: 5 * 60 * 1000, // Cache for 5 minutes
+  });
+
+  // Query for user's report statistics (total counts by status)
+  const { data: statsData, isLoading: isStatsLoading } = useQuery({
+    queryKey: ["user-reports-stats", user?.id],
+    queryFn: () => getUserReportStatistics(),
     enabled: !!user,
     staleTime: 5 * 60 * 1000, // Cache for 5 minutes
   });
@@ -153,6 +164,7 @@ const MyReportsPage: React.FC = () => {
     onSuccess: () => {
       // Invalidate user reports and general reports to keep data consistent
       qc.invalidateQueries({ queryKey: ["user-reports"] });
+      qc.invalidateQueries({ queryKey: ["user-reports-stats"] });
       qc.invalidateQueries({ queryKey: ["reports"] });
       qc.invalidateQueries({ queryKey: ["recent-reports"] });
     },
@@ -220,6 +232,7 @@ const MyReportsPage: React.FC = () => {
     onSuccess: () => {
       // Invalidate user reports and general reports to keep data consistent
       qc.invalidateQueries({ queryKey: ["user-reports"] });
+      qc.invalidateQueries({ queryKey: ["user-reports-stats"] });
       qc.invalidateQueries({ queryKey: ["reports"] });
       qc.invalidateQueries({ queryKey: ["recent-reports"] });
     },
@@ -229,14 +242,13 @@ const MyReportsPage: React.FC = () => {
   const total = data?.total ?? 0;
   const totalPages = Math.max(1, Math.ceil(total / pageSize));
 
-  // Statistics calculation from real data
+  // Statistics calculation from API (accurate counts from database)
   const stats = {
-    total: total,
-    pending: reports.filter((r: Report) => r.status === "PENDING").length,
-    inProgress: reports.filter((r: Report) => r.status === "IN_PROGRESS")
-      .length,
-    resolved: reports.filter((r: Report) => r.status === "RESOLVED").length,
-    rejected: reports.filter((r: Report) => r.status === "REJECTED").length,
+    total: statsData?.total ?? 0,
+    pending: statsData?.pending ?? 0,
+    inProgress: statsData?.inProgress ?? 0,
+    resolved: statsData?.resolved ?? 0,
+    rejected: statsData?.rejected ?? 0,
   };
 
   const statusOptions = [
@@ -254,6 +266,47 @@ const MyReportsPage: React.FC = () => {
     { value: "LIGHTING", label: "Penerangan" },
     { value: "SECURITY", label: "Keamanan" },
     { value: "SUGGESTION", label: "Saran" },
+  ];
+
+  // Calculate active filter count
+  const activeFilterCount = useMemo(() => {
+    let count = 0;
+    if (selectedStatus) count++;
+    if (selectedCategory) count++;
+    return count;
+  }, [selectedStatus, selectedCategory]);
+
+  // Reset all filters
+  const handleResetFilters = () => {
+    setSelectedStatus("");
+    setSelectedCategory("");
+    setPage(1);
+  };
+
+  // Filter fields configuration
+  const filterFields: FilterField[] = [
+    {
+      name: "status",
+      label: "Status",
+      type: "select",
+      value: selectedStatus,
+      onChange: (value) => {
+        setSelectedStatus(value as string);
+        setPage(1);
+      },
+      options: statusOptions,
+    },
+    {
+      name: "category",
+      label: "Kategori",
+      type: "select",
+      value: selectedCategory,
+      onChange: (value) => {
+        setSelectedCategory(value as string);
+        setPage(1);
+      },
+      options: categoryOptions,
+    },
   ];
 
   const getStatusBadge = (status: string) => {
@@ -335,84 +388,103 @@ const MyReportsPage: React.FC = () => {
 
       {/* Statistics Cards */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-        <Card className="hover:shadow-md transition-shadow">
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-gray-600 mb-1">
-                  Laporan Menunggu
-                </p>
-                <p className="text-3xl font-bold text-gray-900">
-                  {stats.pending}
-                </p>
-              </div>
-              <div className="p-3 rounded-full bg-yellow-100">
-                <Clock className="h-6 w-6 text-yellow-600" />
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+        {isStatsLoading ? (
+          // Loading skeleton for statistics
+          [...Array(4)].map((_, i) => (
+            <Card key={i} className="animate-pulse">
+              <CardContent className="p-6">
+                <div className="flex items-center justify-between">
+                  <div className="flex-1">
+                    <div className="h-4 bg-gray-200 rounded w-24 mb-2"></div>
+                    <div className="h-8 bg-gray-200 rounded w-16"></div>
+                  </div>
+                  <div className="p-3 rounded-full bg-gray-200 w-12 h-12"></div>
+                </div>
+              </CardContent>
+            </Card>
+          ))
+        ) : (
+          <>
+            <Card className="hover:shadow-md transition-shadow">
+              <CardContent className="p-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm font-medium text-gray-600 mb-1">
+                      Laporan Menunggu
+                    </p>
+                    <p className="text-3xl font-bold text-gray-900">
+                      {stats.pending}
+                    </p>
+                  </div>
+                  <div className="p-3 rounded-full bg-yellow-100">
+                    <Clock className="h-6 w-6 text-yellow-600" />
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
 
-        <Card className="hover:shadow-md transition-shadow">
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-gray-600 mb-1">
-                  Laporan Dalam Proses
-                </p>
-                <p className="text-3xl font-bold text-gray-900">
-                  {stats.inProgress}
-                </p>
-              </div>
-              <div className="p-3 rounded-full bg-blue-100">
-                <Pause className="h-6 w-6 text-blue-600" />
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+            <Card className="hover:shadow-md transition-shadow">
+              <CardContent className="p-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm font-medium text-gray-600 mb-1">
+                      Laporan Dalam Proses
+                    </p>
+                    <p className="text-3xl font-bold text-gray-900">
+                      {stats.inProgress}
+                    </p>
+                  </div>
+                  <div className="p-3 rounded-full bg-blue-100">
+                    <Pause className="h-6 w-6 text-blue-600" />
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
 
-        <Card className="hover:shadow-md transition-shadow">
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-gray-600 mb-1">
-                  Laporan Selesai
-                </p>
-                <p className="text-3xl font-bold text-gray-900">
-                  {stats.resolved}
-                </p>
-              </div>
-              <div className="p-3 rounded-full bg-green-100">
-                <CheckCircle className="h-6 w-6 text-green-600" />
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+            <Card className="hover:shadow-md transition-shadow">
+              <CardContent className="p-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm font-medium text-gray-600 mb-1">
+                      Laporan Selesai
+                    </p>
+                    <p className="text-3xl font-bold text-gray-900">
+                      {stats.resolved}
+                    </p>
+                  </div>
+                  <div className="p-3 rounded-full bg-green-100">
+                    <CheckCircle className="h-6 w-6 text-green-600" />
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
 
-        <Card className="hover:shadow-md transition-shadow">
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-gray-600 mb-1">
-                  Laporan Ditolak
-                </p>
-                <p className="text-3xl font-bold text-gray-900">
-                  {stats.rejected}
-                </p>
-              </div>
-              <div className="p-3 rounded-full bg-red-100">
-                <XCircle className="h-6 w-6 text-red-600" />
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+            <Card className="hover:shadow-md transition-shadow">
+              <CardContent className="p-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm font-medium text-gray-600 mb-1">
+                      Laporan Ditolak
+                    </p>
+                    <p className="text-3xl font-bold text-gray-900">
+                      {stats.rejected}
+                    </p>
+                  </div>
+                  <div className="p-3 rounded-full bg-red-100">
+                    <XCircle className="h-6 w-6 text-red-600" />
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </>
+        )}
       </div>
 
       {/* Filters */}
       <Card>
         <CardContent className="p-6">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <form onSubmit={handleSearch} className="relative">
+          <div className="flex items-center gap-4">
+            <form onSubmit={handleSearch} className="relative flex-1">
               <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400 z-10" />
               <Input
                 placeholder="Cari laporan..."
@@ -422,24 +494,10 @@ const MyReportsPage: React.FC = () => {
               />
             </form>
 
-            <Select
-              options={statusOptions}
-              value={selectedStatus}
-              onChange={(e) => {
-                setSelectedStatus(e.target.value);
-                setPage(1);
-              }}
-              placeholder="Filter status"
-            />
-
-            <Select
-              options={categoryOptions}
-              value={selectedCategory}
-              onChange={(e) => {
-                setSelectedCategory(e.target.value);
-                setPage(1);
-              }}
-              placeholder="Filter kategori"
+            <AdvancedFilter
+              fields={filterFields}
+              activeFilterCount={activeFilterCount}
+              onReset={handleResetFilters}
             />
           </div>
         </CardContent>

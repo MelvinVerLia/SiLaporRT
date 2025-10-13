@@ -495,6 +495,29 @@ class ReportRepository {
       throw error;
     }
   }
+
+  static async getUserReportStatistics(userId: string) {
+    try {
+      const [total, pending, inProgress, resolved, rejected] =
+        await Promise.all([
+          prisma.report.count({ where: { userId } }),
+          prisma.report.count({ where: { userId, status: "PENDING" } }),
+          prisma.report.count({ where: { userId, status: "IN_PROGRESS" } }),
+          prisma.report.count({ where: { userId, status: "RESOLVED" } }),
+          prisma.report.count({ where: { userId, status: "REJECTED" } }),
+        ]);
+
+      return {
+        total,
+        pending,
+        inProgress,
+        resolved,
+        rejected,
+      };
+    } catch (error) {
+      throw error;
+    }
+  }
 }
 
 export default ReportRepository;
