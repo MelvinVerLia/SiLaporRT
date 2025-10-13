@@ -12,14 +12,14 @@ export class AuthController {
           .json({ success: false, message: "Email and password are required" });
       }
 
-      const result = await AuthService.login({ email, password });
+      const result = await AuthService.login({ email, password }, rememberMe);
 
       res.cookie("access_token", result.accessToken, {
         httpOnly: true,
         secure: process.env.NODE_ENV === "production",
         sameSite: "lax",
         path: "/",
-        maxAge: 60 * 1000,
+        maxAge: 5 * 60 * 1000,
       });
 
       res.cookie("refresh_token", result.refreshToken, {
@@ -85,7 +85,7 @@ export class AuthController {
         secure: process.env.NODE_ENV === "production",
         sameSite: "lax",
         path: "/",
-        maxAge: 60 * 1000,
+        maxAge: 5 * 60 * 1000,
       });
 
       res.cookie("refresh_token", result.refreshToken, {

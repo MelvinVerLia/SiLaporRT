@@ -15,27 +15,11 @@ class ReportController {
       const user = req.user as { id: string };
       const data = req.body;
 
-      console.log("Creating report - User ID:", user?.id); // Debug log
-      console.log(
-        "Creating report - Request body:",
-        JSON.stringify(data, null, 2)
-      ); // Debug log
-
-      if (!data.title || !data.description || !data.category) {
-        throw new Error("Title, description, and category are required");
+      if (!data.title || !data.description || !data.location) {
+        throw new Error("Title, description, and location are required");
       }
 
-      if (!data.location.latitude || !data.location.longitude) {
-        throw new Error("Location coordinates are required");
-      }
-
-      // Add user ID to the data
       const dataWithUser = { ...data, userId: user.id };
-
-      console.log(
-        "Final data with user ID:",
-        JSON.stringify(dataWithUser, null, 2)
-      ); // Debug log
 
       const result = await ReportService.createReport(dataWithUser);
       res.status(201).json({
@@ -44,7 +28,7 @@ class ReportController {
         data: result,
       });
     } catch (error: any) {
-      console.error("Error in createReport controller:", error); // Debug log
+      console.error("Error in createReport controller:", error); 
       res.status(400).json({
         success: false,
         message: error.message,
