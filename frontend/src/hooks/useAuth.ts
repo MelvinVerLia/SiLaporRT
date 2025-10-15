@@ -140,26 +140,20 @@ export const useAuth = () => {
     []
   );
 
-  const updateProfile = useCallback(
-    async (data: User) => {
-      setIsLoading(true);
-      setError(null);
-      try {
-        const newUser = await apiUpdateProfile(data);
-        console.log("old user", user);
-        console.log("udpated user", newUser.data);
-        setUser(newUser.data);
-        return true;
-      } catch (e: unknown) {
-        console.log(e);
-        setError({ message: "Gagal memperbarui profil" });
-        return false;
-      } finally {
-        setIsLoading(false);
-      }
-    },
-    [user]
-  );
+  const updateProfile = useCallback(async (data: User) => {
+    // Note: setIsLoading tidak digunakan untuk updateProfile
+    // karena component yang memanggil punya loading state sendiri
+    try {
+      const newUser = await apiUpdateProfile(data);
+      console.log("Profile updated:", newUser.data);
+      setUser(newUser.data);
+      return true;
+    } catch (e: unknown) {
+      console.error("Update profile error:", e);
+      // Tidak set error state di sini, biarkan component handle
+      return false;
+    }
+  }, []);
 
   const deleteAccount = useCallback(async () => {
     setIsLoading(true);
