@@ -3,9 +3,12 @@ import {
   ArrowLeft,
   ArrowRight,
   Check,
+  FileImage,
   FileText,
+  FileVideo,
   MapPin,
   Upload,
+  X,
 } from "lucide-react";
 import {
   Card,
@@ -16,14 +19,11 @@ import {
 import Button from "../../components/ui/Button";
 import Input from "../../components/ui/Input";
 import Textarea from "../../components/ui/Textarea";
-import Select from "../../components/ui/Select";
-import Badge from "../../components/ui/Badge";
 import LocationPicker from "../../components/features/maps/LocationPicker";
 import CloudinaryUpload from "../../components/upload/CloudinaryUpload";
 import { useCreateReport } from "../../hooks/useCreateReport";
 import {
   CreateReportFormData,
-  ReportCategory,
   Location,
 } from "../../types/report.types";
 import { CloudinaryFile } from "../../types/announcement.types";
@@ -38,7 +38,6 @@ interface ExtendedCloudinaryFile extends CloudinaryFile {
 interface FormErrors {
   title?: string;
   description?: string;
-  category?: string;
   location?: string;
   address?: string;
   rt?: string;
@@ -68,7 +67,6 @@ const CreateReportPage: React.FC = () => {
   const [formData, setFormData] = useState<CreateReportFormData>({
     title: "",
     description: "",
-    category: "",
     isAnonymous: false,
     isPublic: true,
     location: null,
@@ -113,18 +111,6 @@ const CreateReportPage: React.FC = () => {
     },
   ];
 
-  const categoryOptions = [
-    { value: "", label: "Pilih Kategori" },
-    { value: ReportCategory.INFRASTRUCTURE, label: "Infrastruktur" },
-    { value: ReportCategory.CLEANLINESS, label: "Kebersihan" },
-    { value: ReportCategory.LIGHTING, label: "Penerangan" },
-    { value: ReportCategory.SECURITY, label: "Keamanan" },
-    { value: ReportCategory.UTILITIES, label: "Utilitas" },
-    { value: ReportCategory.ENVIRONMENT, label: "Lingkungan" },
-    { value: ReportCategory.SUGGESTION, label: "Saran" },
-    { value: ReportCategory.OTHER, label: "Lainnya" },
-  ];
-
   const validateStep = (step: number): boolean => {
     const newErrors: FormErrors = {};
 
@@ -135,9 +121,6 @@ const CreateReportPage: React.FC = () => {
         }
         if (!formData.description.trim()) {
           newErrors.description = "Deskripsi laporan wajib diisi";
-        }
-        if (!formData.category) {
-          newErrors.category = "Kategori wajib dipilih";
         }
         break;
 
@@ -237,11 +220,6 @@ const CreateReportPage: React.FC = () => {
     }
   };
 
-  const getCategoryLabel = (category: string) => {
-    const option = categoryOptions.find((opt) => opt.value === category);
-    return option?.label || category;
-  };
-
   // Fungsi untuk mengklasifikasi file type seperti di announcement
   function classifyFile(f: CloudinaryFile): "image" | "video" | "document" {
     const fmt = (f.format || "").toLowerCase();
@@ -329,19 +307,6 @@ const CreateReportPage: React.FC = () => {
               rows={4}
             />
 
-            <Select
-              label="Kategori"
-              options={categoryOptions}
-              value={formData.category}
-              onChange={(e) =>
-                setFormData((prev) => ({
-                  ...prev,
-                  category: e.target.value as ReportCategory,
-                }))
-              }
-              error={errors.category}
-            />
-
             <div className="space-y-4">
               <h3 className="font-medium text-gray-900">Pengaturan Privasi</h3>
 
@@ -356,7 +321,7 @@ const CreateReportPage: React.FC = () => {
                         isAnonymous: e.target.checked,
                       }))
                     }
-                    className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                    className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500 hover:cursor-pointer"
                   />
                   <span className="text-sm text-gray-700">
                     Laporkan secara anonim (nama tidak ditampilkan)
@@ -373,9 +338,9 @@ const CreateReportPage: React.FC = () => {
                         isPublic: e.target.checked,
                       }))
                     }
-                    className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                    className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500 hover:cursor-pointer"
                   />
-                  <span className="text-sm text-gray-700">
+                  <span className="text-sm text-gray-700 hover:cursor-pointer">
                     Tampilkan di laporan publik (dapat dilihat semua warga)
                   </span>
                 </label>
@@ -480,20 +445,9 @@ const CreateReportPage: React.FC = () => {
                     <label className="text-sm font-medium text-gray-600 ">
                       Judul
                     </label>
-                    <p className="text-gray-900 whitespace-pre-wrap break-words">
+                    <p className="text-gray-900 text-md whitespace-pre-wrap break-words">
                       {formData.title}
                     </p>
-                  </div>
-
-                  <div>
-                    <label className="text-sm font-medium text-gray-600 ">
-                      Kategori
-                    </label>
-                    <div className="mt-1">
-                      <Badge variant="default">
-                        {getCategoryLabel(formData.category)}
-                      </Badge>
-                    </div>
                   </div>
 
                   <div>
@@ -505,17 +459,46 @@ const CreateReportPage: React.FC = () => {
                     </p>
                   </div>
 
-                  <div className="flex gap-2">
-                    {formData.isAnonymous && (
-                      <Badge variant="default" size="sm">
-                        Anonim
-                      </Badge>
-                    )}
-                    {formData.isPublic && (
-                      <Badge variant="info" size="sm">
-                        Publik
-                      </Badge>
-                    )}
+                  <div>
+                    <label className="text-sm font-medium text-gray-600">
+                      Visibilitas
+                    </label>
+
+                    <div className="flex flex-col gap-1 mt-1">
+                      <div className="flex items-center gap-2">
+                        {formData.isAnonymous ? (
+                          <Check className="h-4 w-4 text-green-600" />
+                        ) : (
+                          <X className="h-4 w-4 text-red-600" />
+                        )}
+                        <p
+                          className={`text-sm font-semibold ${
+                            formData.isAnonymous
+                              ? "text-gray-900"
+                              : "text-gray-400"
+                          }`}
+                        >
+                          Anonim
+                        </p>
+                      </div>
+
+                      <div className="flex items-center gap-2">
+                        {formData.isPublic ? (
+                          <Check className="h-4 w-4 text-green-600" />
+                        ) : (
+                          <X className="h-4 w-4 text-red-600" />
+                        )}
+                        <p
+                          className={`text-sm font-semibold ${
+                            formData.isPublic
+                              ? "text-gray-900"
+                              : "text-gray-400"
+                          }`}
+                        >
+                          Publik
+                        </p>
+                      </div>
+                    </div>
                   </div>
                 </CardContent>
               </Card>
@@ -550,22 +533,62 @@ const CreateReportPage: React.FC = () => {
                     <p className="text-gray-900">
                       {formData.attachments.length} file terlampir
                     </p>
-                    <div className="mt-2 space-y-1">
+                    <div className="mt-2 grid grid-cols-5 gap-2">
                       {formData.attachments.map((file, index) => {
-                        const fileType =
-                          (file as ExtendedCloudinaryFile).fileType ||
-                          classifyFile(file);
-                        const icon =
-                          fileType === "image"
-                            ? "🖼️"
-                            : fileType === "video"
-                            ? "🎥"
-                            : "📄";
                         return (
-                          <p key={index} className="text-sm text-gray-600">
-                            {icon} {file.original_filename || "file"} (
-                            {fileType})
-                          </p>
+                          <div
+                            key={index}
+                            className="relative group border border-gray-200 rounded-lg overflow-hidden bg-white hover:shadow-md transition-shadow"
+                          >
+                            <div className="aspect-square flex items-center justify-center bg-gray-50">
+                              {file.resource_type === "image" ? (
+                                <img
+                                  src={file.secure_url}
+                                  alt={file.original_filename}
+                                  className="w-full h-full object-cover"
+                                />
+                              ) : (
+                                <div className="flex flex-col items-center justify-center p-4 text-center">
+                                  <FileText className="h-8 w-8 text-gray-400 mb-2" />
+                                  <span className="text-xs text-gray-600 font-medium truncate w-full">
+                                    {file.original_filename}
+                                  </span>
+                                  <span className="text-xs text-gray-400 mt-1">
+                                    {file.format?.toUpperCase()}
+                                    {file.bytes &&
+                                      ` • ${Math.round(file.bytes / 1024)} KB`}
+                                  </span>
+                                </div>
+                              )}
+                            </div>
+                            {file.resource_type === "image" && (
+                              <div className="absolute bottom-0 left-0 right-0 bg-black bg-opacity-60 text-white p-2 transform translate-y-full group-hover:translate-y-0 transition-transform">
+                                <div className="text-xs truncate font-medium">
+                                  {file.original_filename}
+                                </div>
+                                <div className="text-xs text-gray-200">
+                                  {file.format?.toUpperCase()}
+                                  {file.bytes &&
+                                    ` • ${Math.round(file.bytes / 1024)} KB`}
+                                  {file.width &&
+                                    file.height &&
+                                    ` • ${file.width}×${file.height}`}
+                                </div>
+                              </div>
+                            )}
+                            <div className="absolute top-2 left-2">
+                              <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium bg-white bg-opacity-90 text-gray-700 shadow-sm">
+                                {file.resource_type === "image" ? (
+                                  <FileImage className="h-3 w-3" />
+                                ) : file.resource_type === "video" ? (
+                                  <FileVideo className="h-3 w-3" />
+                                ) : (
+                                  <FileText className="h-3 w-3" />
+                                )}
+                                {file.resource_type}
+                              </span>
+                            </div>
+                          </div>
                         );
                       })}
                     </div>

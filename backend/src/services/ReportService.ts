@@ -1,6 +1,7 @@
 import ReportRepository from "../repositories/ReportRepository";
 import { ReportStatus, ReportCategory, Role } from "@prisma/client";
 import { CreateReportData } from "../types/reportTypes";
+import { generateCategory } from "../utils/llm";
 
 interface UserContext {
   id: string;
@@ -10,7 +11,20 @@ interface UserContext {
 class ReportService {
   static async createReport(data: CreateReportData) {
     try {
-      const report = await ReportRepository.createReport(data);
+      const category = await generateCategory(data.title, data.description);
+
+      if (!category) {
+        throw new Error("Category could not be determined.");
+      }
+
+      const categoryFilter = category.replace(/\n/g, "").trim().toUpperCase();
+
+      const dataWithCategory = {
+        ...data,
+        category: categoryFilter as ReportCategory,
+      };
+      console.log(dataWithCategory);
+      const report = await ReportRepository.createReport(dataWithCategory);
       return report;
     } catch (error) {
       throw new Error(`Failed to create report: ${error}`);

@@ -111,6 +111,7 @@ const ReportDetailPage: React.FC = () => {
       SECURITY: "Keamanan",
       UTILITIES: "Utilitas",
       ENVIRONMENT: "Lingkungan",
+      OTHER: "Lainnya",
     };
     return labels[category as keyof typeof labels] || category;
   };
