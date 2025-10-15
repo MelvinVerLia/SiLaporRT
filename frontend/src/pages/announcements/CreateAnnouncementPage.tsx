@@ -19,15 +19,13 @@ export default function CreateAnnouncementPage() {
   return (
     <div className="space-y-6">
       {/* Page Header */}
-      <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4">
-        <div>
-          <h1 className="text-3xl font-bold text-gray-900">
-            Buat Pengumuman Baru
-          </h1>
-          <p className="text-gray-600 mt-1">
-            Buat pengumuman baru untuk warga RT
-          </p>
-        </div>
+      <div>
+        <h1 className="text-3xl font-bold text-gray-900">
+          Buat Pengumuman Baru
+        </h1>
+        <p className="text-gray-600 mt-1">
+          Buat pengumuman baru untuk warga RT
+        </p>
       </div>
 
       {/* Create Form */}
