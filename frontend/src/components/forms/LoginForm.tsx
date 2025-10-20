@@ -5,6 +5,7 @@ import { Card, CardContent, CardTitle } from "../ui/Card";
 import Button from "../ui/Button";
 import Input from "../ui/Input";
 import { useAuthContext } from "../../contexts/AuthContext";
+import { subscribeUserToPush } from "../../utils/PushSubscription";
 
 const LoginForm: React.FC = () => {
   const [email, setEmail] = useState("");
@@ -21,9 +22,10 @@ const LoginForm: React.FC = () => {
     e.preventDefault();
     clearError();
 
-    const success = await login({ email, password, rememberMe });
-    if (success) {
+    const user = await login({ email, password, rememberMe });
+    if (user.id) {
       navigate(from, { replace: true });
+      subscribeUserToPush(user.id);
     }
   };
 

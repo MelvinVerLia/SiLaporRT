@@ -170,7 +170,7 @@ class ReportRepository {
           attachments: true,
           responses: {
             include: {
-              responder: { select: { name: true, role: true } },
+              responder: { select: { name: true, role: true, profile: true } },
               attachments: true,
             },
             orderBy: { createdAt: "asc" },
@@ -337,7 +337,7 @@ class ReportRepository {
               }),
           },
           include: {
-            responder: { select: { name: true, role: true } },
+            responder: { select: { name: true, role: true, profile: true } },
             attachments: true,
           },
         });

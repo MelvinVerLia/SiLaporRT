@@ -43,17 +43,17 @@ export const useAuth = () => {
 
   // LOGIN: server set cookie; FE TIDAK menyimpan apa pun di localStorage
   const login = useCallback(
-    async (credentials: LoginCredentials): Promise<boolean> => {
+    async (credentials: LoginCredentials): Promise<User> => {
       setIsLoading(true);
       setError(null);
       try {
         const { user } = await apiLogin(credentials);
-        setUser(user);
-        return true;
+        setUser( user );
+        return user;
       } catch (e: unknown) {
         console.log(e);
         setError({ message: "Terjadi kesalahan saat login" });
-        return false;
+        return Promise.reject(e);
       } finally {
         setIsLoading(false);
       }

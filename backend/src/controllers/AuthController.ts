@@ -1,4 +1,3 @@
-import { json } from "stream/consumers";
 import { AuthService } from "../services/AuthService";
 import { Request, Response } from "express";
 
@@ -108,7 +107,7 @@ export class AuthController {
   static async getProfile(req: Request, res: Response) {
     try {
       const user = JSON.parse(JSON.stringify(req.user));
-      console.log(user);
+      // console.log(user);
       res.status(200).json({
         success: true,
         data: {

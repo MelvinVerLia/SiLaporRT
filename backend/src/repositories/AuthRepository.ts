@@ -37,7 +37,6 @@ export class AuthRepository {
 
   static async deleteUser(userId: string) {
     try {
-      console.log("userIdddddddd", userId);
       const hi = await prisma.user.update({
         where: { id: userId },
         data: {
@@ -47,6 +46,7 @@ export class AuthRepository {
           profile: null,
           email: null,
           password: null,
+          role: "NULL",
         },
       });
       console.log("wtf is this", hi);
@@ -61,6 +61,13 @@ export class AuthRepository {
     return prisma.user.update({
       where: { id: userId },
       data: { ...data, updatedAt: new Date() },
+    });
+  }
+
+  static async getAllUsersByRole(role: any) {
+    return prisma.user.findMany({
+      where: { role },
+      select: { id: true, role: true },
     });
   }
 }

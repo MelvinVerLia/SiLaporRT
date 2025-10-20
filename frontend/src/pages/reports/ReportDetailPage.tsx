@@ -502,8 +502,17 @@ const ReportDetailPage: React.FC = () => {
                     >
                       <div className="flex items-start justify-between mb-2">
                         <div className="flex items-center">
-                          <div className="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center text-white text-sm font-medium mr-3">
-                            {response.responder.name.charAt(0)}
+                          <div className="flex-shrink-0 w-8 h-8 rounded-full overflow-hidden flex items-center justify-center text-sm font-medium mr-3">
+                            {response.responder.profile ? (
+                              <img
+                                src={response.responder.profile}
+                                alt={response.responder.name
+                                  .charAt(0)
+                                  .toUpperCase()}
+                              />
+                            ) : (
+                              response.responder.name.charAt(0).toUpperCase()
+                            )}
                           </div>
                           <div>
                             <p className="font-medium text-gray-900">

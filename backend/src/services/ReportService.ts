@@ -2,6 +2,7 @@ import ReportRepository from "../repositories/ReportRepository";
 import { ReportStatus, ReportCategory, Role } from "@prisma/client";
 import { CreateReportData } from "../types/reportTypes";
 import { generateCategory } from "../utils/llm";
+import { NotificationService } from "./NotificationService";
 
 interface UserContext {
   id: string;
@@ -103,11 +104,20 @@ class ReportService {
     }
   }
 
-  static async updateStatus(reportId: string, status: string) {
+  static async updateStatus(reportId: string, status: ReportStatus) {
     try {
+      console.log("masuk update status")
       const updatedReport = await ReportRepository.updateStatus(
         reportId,
-        status as ReportStatus
+        status
+      );
+      console.log("updated Report", updatedReport)
+      await NotificationService.sendNotificationByUserId(
+        updatedReport.userId!,
+        `Laporan "${updatedReport.title}" Telah Diperbarui!`,
+        `Status laporan kamu kini berubah menjadi ${updatedReport.status}`,
+        `${process.env.FRONTEND_URL}/reports/${updatedReport.id}`,
+        "https://res.cloudinary.com/dgnedkivd/image/upload/v1757562088/silaporrt/dev/logo/logo_lnenhb.png"
       );
       return updatedReport;
     } catch (error) {

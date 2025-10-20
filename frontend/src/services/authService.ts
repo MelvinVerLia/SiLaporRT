@@ -11,7 +11,7 @@ export async function login(payload: LoginCredentials): Promise<AuthUser> {
     method: "POST",
     data: payload,
   });
-  return res.data as AuthUser; // { user, token }
+  return res.data as AuthUser; 
 }
 
 export async function getProfile(): Promise<User> {
@@ -20,7 +20,7 @@ export async function getProfile(): Promise<User> {
 }
 
 export async function logout() {
-  await publicRequest("/auth/logout", { method: "POST" }); // clear cookie di BE
+  await publicRequest("/auth/logout", { method: "POST" }); 
 }
 
 export async function sendOTP(

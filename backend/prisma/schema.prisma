@@ -30,19 +30,21 @@ model User {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
   
-  // Relations
   reports         Report[]
   responses       Response[]
   reportComments  ReportComment[]
   reportUpvotes   ReportUpvote[]
   announcements   Announcement[]
+  subscriptions   PushSubscription[]
+  notifications   notification[]
   
   @@map("users")
 }
 
 enum Role {
-  CITIZEN   // Warga biasa
-  RT_ADMIN  // Admin RT - yang bisa memberikan response resmi
+  CITIZEN   
+  RT_ADMIN  
+  NULL
 }
 
 model Report {
@@ -52,11 +54,11 @@ model Report {
   category    ReportCategory
   status      ReportStatus  @default(PENDING)
   
-  isAnonymous Boolean       @default(false) // Apakah nama pelapor disembunyikan
-  isPublic    Boolean       @default(true)  // Apakah ditampilkan di menu laporan publik
+  isAnonymous Boolean       @default(false) 
+  isPublic    Boolean       @default(true) 
   
-  upvoteCount   Int         @default(0)     // Cache jumlah upvote
-  commentCount  Int         @default(0)     // Cache jumlah comment
+  upvoteCount   Int         @default(0)     
+  commentCount  Int         @default(0)    
   
   location    Location      @relation(fields: [locationId], references: [id])
   locationId  String        
@@ -78,14 +80,14 @@ model Report {
 }
 
 enum ReportCategory {
-  INFRASTRUCTURE  // Jalan rusak, got mampet
-  CLEANLINESS    // Sampah, kebersihan  
-  LIGHTING       // Lampu jalan mati
-  SECURITY       // Keamanan lingkungan
-  UTILITIES      // Air, listrik
-  ENVIRONMENT    // Pohon tumbang, banjir
-  SUGGESTION     // Saran untuk perbaikan lingkungan
-  OTHER          // Lainnya
+  INFRASTRUCTURE  
+  CLEANLINESS    
+  LIGHTING      
+  SECURITY       
+  UTILITIES      
+  ENVIRONMENT    
+  SUGGESTION     
+  OTHER          
 }
 
 enum ReportStatus {
@@ -96,16 +98,14 @@ enum ReportStatus {
   CLOSED       
 }
 
-// Response resmi hanya dari RT Admin
 model Response {
   id          String       @id @default(cuid())
   message     String       @db.Text
-  attachments Attachment[] // RT bisa attach foto progress, dll
+  attachments Attachment[] 
   
   report      Report       @relation(fields: [reportId], references: [id], onDelete: Cascade)
   reportId    String
   
-  // Hanya RT_ADMIN yang bisa buat response
   responder   User         @relation(fields: [responderId], references: [id])
   responderId String
   
@@ -114,7 +114,6 @@ model Response {
   @@map("responses")
 }
 
-// Comment/diskusi warga di laporan
 model ReportComment {
   id       String @id @default(cuid())
   content  String @db.Text
@@ -139,7 +138,6 @@ model ReportUpvote {
   
   createdAt DateTime @default(now())
   
-  // Satu user hanya bisa upvote sekali per laporan
   @@unique([reportId, userId])
   @@map("report_upvotes")
 }
@@ -150,7 +148,6 @@ model Location {
   longitude Float
   address   String
   
-  // Administrative
   rt        String
   rw        String
   kelurahan String?
@@ -165,18 +162,16 @@ model Attachment {
   id       String @id @default(cuid())
   filename String
   url      String
-  fileType String // image, video, document
+  fileType String 
 
-  // Cloudinary (opsional)
-  provider     String?  // "cloudinary"
+  provider     String?  
   publicId     String?  @unique
-  resourceType String?  // "image" | "video" | "raw"
+  resourceType String?  
   format       String?
   bytes        Int?
   width        Int?
   height       Int?
   
-  // Relations (bisa attach ke Report atau Response)
   report     Report?   @relation(fields: [reportId], references: [id], onDelete: Cascade)
   reportId   String?
   response   Response? @relation(fields: [responseId], references: [id], onDelete: Cascade)
@@ -197,16 +192,14 @@ model Announcement {
   priority    Priority          @default(NORMAL)
   isActive    Boolean           @default(true)
   
-  isPinned    Boolean           @default(false)      // TODO: Pin announcement
-  publishAt   DateTime?                              // TODO: Schedule publish
-  expireAt    DateTime?                              // TODO: Auto-hide
-  viewCount   Int               @default(0)          // TODO: Analytics
+  isPinned    Boolean           @default(false)      
+  publishAt   DateTime?                              
+  expireAt    DateTime?                              
+  viewCount   Int               @default(0)          
   
-  // Author (only RT_ADMIN can create)
   author      User              @relation(fields: [authorId], references: [id])
   authorId    String
   
-  // Media attachments
   attachments Attachment[]
   
   createdAt   DateTime          @default(now())
@@ -221,12 +214,41 @@ model Announcement {
   @@index([priority])
 }
 
+model notification {
+  id        String   @id @default(cuid())
+  title     String
+  body      String
+  clickUrl  String?
+  createdAt DateTime @default(now())
+
+  isRead    Boolean  @default(false)    
+
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+}
+
+model PushSubscription {
+  id             String   @id @default(cuid())
+  endpoint       String   @unique
+  p256dh         String
+  auth           String
+  isActive       Boolean  @default(true)
+
+  userId String?
+  user   User? @relation(fields: [userId], references: [id])
+
+  createdAt DateTime @default(now())
+
+  @@map("push_subscriptions")
+}
+
 enum AnnouncementType {
-  GENERAL     // Pengumuman umum
-  URGENT      // Mendesak  
-  EVENT       // Acara/kegiatan
-  MAINTENANCE // Pemeliharaan
-  REGULATION  // Peraturan baru
+  GENERAL     
+  URGENT      
+  EVENT       
+  MAINTENANCE 
+  REGULATION 
+  OTHER
 }
 
 enum Priority {
