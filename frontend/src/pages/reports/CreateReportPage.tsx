@@ -3,11 +3,10 @@ import {
   ArrowLeft,
   ArrowRight,
   Check,
-  FileImage,
   FileText,
-  FileVideo,
   MapPin,
   Upload,
+  Eye,
   X,
 } from "lucide-react";
 import {
@@ -21,11 +20,9 @@ import Input from "../../components/ui/Input";
 import Textarea from "../../components/ui/Textarea";
 import LocationPicker from "../../components/features/maps/LocationPicker";
 import CloudinaryUpload from "../../components/upload/CloudinaryUpload";
+import ReportPreview from "../../components/features/reports/ReportPreview";
 import { useCreateReport } from "../../hooks/useCreateReport";
-import {
-  CreateReportFormData,
-  Location,
-} from "../../types/report.types";
+import { CreateReportFormData, Location } from "../../types/report.types";
 import { CloudinaryFile } from "../../types/announcement.types";
 import { useToast } from "../../hooks/useToast";
 
@@ -63,6 +60,7 @@ const CreateReportPage: React.FC = () => {
   const [currentStep, setCurrentStep] = useState(1);
   const [errors, setErrors] = useState<FormErrors>({});
   const [isUploading, setIsUploading] = useState(false);
+  const [isPreviewModalOpen, setIsPreviewModalOpen] = useState(false);
 
   const [formData, setFormData] = useState<CreateReportFormData>({
     title: "",
@@ -105,8 +103,8 @@ const CreateReportPage: React.FC = () => {
     },
     {
       number: 4,
-      title: "Review",
-      description: "Periksa dan kirim",
+      title: "Submit Laporan",
+      description: "Kirim laporan Anda",
       icon: Check,
     },
   ];
@@ -269,12 +267,12 @@ const CreateReportPage: React.FC = () => {
     switch (currentStep) {
       case 1:
         return (
-          <div className="space-y-6">
-            <div className="text-center mb-6">
-              <h2 className="text-2xl font-bold text-gray-900 mb-2">
+          <div className="space-y-4">
+            <div className="text-center mb-4">
+              <h3 className="text-lg font-semibold text-gray-900 mb-1">
                 Detail Laporan
-              </h2>
-              <p className="text-gray-600">
+              </h3>
+              <p className="text-sm text-gray-600">
                 Berikan informasi dasar tentang laporan Anda
               </p>
             </div>
@@ -306,46 +304,6 @@ const CreateReportPage: React.FC = () => {
               error={errors.description}
               rows={4}
             />
-
-            <div className="space-y-4">
-              <h3 className="font-medium text-gray-900">Pengaturan Privasi</h3>
-
-              <div className="space-y-3">
-                <label className="flex items-center space-x-3">
-                  <input
-                    type="checkbox"
-                    checked={formData.isAnonymous}
-                    onChange={(e) =>
-                      setFormData((prev) => ({
-                        ...prev,
-                        isAnonymous: e.target.checked,
-                      }))
-                    }
-                    className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500 hover:cursor-pointer"
-                  />
-                  <span className="text-sm text-gray-700">
-                    Laporkan secara anonim (nama tidak ditampilkan)
-                  </span>
-                </label>
-
-                <label className="flex items-center space-x-3">
-                  <input
-                    type="checkbox"
-                    checked={formData.isPublic}
-                    onChange={(e) =>
-                      setFormData((prev) => ({
-                        ...prev,
-                        isPublic: e.target.checked,
-                      }))
-                    }
-                    className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500 hover:cursor-pointer"
-                  />
-                  <span className="text-sm text-gray-700 hover:cursor-pointer">
-                    Tampilkan di laporan publik (dapat dilihat semua warga)
-                  </span>
-                </label>
-              </div>
-            </div>
           </div>
         );
 
@@ -388,11 +346,11 @@ const CreateReportPage: React.FC = () => {
       case 3:
         return (
           <div className="space-y-4">
-            <div className="text-center">
-              <h3 className="text-lg font-semibold text-gray-900 mb-2">
+            <div className="text-center mb-4">
+              <h3 className="text-lg font-semibold text-gray-900 mb-1">
                 Lampiran (Opsional)
               </h3>
-              <p className="text-gray-600 text-sm">
+              <p className="text-sm text-gray-600">
                 Tambahkan foto, video, atau dokumen sebagai bukti laporan Anda
               </p>
             </div>
@@ -425,176 +383,87 @@ const CreateReportPage: React.FC = () => {
 
       case 4:
         return (
-          <div className="space-y-6">
-            <div className="text-center mb-6">
-              <h2 className="text-2xl font-bold text-gray-900 mb-2">
-                Review Laporan
-              </h2>
-              <p className="text-gray-600">
-                Periksa kembali laporan Anda sebelum mengirim
+          <div className="space-y-4">
+            <div className="text-center mb-4">
+              <h3 className="text-lg font-semibold text-gray-900 mb-1">
+                Submit Laporan
+              </h3>
+              <p className="text-sm text-gray-600">
+                Atur privasi dan kirim laporan Anda
               </p>
             </div>
 
+            {/* Pengaturan Privasi */}
             <div className="space-y-4">
-              <Card>
-                <CardHeader>
-                  <CardTitle>Detail Laporan</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div>
-                    <label className="text-sm font-medium text-gray-600 ">
-                      Judul
-                    </label>
-                    <p className="text-gray-900 text-md whitespace-pre-wrap break-words">
-                      {formData.title}
-                    </p>
-                  </div>
+              <div className="pb-3 border-b border-gray-200">
+                <h4 className="text-base font-medium text-gray-900 mb-1">
+                  Pengaturan Privasi
+                </h4>
+                <p className="text-xs text-gray-500">
+                  Tentukan bagaimana laporan Anda akan ditampilkan
+                </p>
+              </div>
 
-                  <div>
-                    <label className="text-sm font-medium text-gray-600">
-                      Deskripsi
-                    </label>
-                    <p className="text-gray-900 text-sm whitespace-pre-wrap break-words">
-                      {formData.description}
-                    </p>
-                  </div>
+              {/* Anonymous Option */}
+              <div className="flex items-start justify-between py-3 border-b border-gray-200">
+                <div className="flex-1 pr-3">
+                  <label
+                    htmlFor="isAnonymous"
+                    className="block text-sm font-medium text-gray-900 mb-0.5 cursor-pointer"
+                  >
+                    Laporan Anonim
+                  </label>
+                  <p className="text-xs text-gray-600">
+                    Nama Anda tidak akan ditampilkan pada laporan ini. Hanya
+                    admin yang dapat melihat identitas Anda.
+                  </p>
+                </div>
+                <div className="flex items-center h-5 mt-0.5">
+                  <input
+                    id="isAnonymous"
+                    type="checkbox"
+                    checked={formData.isAnonymous}
+                    onChange={(e) =>
+                      setFormData((prev) => ({
+                        ...prev,
+                        isAnonymous: e.target.checked,
+                      }))
+                    }
+                    className="w-4 h-4 text-blue-600 border-gray-300 rounded cursor-pointer"
+                  />
+                </div>
+              </div>
 
-                  <div>
-                    <label className="text-sm font-medium text-gray-600">
-                      Visibilitas
-                    </label>
-
-                    <div className="flex flex-col gap-1 mt-1">
-                      <div className="flex items-center gap-2">
-                        {formData.isAnonymous ? (
-                          <Check className="h-4 w-4 text-green-600" />
-                        ) : (
-                          <X className="h-4 w-4 text-red-600" />
-                        )}
-                        <p
-                          className={`text-sm font-semibold ${
-                            formData.isAnonymous
-                              ? "text-gray-900"
-                              : "text-gray-400"
-                          }`}
-                        >
-                          Anonim
-                        </p>
-                      </div>
-
-                      <div className="flex items-center gap-2">
-                        {formData.isPublic ? (
-                          <Check className="h-4 w-4 text-green-600" />
-                        ) : (
-                          <X className="h-4 w-4 text-red-600" />
-                        )}
-                        <p
-                          className={`text-sm font-semibold ${
-                            formData.isPublic
-                              ? "text-gray-900"
-                              : "text-gray-400"
-                          }`}
-                        >
-                          Publik
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-
-              <Card>
-                <CardHeader>
-                  <CardTitle>Lokasi</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-2">
-                    <p className="text-gray-900">{locationForm.address}</p>
-                    <p className="text-sm text-gray-600">
-                      RT {locationForm.rt} RW {locationForm.rw}
-                    </p>
-                    <p className="text-sm text-gray-600">
-                      {locationForm.kelurahan}, {locationForm.kecamatan}
-                    </p>
-                    <p className="text-xs text-gray-500">
-                      {locationForm.latitude.toFixed(6)},{" "}
-                      {locationForm.longitude.toFixed(6)}
-                    </p>
-                  </div>
-                </CardContent>
-              </Card>
-
-              {formData.attachments.length > 0 && (
-                <Card>
-                  <CardHeader>
-                    <CardTitle>Lampiran</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <p className="text-gray-900">
-                      {formData.attachments.length} file terlampir
-                    </p>
-                    <div className="mt-2 grid grid-cols-5 gap-2">
-                      {formData.attachments.map((file, index) => {
-                        return (
-                          <div
-                            key={index}
-                            className="relative group border border-gray-200 rounded-lg overflow-hidden bg-white hover:shadow-md transition-shadow"
-                          >
-                            <div className="aspect-square flex items-center justify-center bg-gray-50">
-                              {file.resource_type === "image" ? (
-                                <img
-                                  src={file.secure_url}
-                                  alt={file.original_filename}
-                                  className="w-full h-full object-cover"
-                                />
-                              ) : (
-                                <div className="flex flex-col items-center justify-center p-4 text-center">
-                                  <FileText className="h-8 w-8 text-gray-400 mb-2" />
-                                  <span className="text-xs text-gray-600 font-medium truncate w-full">
-                                    {file.original_filename}
-                                  </span>
-                                  <span className="text-xs text-gray-400 mt-1">
-                                    {file.format?.toUpperCase()}
-                                    {file.bytes &&
-                                      ` • ${Math.round(file.bytes / 1024)} KB`}
-                                  </span>
-                                </div>
-                              )}
-                            </div>
-                            {file.resource_type === "image" && (
-                              <div className="absolute bottom-0 left-0 right-0 bg-black bg-opacity-60 text-white p-2 transform translate-y-full group-hover:translate-y-0 transition-transform">
-                                <div className="text-xs truncate font-medium">
-                                  {file.original_filename}
-                                </div>
-                                <div className="text-xs text-gray-200">
-                                  {file.format?.toUpperCase()}
-                                  {file.bytes &&
-                                    ` • ${Math.round(file.bytes / 1024)} KB`}
-                                  {file.width &&
-                                    file.height &&
-                                    ` • ${file.width}×${file.height}`}
-                                </div>
-                              </div>
-                            )}
-                            <div className="absolute top-2 left-2">
-                              <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium bg-white bg-opacity-90 text-gray-700 shadow-sm">
-                                {file.resource_type === "image" ? (
-                                  <FileImage className="h-3 w-3" />
-                                ) : file.resource_type === "video" ? (
-                                  <FileVideo className="h-3 w-3" />
-                                ) : (
-                                  <FileText className="h-3 w-3" />
-                                )}
-                                {file.resource_type}
-                              </span>
-                            </div>
-                          </div>
-                        );
-                      })}
-                    </div>
-                  </CardContent>
-                </Card>
-              )}
+              {/* Public Option */}
+              <div className="flex items-start justify-between py-3 border-b border-gray-200">
+                <div className="flex-1 pr-3">
+                  <label
+                    htmlFor="isPublic"
+                    className="block text-sm font-medium text-gray-900 mb-0.5 cursor-pointer"
+                  >
+                    Laporan Publik
+                  </label>
+                  <p className="text-xs text-gray-600">
+                    Laporan dapat dilihat oleh semua warga di halaman publik.
+                    Jika tidak dicentang, hanya Anda dan admin yang dapat
+                    melihat.
+                  </p>
+                </div>
+                <div className="flex items-center h-5 mt-0.5">
+                  <input
+                    id="isPublic"
+                    type="checkbox"
+                    checked={formData.isPublic}
+                    onChange={(e) =>
+                      setFormData((prev) => ({
+                        ...prev,
+                        isPublic: e.target.checked,
+                      }))
+                    }
+                    className="w-4 h-4 text-blue-600 border-gray-300 rounded cursor-pointer"
+                  />
+                </div>
+              </div>
             </div>
           </div>
         );
@@ -609,7 +478,9 @@ const CreateReportPage: React.FC = () => {
       {/* Header */}
       <div>
         <h1 className="text-3xl font-bold text-gray-900">Buat Laporan</h1>
-        <p className="text-gray-600 mt-1">Laporkan masalah di lingkungan RT Anda</p>
+        <p className="text-gray-600 mt-1">
+          Laporkan masalah di lingkungan RT Anda
+        </p>
       </div>
 
       {/* Progress Steps */}
@@ -667,58 +538,148 @@ const CreateReportPage: React.FC = () => {
         })}
       </div>
 
-      {/* Form Content */}
-      <Card>
-        <CardContent className="p-8">
-          {/* Mutation Error Display */}
-          {createReportMutation.isError && (
-            <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg">
-              <p className="text-red-800 text-sm">
-                {createReportMutation.error instanceof Error
-                  ? createReportMutation.error.message
-                  : "Gagal membuat laporan. Silakan coba lagi."}
-              </p>
-            </div>
-          )}
-
-          {renderStepContent()}
-        </CardContent>
-      </Card>
-
-      {/* Navigation Buttons */}
-      <div className="flex justify-between">
-        <Button
-          variant="outline"
-          onClick={handlePrevious}
-          disabled={
-            currentStep === 1 || isUploading || createReportMutation.isPending
-          }
-        >
-          <ArrowLeft className="mr-2 h-4 w-4" />
-          Sebelumnya
-        </Button>
-
-        {currentStep < steps.length ? (
+      {/* Main Grid Layout: Form + Preview */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+        {/* LEFT COLUMN: Form Section */}
+        <div className="lg:col-span-7 xl:col-span-8 space-y-6">
+          {/* Mobile Preview Button - Only visible on small screens */}
           <Button
-            onClick={handleNext}
-            disabled={isUploading || createReportMutation.isPending}
+            variant="outline"
+            onClick={() => setIsPreviewModalOpen(true)}
+            className="w-full lg:hidden"
           >
-            Selanjutnya
-            <ArrowRight className="ml-2 h-4 w-4" />
+            <Eye className="mr-2 h-4 w-4" />
+            Lihat Preview
           </Button>
-        ) : (
-          <Button
-            onClick={handleSubmit}
-            loading={createReportMutation.isPending || isUploading}
-            disabled={createReportMutation.isPending || isUploading}
-          >
-            <Check className="mr-2 h-4 w-4" />
-            {createReportMutation.isPending || isUploading
-              ? "Mengirim..."
-              : "Kirim Laporan"}
-          </Button>
-        )}
+
+          {/* Form Content */}
+          <Card>
+            <CardContent className="p-6">
+              {/* Mutation Error Display */}
+              {createReportMutation.isError && (
+                <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg">
+                  <p className="text-red-800 text-sm">
+                    {createReportMutation.error instanceof Error
+                      ? createReportMutation.error.message
+                      : "Gagal membuat laporan. Silakan coba lagi."}
+                  </p>
+                </div>
+              )}
+
+              {renderStepContent()}
+            </CardContent>
+          </Card>
+
+          {/* Navigation Buttons */}
+          <div className="flex justify-between">
+            <Button
+              variant="outline"
+              onClick={handlePrevious}
+              disabled={
+                currentStep === 1 ||
+                isUploading ||
+                createReportMutation.isPending
+              }
+            >
+              <ArrowLeft className="mr-2 h-4 w-4" />
+              Sebelumnya
+            </Button>
+
+            {currentStep < steps.length ? (
+              <Button
+                onClick={handleNext}
+                disabled={isUploading || createReportMutation.isPending}
+              >
+                Selanjutnya
+                <ArrowRight className="ml-2 h-4 w-4" />
+              </Button>
+            ) : (
+              <Button
+                onClick={handleSubmit}
+                loading={createReportMutation.isPending || isUploading}
+                disabled={createReportMutation.isPending || isUploading}
+              >
+                <Check className="mr-2 h-4 w-4" />
+                {createReportMutation.isPending || isUploading
+                  ? "Mengirim..."
+                  : "Kirim Laporan"}
+              </Button>
+            )}
+          </div>
+        </div>
+
+        {/* RIGHT COLUMN: Live Preview Section */}
+        <div className="lg:col-span-5 xl:col-span-4 hidden lg:block">
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <FileText className="h-5 w-5" />
+                Preview Laporan
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <ReportPreview
+                title={formData.title}
+                description={formData.description}
+                isAnonymous={formData.isAnonymous}
+                isPublic={formData.isPublic}
+                locationData={locationForm}
+                attachments={formData.attachments}
+                currentStep={currentStep}
+              />
+            </CardContent>
+          </Card>
+        </div>
       </div>
+
+      {/* Mobile Preview Modal */}
+      {isPreviewModalOpen && (
+        <div className="fixed inset-0 z-50 lg:hidden">
+          {/* Overlay */}
+          <div
+            className="fixed inset-0 bg-black/50"
+            onClick={() => setIsPreviewModalOpen(false)}
+          />
+
+          {/* Modal Content */}
+          <div className="fixed inset-x-0 bottom-0 z-50 bg-white rounded-t-2xl shadow-xl max-h-[90vh] overflow-y-auto animate-slide-up">
+            <div className="sticky z-10 top-0 bg-white border-b border-gray-200 p-4 flex items-center justify-between">
+              <h3 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
+                <FileText className="h-5 w-5" />
+                Preview Laporan
+              </h3>
+              <button
+                onClick={() => setIsPreviewModalOpen(false)}
+                className="p-2 rounded-lg hover:bg-gray-100 transition-colors"
+              >
+                <X className="h-5 w-5 text-gray-500" />
+              </button>
+            </div>
+
+            <div className="p-4">
+              <ReportPreview
+                title={formData.title}
+                description={formData.description}
+                isAnonymous={formData.isAnonymous}
+                isPublic={formData.isPublic}
+                locationData={locationForm}
+                attachments={formData.attachments}
+                currentStep={currentStep}
+              />
+            </div>
+
+            <div className="sticky z-10 bottom-0 bg-white border-t border-gray-200 p-4">
+              <Button
+                variant="outline"
+                onClick={() => setIsPreviewModalOpen(false)}
+                className="w-full"
+              >
+                Tutup Preview
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

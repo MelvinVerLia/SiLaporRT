@@ -250,7 +250,12 @@ const Sidebar: React.FC<SidebarProps> = ({ className }) => {
           <Link
             to="/admin/profile"
             onClick={() => setIsMobileMenuOpen(false)}
-            className="flex items-center space-x-3 rounded-md px-3 py-2.5 text-sm font-medium text-gray-600 hover:bg-gray-100 hover:text-gray-900 transition-colors"
+            className={cn(
+              "flex items-center space-x-3 rounded-md px-3 py-2.5 text-sm font-medium transition-colors",
+              isActivePath("/admin/profile")
+                ? "bg-blue-100 text-blue-700"
+                : "text-gray-600 hover:bg-gray-100 hover:text-gray-900"
+            )}
           >
             <UserCircle className="h-5 w-5 flex-shrink-0" />
             <span>Profil Saya</span>
