@@ -15,6 +15,10 @@ class ReportController {
       const user = req.user as { id: string };
       const data = req.body;
 
+      if (!user) {
+        throw new Error("User not found");
+      }
+
       if (!data.title || !data.description || !data.location) {
         throw new Error("Title, description, and location are required");
       }
@@ -28,7 +32,7 @@ class ReportController {
         data: result,
       });
     } catch (error: any) {
-      console.error("Error in createReport controller:", error); 
+      console.error("Error in createReport controller:", error);
       res.status(400).json({
         success: false,
         message: error.message,

@@ -37,7 +37,7 @@ export class NotificationRepository {
     });
   }
 
-  static async createNotification(
+  static async createNotificationToCitizen(
     title: string,
     body: string,
     clickUrl: string,
@@ -49,7 +49,6 @@ export class NotificationRepository {
     });
 
     if (user && user.role === "CITIZEN") {
-      console.log("Masuk");
       return await prisma.notification.create({
         data: { title, body, clickUrl, userId },
       });
@@ -69,5 +68,27 @@ export class NotificationRepository {
 
   static async deleteSubscriptionByEndpoint(endpoint: string) {
     return prisma.pushSubscription.delete({ where: { endpoint } });
+  }
+
+  static async createNotificationToAdmin(
+    title: string,
+    body: string,
+    clickUrl: string,
+    userId: string
+  ) {
+    return prisma.notification.create({
+      data: { title, body, clickUrl, userId },
+    });
+  }
+
+  static async getAdminSubscription() {
+    const admin = await prisma.user.findMany({
+      where: { role: "RT_ADMIN" },
+      select: { id: true },
+    });
+    const adminIds = admin.map((a) => a.id);
+    return prisma.pushSubscription.findMany({
+      where: { userId: { in: adminIds }, isActive: true },
+    });
   }
 }

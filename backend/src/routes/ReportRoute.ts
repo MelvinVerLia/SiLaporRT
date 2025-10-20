@@ -16,7 +16,6 @@ router.get(
   ReportController.getUserReportStatistics
 );
 router.get("/:reportId", ReportController.getReportById);
-// router.get("/:userId", ReportController.getReportById);
 
 router.post("/add", authenticateJWT, ReportController.createReport);
 

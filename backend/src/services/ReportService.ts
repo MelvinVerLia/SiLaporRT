@@ -24,8 +24,14 @@ class ReportService {
         ...data,
         category: categoryFilter as ReportCategory,
       };
-      console.log(dataWithCategory);
       const report = await ReportRepository.createReport(dataWithCategory);
+
+      await NotificationService.sendNotificationToAdmin(
+        `Laporan "${report.title}" Telah Dibuat!`,
+        `Laporan dah dibuat woi anjing beresin su`,
+        `${process.env.FRONTEND_URL}/reports/${report.id}`,
+        "https://res.cloudinary.com/dgnedkivd/image/upload/v1757562088/silaporrt/dev/logo/logo_lnenhb.png"
+      );
       return report;
     } catch (error) {
       throw new Error(`Failed to create report: ${error}`);
@@ -106,12 +112,12 @@ class ReportService {
 
   static async updateStatus(reportId: string, status: ReportStatus) {
     try {
-      console.log("masuk update status")
+      console.log("masuk update status");
       const updatedReport = await ReportRepository.updateStatus(
         reportId,
         status
       );
-      console.log("updated Report", updatedReport)
+      console.log("updated Report", updatedReport);
       await NotificationService.sendNotificationByUserId(
         updatedReport.userId!,
         `Laporan "${updatedReport.title}" Telah Diperbarui!`,
@@ -138,7 +144,13 @@ class ReportService {
         message.trim(),
         attachments
       );
-
+      await NotificationService.sendNotificationByUserId(
+        response?.report.userId!,
+        `Laporan "${response?.report.title}" Telah Diperbarui!`,
+        `Laporan anda telah diresponse oleh ${response?.responder.name}, silahkan cek laporan anda`,
+        `${process.env.FRONTEND_URL}/reports/${reportId}`,
+        "https://res.cloudinary.com/dgnedkivd/image/upload/v1757562088/silaporrt/dev/logo/logo_lnenhb.png"
+      );
       return {
         success: true,
         data: response,

@@ -40,7 +40,7 @@ export class NotificationService {
       }
     }
 
-    await NotificationRepository.createNotification(
+    await NotificationRepository.createNotificationToCitizen(
       title,
       body,
       clickUrl,
@@ -58,15 +58,11 @@ export class NotificationService {
   ) {
     const citizens = await AuthRepository.getAllUsersByRole("CITIZEN");
 
-    if (!citizens.length) throw new Error("No citizen users found");
-
     const citizenUserIds = citizens.map((u) => u.id);
 
     const subs = await NotificationRepository.getSubscriptionsByUserIds(
       citizenUserIds
     );
-
-    if (!subs.length) throw new Error("No citizen subscriptions found");
 
     const payload = {
       title,
@@ -106,5 +102,49 @@ export class NotificationService {
     }
 
     return { success: true };
+  }
+
+  static async sendNotificationToAdmin(
+    title: string,
+    body: string,
+    clickUrl: string,
+    imageUrl: string
+  ) {
+    const payload = {
+      title,
+      body,
+      clickUrl,
+      icon: imageUrl,
+      badge: imageUrl,
+      image: imageUrl,
+    };
+    console.log("payload", payload)
+    const subs = await NotificationRepository.getAdminSubscription();
+    console.log("subs", subs)   
+    for (const s of subs) {
+      try {
+        await webpush.sendNotification(
+          {
+            endpoint: s.endpoint,
+            keys: { p256dh: s.p256dh, auth: s.auth },
+          } as any,
+          JSON.stringify(payload)
+        );
+      } catch (err: any) {
+        console.error("Push failed:", err.statusCode, err.body);
+
+        if (err.statusCode === 410 || err.statusCode === 404) {
+          await NotificationRepository.deleteSubscriptionByEndpoint(s.endpoint);
+          console.log("Deleted expired subscription:", s.endpoint);
+        }
+      }
+    }
+    await NotificationRepository.createNotificationToAdmin(
+      title,
+      body,
+      clickUrl,
+      subs[0].userId!
+    )
+
   }
 }
