@@ -249,11 +249,11 @@ const LocationPicker: React.FC<LocationPickerProps> = ({
 
   return (
     <div className="space-y-4">
-      <div className="text-center">
-        <h3 className="text-lg font-semibold text-gray-900 mb-2">
+      <div className="text-center mb-4">
+        <h3 className="text-lg font-semibold text-gray-900 mb-1">
           Pilih Lokasi Kejadian
         </h3>
-        <p className="text-gray-600 text-sm">
+        <p className="text-sm text-gray-600">
           Tentukan lokasi kejadian yang akan dilaporkan
         </p>
       </div>
@@ -358,21 +358,21 @@ const LocationPicker: React.FC<LocationPickerProps> = ({
           <div className="grid grid-cols-2 gap-4">
             <Input
               label="RT"
-              placeholder="05"
+              placeholder="01"
               value={rt}
               error={rtError}
               onChange={(e) => onRtChange(e.target.value)}
             />
             <Input
               label="RW"
-              placeholder="02"
+              placeholder="01"
               value={rw}
               error={rwError}
               onChange={(e) => onRwChange(e.target.value)}
             />
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
+          {/* <div className="grid grid-cols-2 gap-4">
             <Input
               label="Latitude"
               placeholder="-6.2000000"
@@ -391,7 +391,7 @@ const LocationPicker: React.FC<LocationPickerProps> = ({
                 onCoordinatesChange(latitude, Number(e.target.value) || 0)
               }
             />
-          </div>
+          </div> */}
         </div>
       </div>
     </div>
