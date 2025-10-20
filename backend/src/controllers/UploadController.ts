@@ -8,7 +8,6 @@ import { Role } from "@prisma/client";
 export class UploadController {
   // FE minta tanda tangan upload
   static async sign(req: Request, res: Response) {
-    console.log('chupapimunayyao');
     try {
       const { folder, resourceType } = req.body;
       // Guard: semua user login boleh sign; kalau folder "announcements" minta RT_ADMIN

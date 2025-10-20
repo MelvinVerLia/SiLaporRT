@@ -31,6 +31,7 @@ import { Report } from "../../types/report.types";
 import AdvancedFilter, {
   FilterField,
 } from "../../components/common/AdvancedFilter";
+import ReportManageTableSkeleton from "./components/ReportManageTableSkeleton";
 
 export default function ManageReportsPage() {
   const navigate = useNavigate();
@@ -379,13 +380,11 @@ export default function ManageReportsPage() {
   return (
     <div className="space-y-6">
       {/* Page Header */}
-      <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4">
-        <div>
-          <h1 className="text-3xl font-bold text-gray-900">Kelola Laporan</h1>
-          <p className="text-gray-600 mt-1">
-            Kelola dan tanggapi laporan dari warga RT
-          </p>
-        </div>
+      <div>
+        <h1 className="text-3xl font-bold text-gray-900">Kelola Laporan</h1>
+        <p className="text-gray-600 mt-1">
+          Kelola dan tanggapi laporan dari warga RT
+        </p>
       </div>
 
       {/* Reports List */}
@@ -424,13 +423,7 @@ export default function ManageReportsPage() {
 
         <CardContent>
           {isLoading ? (
-            <div className="space-y-4">
-              {[...Array(5)].map((_, i) => (
-                <div key={i} className="animate-pulse">
-                  <div className="h-20 bg-gray-200 rounded"></div>
-                </div>
-              ))}
-            </div>
+            <ReportManageTableSkeleton />
           ) : isError ? (
             <div className="text-center py-8">
               <AlertTriangle className="mx-auto h-8 w-8 text-red-400 mb-2" />

@@ -354,21 +354,17 @@ export default function ManageAnnouncementsPage() {
   return (
     <div className="space-y-6">
       {/* Page Header */}
-      <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4">
-        <div>
-          <h1 className="text-3xl font-bold text-gray-900">
-            Kelola Pengumuman
-          </h1>
-          <p className="text-gray-600 mt-1">
-            Buat dan atur pengumuman untuk warga RT
-          </p>
-        </div>
+      <div>
+        <h1 className="text-3xl font-bold text-gray-900">Kelola Pengumuman</h1>
+        <p className="text-gray-600 mt-1">
+          Buat dan atur pengumuman untuk warga RT
+        </p>
       </div>
 
       {/* Announcements List */}
       <Card>
         <CardHeader>
-          <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+          <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4">
             <div className="flex items-center gap-3">
               <CardTitle>Daftar Pengumuman</CardTitle>
               <Badge variant="default" size="sm">

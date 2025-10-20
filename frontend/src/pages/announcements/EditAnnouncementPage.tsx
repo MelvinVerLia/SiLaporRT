@@ -94,11 +94,11 @@ export default function EditAnnouncementPage() {
       <Breadcrumb items={breadcrumbItems} />
 
       {/* Page Header */}
-      <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4">
-        <div>
-          <h1 className="text-3xl font-bold text-gray-900">Edit Pengumuman</h1>
-          <p className="text-gray-600">Edit pengumuman: {announcement.title}</p>
-        </div>
+      <div>
+        <h1 className="text-3xl font-bold text-gray-900">Edit Pengumuman</h1>
+        <p className="text-gray-600 mt-1">
+          Edit pengumuman: {announcement.title}
+        </p>
       </div>
 
       {/* Edit Form */}
