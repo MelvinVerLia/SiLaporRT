@@ -21,6 +21,7 @@ const ReportListItem = ({ r }: { r: Report }) => {
       SECURITY: "Keamanan",
       UTILITIES: "Utilitas",
       ENVIRONMENT: "Lingkungan",
+      OTHER: "Lainnya",
     };
     return labels[category as keyof typeof labels] || category;
   };

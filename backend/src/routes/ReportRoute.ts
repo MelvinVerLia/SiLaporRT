@@ -38,7 +38,7 @@ router.get(
 );
 
 // === ADMIN/RT ROUTES ===
-router.put("/:reportId/status", authenticateJWT, ReportController.updateStatus);
+router.put("/:reportId/status", ReportController.updateStatus);
 router.post(
   "/:reportId/response",
   authenticateJWT,
