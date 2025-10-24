@@ -72,6 +72,9 @@ const LocationPicker: React.FC<LocationPickerProps> = ({
   const autocompleteRef = useRef<google.maps.places.Autocomplete | null>(null);
   const libraries: Libraries = ["places"];
 
+  // Determine if location data is from map (has coordinates)
+  const isFromMap = !!(latitude && longitude);
+
   // Get current marker position; prefer explicit coords, then selectedLocation, else default center
   const markerPosition =
     latitude && longitude
@@ -79,6 +82,8 @@ const LocationPicker: React.FC<LocationPickerProps> = ({
       : selectedLocation
       ? { lat: selectedLocation.latitude, lng: selectedLocation.longitude }
       : center;
+
+  const autocompleteInputRef = useRef<HTMLInputElement | null>(null);
 
   // Hydrate form fields from selectedLocation when provided (once) without overriding user input
   useEffect(() => {
@@ -178,30 +183,29 @@ const LocationPicker: React.FC<LocationPickerProps> = ({
 
   // Handle map click
   const handleMapClick = (e: google.maps.MapMouseEvent) => {
-    if (e.latLng) {
+    if (e.latLng && geocoder) {
       const lat = e.latLng.lat();
       const lng = e.latLng.lng();
+
+      // Update coordinates immediately
       onCoordinatesChange(lat, lng);
-    }
-  };
 
-  // Fill address from coordinates
-  const handleFillAddress = () => {
-    if (!geocoder || !latitude || !longitude) return;
-
-    geocoder.geocode(
-      { location: { lat: latitude, lng: longitude } },
-      (results, status) => {
+      // Auto geocoding
+      geocoder.geocode({ location: { lat, lng } }, (results, status) => {
         if (status === "OK" && results![0]) {
           const components = results![0].address_components;
           const formattedAddress = results![0].formatted_address || "";
 
-          updateLocationData(latitude, longitude, components, formattedAddress);
-        } else {
-          alert("Gagal mengambil alamat dari titik ini");
+          // Update all location data
+          updateLocationData(lat, lng, components, formattedAddress);
+
+          // Sync search bar
+          if (autocompleteInputRef.current) {
+            autocompleteInputRef.current.value = formattedAddress;
+          }
         }
-      }
-    );
+      });
+    }
   };
 
   // Use current location
@@ -222,6 +226,11 @@ const LocationPicker: React.FC<LocationPickerProps> = ({
               const formattedAddress = results![0].formatted_address || "";
 
               updateLocationData(lat, lng, components, formattedAddress);
+
+              // Sync search bar
+              if (autocompleteInputRef.current) {
+                autocompleteInputRef.current.value = formattedAddress;
+              }
             } else {
               // Still update coordinates even if geocoding fails
               const location: Location = {
@@ -254,7 +263,7 @@ const LocationPicker: React.FC<LocationPickerProps> = ({
           Pilih Lokasi Kejadian
         </h3>
         <p className="text-sm text-gray-600">
-          Tentukan lokasi kejadian yang akan dilaporkan
+          Gunakan pencarian, klik pada peta, atau tombol lokasi saat ini
         </p>
       </div>
 
@@ -273,6 +282,7 @@ const LocationPicker: React.FC<LocationPickerProps> = ({
           onPlaceChanged={handlePlaceChanged}
         >
           <input
+            ref={autocompleteInputRef}
             type="text"
             placeholder="Cari lokasi..."
             className="w-full p-3 border border-gray-300 rounded-lg mb-4 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
@@ -292,107 +302,80 @@ const LocationPicker: React.FC<LocationPickerProps> = ({
 
       {/* Action Buttons */}
       <div className="space-y-4">
-        <div className="flex gap-4">
-          <Button
-            type="button"
-            onClick={handleUseCurrentLocation}
-            loading={isSelectingLocation}
-            className="w-full"
-            disabled={isSelectingLocation}
-          >
-            <Navigation className="mr-2 h-4 w-4" />
-            {isSelectingLocation
-              ? "Mendapatkan Lokasi..."
-              : "Gunakan Lokasi Saat Ini"}
-          </Button>
-          <Button
-            type="button"
-            onClick={handleFillAddress}
-            className="w-full"
-            disabled={isSelectingLocation || !latitude || !longitude}
-          >
-            Isi Alamat dari Peta
-          </Button>
-        </div>
-
-        <div className="relative">
-          <div className="absolute inset-0 flex items-center">
-            <div className="w-full border-t border-gray-300" />
+        {!isFromMap && (
+          <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
+            <p className="text-sm text-blue-800">
+              💡 Pilih lokasi dari peta untuk melanjutkan
+            </p>
           </div>
-          <div className="relative flex justify-center text-sm">
-            <span className="px-2 bg-white text-gray-500">
-              atau input manual
-            </span>
+        )}
+
+        <Button
+          type="button"
+          onClick={handleUseCurrentLocation}
+          loading={isSelectingLocation}
+          className="w-full"
+          disabled={isSelectingLocation}
+        >
+          <Navigation className="mr-2 h-4 w-4" />
+          {isSelectingLocation
+            ? "Mendapatkan Lokasi..."
+            : "Gunakan Lokasi Saat Ini"}
+        </Button>
+
+        {/* Location Details - Only shown when coordinates exist */}
+        {isFromMap && (
+          <div className="space-y-4 p-4 border border-gray-200 rounded-lg bg-white">
+            <div className="flex items-center justify-between">
+              <h4 className="font-medium text-gray-900">Detail Lokasi</h4>
+              <span className="text-xs text-green-600 bg-green-50 px-2 py-1 rounded">
+                Dari Google Maps
+              </span>
+            </div>
+
+            <Input
+              label="Alamat Lengkap"
+              value={address}
+              error={addressError}
+              onChange={(e) => onAddressChange(e.target.value)}
+              disabled={true}
+            />
+
+            <div className="grid grid-cols-2 gap-4">
+              <Input
+                label="Kelurahan"
+                value={kelurahan}
+                error={kelurahanError}
+                onChange={(e) => onKelurahanChange(e.target.value)}
+                disabled={true}
+              />
+              <Input
+                label="Kecamatan"
+                value={kecamatan}
+                error={kecamatanError}
+                onChange={(e) => onKecamatanChange(e.target.value)}
+                disabled={true}
+              />
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <Input
+                label="RT"
+                value={rt}
+                placeholder="Contoh: 01"
+                error={rtError}
+                onChange={(e) => onRtChange(e.target.value)}
+              />
+              <Input
+                label="RW"
+                value={rw}
+                placeholder="Contoh: 01"
+                error={rwError}
+                onChange={(e) => onRwChange(e.target.value)}
+              />
+            </div>
           </div>
-        </div>
-
-        {/* Manual Input Form */}
-        <div className="space-y-4 p-4 border border-gray-200 rounded-lg bg-gray-50">
-          <h4 className="font-medium text-gray-900">Input Manual</h4>
-
-          <Input
-            label="Alamat Lengkap"
-            placeholder="Contoh: Jl. Mawar No. 45"
-            value={address}
-            error={addressError}
-            onChange={(e) => onAddressChange(e.target.value)}
-          />
-
-          <div className="grid grid-cols-2 gap-4">
-            <Input
-              label="Kelurahan"
-              placeholder="Nama kelurahan"
-              value={kelurahan}
-              error={kelurahanError}
-              onChange={(e) => onKelurahanChange(e.target.value)}
-            />
-            <Input
-              label="Kecamatan"
-              placeholder="Nama kecamatan"
-              value={kecamatan}
-              error={kecamatanError}
-              onChange={(e) => onKecamatanChange(e.target.value)}
-            />
-          </div>
-
-          <div className="grid grid-cols-2 gap-4">
-            <Input
-              label="RT"
-              placeholder="01"
-              value={rt}
-              error={rtError}
-              onChange={(e) => onRtChange(e.target.value)}
-            />
-            <Input
-              label="RW"
-              placeholder="01"
-              value={rw}
-              error={rwError}
-              onChange={(e) => onRwChange(e.target.value)}
-            />
-          </div>
-
-          {/* <div className="grid grid-cols-2 gap-4">
-            <Input
-              label="Latitude"
-              placeholder="-6.2000000"
-              type="number"
-              value={latitude || ""}
-              onChange={(e) =>
-                onCoordinatesChange(Number(e.target.value) || 0, longitude)
-              }
-            />
-            <Input
-              label="Longitude"
-              placeholder="106.8166666"
-              type="number"
-              value={longitude || ""}
-              onChange={(e) =>
-                onCoordinatesChange(latitude, Number(e.target.value) || 0)
-              }
-            />
-          </div> */}
-        </div>
+        )}
       </div>
     </div>
   );
