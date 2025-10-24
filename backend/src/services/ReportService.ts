@@ -30,7 +30,8 @@ class ReportService {
         `Laporan "${report.title}" Telah Dibuat!`,
         `Laporan dah dibuat woi anjing beresin su`,
         `${process.env.FRONTEND_URL}/reports/${report.id}`,
-        "https://res.cloudinary.com/dgnedkivd/image/upload/v1757562088/silaporrt/dev/logo/logo_lnenhb.png"
+        "https://res.cloudinary.com/dgnedkivd/image/upload/v1757562088/silaporrt/dev/logo/logo_lnenhb.png",
+        "REPORT"
       );
       return report;
     } catch (error) {
@@ -123,7 +124,8 @@ class ReportService {
         `Laporan "${updatedReport.title}" Telah Diperbarui!`,
         `Status laporan kamu kini berubah menjadi ${updatedReport.status}`,
         `${process.env.FRONTEND_URL}/reports/${updatedReport.id}`,
-        "https://res.cloudinary.com/dgnedkivd/image/upload/v1757562088/silaporrt/dev/logo/logo_lnenhb.png"
+        "https://res.cloudinary.com/dgnedkivd/image/upload/v1757562088/silaporrt/dev/logo/logo_lnenhb.png",
+        "REPORT"
       );
       return updatedReport;
     } catch (error) {
@@ -149,7 +151,8 @@ class ReportService {
         `Laporan "${response?.report.title}" Telah Diperbarui!`,
         `Laporan anda telah diresponse oleh ${response?.responder.name}, silahkan cek laporan anda`,
         `${process.env.FRONTEND_URL}/reports/${reportId}`,
-        "https://res.cloudinary.com/dgnedkivd/image/upload/v1757562088/silaporrt/dev/logo/logo_lnenhb.png"
+        "https://res.cloudinary.com/dgnedkivd/image/upload/v1757562088/silaporrt/dev/logo/logo_lnenhb.png",
+        "REPORT"
       );
       return {
         success: true,

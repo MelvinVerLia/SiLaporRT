@@ -57,13 +57,11 @@ const ReportDetailPage: React.FC = () => {
   const [selectedStatus, setSelectedStatus] = useState("");
   const libraries: Libraries = ["places"];
 
-  // Ref untuk mencegah spam clicking
   const lastUpvoteTime = useRef<number>(0);
-  const UPVOTE_COOLDOWN = 500; // 500ms cooldown
+  const UPVOTE_COOLDOWN = 500;
 
   const isAdmin = user?.role === Role.RT_ADMIN;
 
-  // Detect where user came from based on location state or current URL context
   const isFromAdmin =
     location.state?.from === "admin" ||
     location.pathname.includes("/admin") ||
@@ -84,7 +82,6 @@ const ReportDetailPage: React.FC = () => {
     queryFn: () => getReportDetails(id!),
   });
 
-  // Get user's upvote status
   const { data: upvoteStatus } = useQuery({
     queryKey: ["upvote-status", id],
     queryFn: () => getUserUpvoteStatus(id!),
@@ -761,6 +758,12 @@ const ReportDetailPage: React.FC = () => {
                     placeholder="Tulis tanggapan resmi untuk warga..."
                     rows={3}
                     className="w-full text-sm"
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter" && !e.shiftKey) {
+                        e.preventDefault();
+                        handleSubmitResponse();
+                      }
+                    }}
                   />
                   <Button
                     onClick={handleSubmitResponse}

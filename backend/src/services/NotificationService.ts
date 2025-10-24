@@ -1,7 +1,8 @@
-import { error } from "console";
 import { NotificationRepository } from "../repositories/NotificationRepository";
 import webpush from "../utils/webpush";
 import { AuthRepository } from "../repositories/AuthRepository";
+import { error } from "console";
+import { NotificationCategory } from "@prisma/client";
 
 export class NotificationService {
   static async sendNotificationByUserId(
@@ -9,7 +10,8 @@ export class NotificationService {
     title: string,
     body: string,
     clickUrl: string,
-    icon: string
+    icon: string,
+    category: NotificationCategory
   ) {
     const subs = await NotificationRepository.getAllSubscriptionsByUserId(
       userId
@@ -40,11 +42,13 @@ export class NotificationService {
       }
     }
 
+    console.log("Notification sent successfully");
     await NotificationRepository.createNotificationToCitizen(
       title,
       body,
       clickUrl,
-      userId
+      userId,
+      category
     );
 
     return { success: true };
@@ -54,7 +58,8 @@ export class NotificationService {
     title: string,
     body: string,
     clickUrl: string,
-    imageUrl: string
+    imageUrl: string,
+    category: NotificationCategory
   ) {
     const citizens = await AuthRepository.getAllUsersByRole("CITIZEN");
 
@@ -78,6 +83,7 @@ export class NotificationService {
       body,
       clickUrl,
       userId: u.id,
+      category,
     }));
 
     await NotificationRepository.createMany(notificationData);
@@ -108,7 +114,8 @@ export class NotificationService {
     title: string,
     body: string,
     clickUrl: string,
-    imageUrl: string
+    imageUrl: string,
+    category: NotificationCategory
   ) {
     const payload = {
       title,
@@ -118,9 +125,7 @@ export class NotificationService {
       badge: imageUrl,
       image: imageUrl,
     };
-    console.log("payload", payload)
     const subs = await NotificationRepository.getAdminSubscription();
-    console.log("subs", subs)   
     for (const s of subs) {
       try {
         await webpush.sendNotification(
@@ -143,8 +148,21 @@ export class NotificationService {
       title,
       body,
       clickUrl,
-      subs[0].userId!
-    )
+      subs[0].userId!,
+      category
+    );
+  }
 
+  static async getNotifications(userId: string) {
+    const response = await NotificationRepository.getNotifications(userId);
+    return response;
+  }
+
+  static readAllNotification(userId: string) {
+    return NotificationRepository.readAllNotification(userId);
+  }
+
+  static readNotification(id: string) {
+    return NotificationRepository.readNotification(id);
   }
 }
