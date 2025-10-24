@@ -15,10 +15,10 @@ dotenv.config();
 
 const app = express();
 
+const origins = process.env.FRONTEND_URL_PROD || process.env.FRONTEND_URL;
 app.use(
   cors({
-    origin: process.env.FRONTEND_URL,
-    // origin: process.env.FRONTEND_URL_PROD,
+    origin: origins,
     credentials: true,
   })
 );
@@ -30,7 +30,7 @@ app.use("/api/reports", reportRouter);
 app.use("/api/auth", authRouter);
 app.use("/api/announcements", announcementRouter);
 app.use("/api/uploads", uploadRouter);
-app.use("/api/notification", notificationRouter)
+app.use("/api/notification", notificationRouter);
 
 app.get("/", (req, res) => {
   res.send("Hello World!");

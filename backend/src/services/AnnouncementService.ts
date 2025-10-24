@@ -119,10 +119,13 @@ export class AnnouncementService {
       attachments,
     });
 
+    const url =
+      `${process.env.FRONTEND_URL_PROD}/announcements/${announcement.id}` ||
+      `${process.env.FRONTEND_URL}/announcements/${announcement.id}`;
     await NotificationService.sendNotificationAll(
       `📢 Pengumuman Baru: "${announcement.title}"`,
       `Cek pengumuman terbaru berjudul "${announcement.title}" sekarang di aplikasi SiLaporRT.`,
-      `${process.env.FRONTEND_URL}/announcements/${announcement.id}`,
+      url,
       "https://res.cloudinary.com/dgnedkivd/image/upload/v1757562088/silaporrt/dev/logo/logo_lnenhb.png",
       "ANNOUNCEMENT"
     );

@@ -18,18 +18,24 @@ export async function subscribeUserToPush(userId: string) {
 
   console.log("subscription", subscription);
 
-  const response = await fetch(
-    `${import.meta.env.VITE_API_BASE_URL}/notification/subscribe`,
-    {
+  if (import.meta.env.VITE_API_BASE_URL_PROD) {
+    await fetch(
+      `${import.meta.env.VITE_API_BASE_URL_PROD}/notification/subscribe`,
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({ subscription, userId }),
+      }
+    );
+  } else {
+    await fetch(`${import.meta.env.VITE_API_BASE}/notification/subscribe`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       credentials: "include",
       body: JSON.stringify({ subscription, userId }),
-    }
-  );
-  //   await sendNotification(subscription);
-
-  console.log("Subscribed to push:", response);
+    });
+  }
 }
 
 function urlBase64ToUint8Array(base64String: string) {
