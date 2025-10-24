@@ -36,7 +36,6 @@ class ReportRepository {
           isPublic: data.isPublic ?? true,
           userId: data.userId,
           locationId: location.id,
-          // Create attachments if provided
           attachments: data.attachments
             ? {
                 create: data.attachments.map((att) => ({
@@ -170,7 +169,7 @@ class ReportRepository {
           attachments: true,
           responses: {
             include: {
-              responder: { select: { name: true, role: true } },
+              responder: { select: { name: true, role: true, profile: true } },
               attachments: true,
             },
             orderBy: { createdAt: "asc" },
@@ -316,14 +315,14 @@ class ReportRepository {
     reportId: string,
     responderId: string,
     message: string,
-    attachments?: string[] // Array of attachment URLs/filenames
+    attachments?: string[] 
   ) {
     try {
       return await prisma.$transaction(async (tx) => {
         const response = await tx.response.create({
           data: {
             reportId,
-            responderId, // Note: using responderId to match schema
+            responderId, 
             message,
             ...(attachments &&
               attachments.length > 0 && {
@@ -331,22 +330,27 @@ class ReportRepository {
                   create: attachments.map((attachment) => ({
                     filename: attachment,
                     url: attachment,
-                    fileType: "image", // You might want to determine this dynamically
+                    fileType: "image", 
                   })),
                 },
               }),
           },
           include: {
-            responder: { select: { name: true, role: true } },
+            responder: { select: { name: true, role: true, profile: true } },
             attachments: true,
+            report: {
+              select: {
+                userId: true,
+                title: true,
+              }
+            }
           },
         });
 
-        // Optionally update report status when official response is added
         await tx.report.update({
           where: { id: reportId },
           data: {
-            status: ReportStatus.IN_PROGRESS, // or keep current status
+            status: ReportStatus.IN_PROGRESS, 
           },
         });
 
@@ -491,6 +495,29 @@ class ReportRepository {
       });
 
       return { success: true, data: updatedReport };
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  static async getUserReportStatistics(userId: string) {
+    try {
+      const [total, pending, inProgress, resolved, rejected] =
+        await Promise.all([
+          prisma.report.count({ where: { userId } }),
+          prisma.report.count({ where: { userId, status: "PENDING" } }),
+          prisma.report.count({ where: { userId, status: "IN_PROGRESS" } }),
+          prisma.report.count({ where: { userId, status: "RESOLVED" } }),
+          prisma.report.count({ where: { userId, status: "REJECTED" } }),
+        ]);
+
+      return {
+        total,
+        pending,
+        inProgress,
+        resolved,
+        rejected,
+      };
     } catch (error) {
       throw error;
     }

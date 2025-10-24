@@ -18,7 +18,7 @@ import CreateReportPage from "./pages/reports/CreateReportPage";
 import ReportDetailPage from "./pages/reports/ReportDetailPage";
 import MyReportsPage from "./pages/reports/MyReportsPage";
 import AdminDashboard from "./pages/dashboard/AdminDashboard";
-import ProfilePage from "./pages/ProfilePage";
+import ProfilePage from "./pages/profile/ProfilePage";
 import AnnouncementsPage from "./pages/announcements/AnnouncementsPage";
 import AnnouncementDetailPage from "./pages/announcements/AnnouncementDetailPage";
 import ManageAnnouncementsPage from "./pages/announcements/ManageAnnouncementsPage";
@@ -147,7 +147,7 @@ function App() {
                 >
                   <Route index element={<AdminDashboard />} />
                   <Route path="profile" element={<ProfilePage />} />
-                  <Route path="create-report" element={<CreateReportPage />} />
+                  <Route path="reports/create" element={<CreateReportPage />} />
                   <Route path="reports" element={<ManageReportsPage />} />
                   <Route path="reports/:id" element={<ReportDetailPage />} />
                   <Route

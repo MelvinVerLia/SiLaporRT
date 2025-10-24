@@ -80,13 +80,12 @@ export async function createReport(
         kelurahan: formData.location.kelurahan,
         kecamatan: formData.location.kecamatan,
       },
-      // Convert CloudinaryFile to attachment format with proper classification
       attachments: formData.attachments.map((file) => {
         const extendedFile = file as CloudinaryFile & { fileType?: string };
         return {
           filename: file.original_filename || "file",
           url: file.secure_url,
-          fileType: extendedFile.fileType || classifyFile(file), // Use classified type
+          fileType: extendedFile.fileType || classifyFile(file), 
           provider: "cloudinary",
           publicId: file.public_id,
           resourceType: file.resource_type,
@@ -98,10 +97,7 @@ export async function createReport(
       }),
     };
 
-    console.log("Payload to send:", payload); // Debug log
-
-    // Send as JSON since files are already uploaded to cloudinary
-    console.log("Sending JSON payload with cloudinary attachments"); // Debug log
+    console.log("Sending JSON payload with cloudinary attachments"); 
 
     const res = await request("/reports/add", {
       method: "POST",
@@ -122,7 +118,6 @@ export async function getReportList(params: {
   status: string;
 }) {
   const res = await request("/reports", { method: "GET", params });
-  console.log(res.data);
   return res.data;
 }
 
@@ -133,12 +128,10 @@ export async function getReportDetails(id: string) {
 
 export async function getRecentReports() {
   const res = await request("/reports/get-recent", { method: "GET" });
-  console.log(res.data);
   return res.data;
 }
 
 export async function toggleUpvote(id: string) {
-  console.log("help");
   const res = await request(`/reports/${id}/upvote`, { method: "PUT" });
   return res.data;
 }

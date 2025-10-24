@@ -15,27 +15,15 @@ class ReportController {
       const user = req.user as { id: string };
       const data = req.body;
 
-      console.log("Creating report - User ID:", user?.id); // Debug log
-      console.log(
-        "Creating report - Request body:",
-        JSON.stringify(data, null, 2)
-      ); // Debug log
-
-      if (!data.title || !data.description || !data.category) {
-        throw new Error("Title, description, and category are required");
+      if (!user) {
+        throw new Error("User not found");
       }
 
-      if (!data.location.latitude || !data.location.longitude) {
-        throw new Error("Location coordinates are required");
+      if (!data.title || !data.description || !data.location) {
+        throw new Error("Title, description, and location are required");
       }
 
-      // Add user ID to the data
       const dataWithUser = { ...data, userId: user.id };
-
-      console.log(
-        "Final data with user ID:",
-        JSON.stringify(dataWithUser, null, 2)
-      ); // Debug log
 
       const result = await ReportService.createReport(dataWithUser);
       res.status(201).json({
@@ -44,7 +32,7 @@ class ReportController {
         data: result,
       });
     } catch (error: any) {
-      console.error("Error in createReport controller:", error); // Debug log
+      console.error("Error in createReport controller:", error);
       res.status(400).json({
         success: false,
         message: error.message,
@@ -73,16 +61,28 @@ class ReportController {
       const { reportId } = req.params;
 
       if (!reportId) {
-        throw new Error("Report ID is required");
+        return res.status(400).json({
+          success: false,
+          message: "Report ID is required",
+        });
       }
+
       const report = await ReportService.getReportById(reportId);
-      res.json({
+
+      if (!report) {
+        return res.status(404).json({
+          success: false,
+          message: "Report not found",
+        });
+      }
+
+      return res.status(200).json({
         success: true,
         message: "Report retrieved successfully",
         data: report,
       });
     } catch (error: any) {
-      res.status(500).json({
+      return res.status(500).json({
         success: false,
         message: error.message || "Failed to fetch report",
       });
@@ -359,6 +359,24 @@ class ReportController {
       res.status(500).json({
         success: false,
         message: error.message || "Failed to update report visibility",
+      });
+    }
+  }
+
+  static async getUserReportStatistics(req: Request, res: Response) {
+    try {
+      const user = req.user as { id: string };
+
+      const stats = await ReportService.getUserReportStatistics(user.id);
+      res.json({
+        success: true,
+        message: "User report statistics retrieved successfully",
+        data: stats,
+      });
+    } catch (error: any) {
+      res.status(500).json({
+        success: false,
+        message: error.message || "Failed to fetch user report statistics",
       });
     }
   }

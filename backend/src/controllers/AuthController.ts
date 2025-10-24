@@ -1,4 +1,3 @@
-import { json } from "stream/consumers";
 import { AuthService } from "../services/AuthService";
 import { Request, Response } from "express";
 
@@ -12,20 +11,20 @@ export class AuthController {
           .json({ success: false, message: "Email and password are required" });
       }
 
-      const result = await AuthService.login({ email, password });
+      const result = await AuthService.login({ email, password }, rememberMe);
 
       res.cookie("access_token", result.accessToken, {
         httpOnly: true,
         secure: process.env.NODE_ENV === "production",
-        sameSite: "none",
+        sameSite: process.env.FRONTEND_URL_PROD ? "none" : "lax",
         path: "/",
-        maxAge: 60 * 1000,
+        maxAge: 5 * 60 * 1000,
       });
 
       res.cookie("refresh_token", result.refreshToken, {
         httpOnly: true,
         secure: process.env.NODE_ENV === "production",
-        sameSite: "none",
+        sameSite: process.env.FRONTEND_URL_PROD ? "none" : "lax",
         path: "/",
         maxAge: rememberMe
           ? 7 * 24 * 60 * 60 * 1000 // 7 days
@@ -53,12 +52,12 @@ export class AuthController {
     res.clearCookie("refresh_token", {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
-      sameSite: "none",
+      sameSite: process.env.FRONTEND_URL_PROD ? "none" : "lax",
       path: "/",
     });
     res.clearCookie("access_token", {
       httpOnly: true,
-      sameSite: "none",
+      sameSite: process.env.FRONTEND_URL_PROD ? "none" : "lax",
       secure: process.env.NODE_ENV === "production",
       path: "/",
     });
@@ -73,7 +72,6 @@ export class AuthController {
         accessToken: string;
         refreshToken: string;
       };
-      console.log("result", result);
       if (!result?.accessToken) {
         return res
           .status(400)
@@ -83,22 +81,24 @@ export class AuthController {
       res.cookie("access_token", result.accessToken, {
         httpOnly: true,
         secure: process.env.NODE_ENV === "production",
-        sameSite: "none",
+        sameSite: process.env.FRONTEND_URL_PROD ? "none" : "lax",
         path: "/",
-        maxAge: 60 * 1000,
+        maxAge: 5 * 60 * 1000,
       });
 
       res.cookie("refresh_token", result.refreshToken, {
         httpOnly: true,
         secure: process.env.NODE_ENV === "production",
-        sameSite: "none",
+        sameSite: process.env.FRONTEND_URL_PROD ? "none" : "lax",
         path: "/",
         maxAge: 24 * 60 * 60 * 1000,
       });
 
-      // redirect bersih ke home FE
-      // res.redirect(process.env.FRONTEND_URL || "/");
-      res.redirect(process.env.FRONTEND_URL_PROD || "/");
+      if (process.env.FRONTEND_URL_PROD) {
+        res.redirect(process.env.FRONTEND_URL_PROD || "/");
+      } else {
+        res.redirect(process.env.FRONTEND_URL || "/");
+      }
     } catch (error) {
       console.log(error);
       res.status(500).json({ success: false, message: "Google auth failed" });
@@ -108,7 +108,7 @@ export class AuthController {
   static async getProfile(req: Request, res: Response) {
     try {
       const user = JSON.parse(JSON.stringify(req.user));
-      console.log(user);
+      // console.log(user);
       res.status(200).json({
         success: true,
         data: {
@@ -378,7 +378,7 @@ export class AuthController {
       // set new cookies
       res.cookie("access_token", newAccessToken, {
         httpOnly: true,
-        sameSite: "none",
+        sameSite: process.env.FRONTEND_URL_PROD ? "none" : "lax",
         secure: process.env.NODE_ENV === "production",
         path: "/",
         maxAge: 60 * 1000,

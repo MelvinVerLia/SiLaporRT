@@ -2,7 +2,6 @@ import React, { useEffect, useMemo, useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import {
   Save,
-  X,
   Calendar,
   Settings,
   AlertTriangle,
@@ -30,7 +29,6 @@ import { useToast } from "../../../hooks/useToast";
 type Props = {
   initial?: Announcement | null;
   onSuccess?: (a: Announcement) => void;
-  onCancel?: () => void;
 };
 
 const typeOptions = [
@@ -56,11 +54,7 @@ function toLocalInput(dt?: string | null) {
   return local.toISOString().slice(0, 16);
 }
 
-export default function AdminAnnouncementForm({
-  initial,
-  onSuccess,
-  onCancel,
-}: Props) {
+export default function AdminAnnouncementForm({ initial, onSuccess }: Props) {
   const isEdit = !!initial?.id;
   const qc = useQueryClient();
   const toast = useToast();
@@ -528,13 +522,6 @@ export default function AdminAnnouncementForm({
         {!isEdit && (
           <Button type="button" variant="secondary" onClick={resetForm}>
             Reset
-          </Button>
-        )}
-
-        {onCancel && (
-          <Button type="button" variant="ghost" onClick={onCancel}>
-            <X className="mr-2 h-4 w-4" />
-            Batal
           </Button>
         )}
       </div>

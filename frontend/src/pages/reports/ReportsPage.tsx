@@ -1,8 +1,7 @@
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
 import { Search, FileText, AlertCircle, RefreshCw } from "lucide-react";
 import { Card, CardContent } from "../../components/ui/Card";
 import Input from "../../components/ui/Input";
-import Select from "../../components/ui/Select";
 // import { useAuth } from "../../hooks/useAuth";
 import { getReportList } from "../../services/reportService";
 import { Report } from "../../types/report.types";
@@ -11,6 +10,9 @@ import Button from "../../components/ui/Button";
 import Pagination from "../../components/ui/Pagination";
 import ReportListItem from "./ReportListItem";
 import ReportListItemSkeleton from "./components/ReportListItemSkeleton";
+import AdvancedFilter, {
+  FilterField,
+} from "../../components/common/AdvancedFilter";
 
 const ReportsPage: React.FC = () => {
   // const { isAuthenticated } = useAuth();
@@ -66,6 +68,47 @@ const ReportsPage: React.FC = () => {
     { value: "REJECTED", label: "Ditolak" },
   ];
 
+  // Calculate active filter count
+  const activeFilterCount = useMemo(() => {
+    let count = 0;
+    if (selectedCategory) count++;
+    if (selectedStatus) count++;
+    return count;
+  }, [selectedCategory, selectedStatus]);
+
+  // Reset all filters
+  const handleResetFilters = () => {
+    setSelectedCategory("");
+    setSelectedStatus("");
+    setPage(1);
+  };
+
+  // Filter fields configuration
+  const filterFields: FilterField[] = [
+    {
+      name: "category",
+      label: "Kategori",
+      type: "select",
+      value: selectedCategory,
+      onChange: (value) => {
+        setSelectedCategory(value as string);
+        setPage(1);
+      },
+      options: categoryOptions,
+    },
+    {
+      name: "status",
+      label: "Status",
+      type: "select",
+      value: selectedStatus,
+      onChange: (value) => {
+        setSelectedStatus(value as string);
+        setPage(1);
+      },
+      options: statusOptions,
+    },
+  ];
+
   return (
     <div className="space-y-6">
       {/* Page Header */}
@@ -79,8 +122,8 @@ const ReportsPage: React.FC = () => {
       {/* Filters */}
       <Card>
         <CardContent className="p-6">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div className="relative">
+          <div className="flex items-center gap-4">
+            <div className="relative flex-1">
               <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400 z-10" />
               <Input
                 placeholder="Cari laporan..."
@@ -90,24 +133,10 @@ const ReportsPage: React.FC = () => {
               />
             </div>
 
-            <Select
-              options={categoryOptions}
-              value={selectedCategory}
-              onChange={(e) => {
-                setSelectedCategory(e.target.value);
-                setPage(1);
-              }}
-              placeholder="Pilih kategori"
-            />
-
-            <Select
-              options={statusOptions}
-              value={selectedStatus}
-              onChange={(e) => {
-                setSelectedStatus(e.target.value);
-                setPage(1);
-              }}
-              placeholder="Pilih status"
+            <AdvancedFilter
+              fields={filterFields}
+              activeFilterCount={activeFilterCount}
+              onReset={handleResetFilters}
             />
           </div>
         </CardContent>

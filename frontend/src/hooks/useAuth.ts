@@ -18,6 +18,9 @@ import {
   validateForgotPasswordToken,
   changeForgotPassword,
   forgotPassword as sendForgotPassword,
+  getNotifications as apiGetNotifications,
+  markNotificationAsReadAll as apiMarkAll,
+  markNotificationRead as apiMarkRead,
 } from "../services/authService";
 
 export const useAuth = () => {
@@ -43,17 +46,17 @@ export const useAuth = () => {
 
   // LOGIN: server set cookie; FE TIDAK menyimpan apa pun di localStorage
   const login = useCallback(
-    async (credentials: LoginCredentials): Promise<boolean> => {
+    async (credentials: LoginCredentials): Promise<User> => {
       setIsLoading(true);
       setError(null);
       try {
         const { user } = await apiLogin(credentials);
         setUser(user);
-        return true;
+        return user;
       } catch (e: unknown) {
         console.log(e);
         setError({ message: "Terjadi kesalahan saat login" });
-        return false;
+        return Promise.reject(e);
       } finally {
         setIsLoading(false);
       }
@@ -140,26 +143,20 @@ export const useAuth = () => {
     []
   );
 
-  const updateProfile = useCallback(
-    async (data: User) => {
-      setIsLoading(true);
-      setError(null);
-      try {
-        const newUser = await apiUpdateProfile(data);
-        console.log("old user", user);
-        console.log("udpated user", newUser.data);
-        setUser(newUser.data);
-        return true;
-      } catch (e: unknown) {
-        console.log(e);
-        setError({ message: "Gagal memperbarui profil" });
-        return false;
-      } finally {
-        setIsLoading(false);
-      }
-    },
-    [user]
-  );
+  const updateProfile = useCallback(async (data: User) => {
+    // Note: setIsLoading tidak digunakan untuk updateProfile
+    // karena component yang memanggil punya loading state sendiri
+    try {
+      const newUser = await apiUpdateProfile(data);
+      console.log("Profile updated:", newUser.data);
+      setUser(newUser.data);
+      return true;
+    } catch (e: unknown) {
+      console.error("Update profile error:", e);
+      // Tidak set error state di sini, biarkan component handle
+      return false;
+    }
+  }, []);
 
   const deleteAccount = useCallback(async () => {
     setIsLoading(true);
@@ -233,6 +230,36 @@ export const useAuth = () => {
     }
   }, []);
 
+  const getNotifications = useCallback(async () => {
+    try {
+      const response = await apiGetNotifications();
+      return response;
+    } catch (error) {
+      console.log(error);
+      setError({ message: "Gagal mengambil notifikasi" });
+    }
+  }, []);
+
+  const markAsReadAll = useCallback(async () => {
+    try {
+      const response = await apiMarkAll();
+      return response;
+    } catch (error) {
+      console.log(error);
+      setError({ message: "Gagal mengambil notifikasi" });
+    }
+  }, []);
+
+  const readNotification = useCallback(async (id: string) => {
+    try {
+      const response = await apiMarkRead(id);
+      return response;
+    } catch (error) {
+      console.log(error);
+      setError({ message: "Gagal mengambil notifikasi" });
+    }
+  }, []);
+
   return {
     user,
     isLoading,
@@ -252,5 +279,8 @@ export const useAuth = () => {
     verifyForgotPasswordToken,
     forgotPasswordChange,
     forgotPassword,
+    getNotifications,
+    readNotification,
+    markAsReadAll,
   };
 };

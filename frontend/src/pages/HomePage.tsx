@@ -36,10 +36,6 @@ const HomePage: React.FC = () => {
     queryFn: getRecentReports,
   });
   const toast = useToast();
-
-  useEffect(() => {
-    console.log("authentication", isAuthenticated);
-  }, []);
   
   useEffect(() => {
     toast.success(

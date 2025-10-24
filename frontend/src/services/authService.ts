@@ -11,7 +11,7 @@ export async function login(payload: LoginCredentials): Promise<AuthUser> {
     method: "POST",
     data: payload,
   });
-  return res.data as AuthUser; // { user, token }
+  return res.data as AuthUser;
 }
 
 export async function getProfile(): Promise<User> {
@@ -20,7 +20,7 @@ export async function getProfile(): Promise<User> {
 }
 
 export async function logout() {
-  await publicRequest("/auth/logout", { method: "POST" }); // clear cookie di BE
+  await publicRequest("/auth/logout", { method: "POST" });
 }
 
 export async function sendOTP(
@@ -98,5 +98,20 @@ export async function forgotPassword(email: string) {
     method: "POST",
     data: { email },
   });
+  return res;
+}
+
+export async function getNotifications() {
+  const res = await request("/notification/notifications", { method: "GET" });
+  return res;
+}
+
+export async function markNotificationRead(id: string) {
+  const res = await request(`/notification/read/${id}`, { method: "PUT" });
+  return res;
+}
+
+export async function markNotificationAsReadAll() {
+  const res = await request("/notification/read-all", { method: "PUT" });
   return res;
 }

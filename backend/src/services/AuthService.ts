@@ -112,14 +112,10 @@ export class AuthService {
     }
   }
 
-  static async login({ email, password }: LoginData) {
+  static async login({ email, password }: LoginData, rememberMe: boolean) {
     const user = await AuthRepository.getUserByEmail(email);
-    if (!user) {
+    if (!user || !user.password) {
       throw new Error("Invalid email or password");
-    }
-
-    if (!user.password) {
-      throw new Error("Please login with Google");
     }
 
     const isValidPassword = await bcrypt.compare(password, user.password);
@@ -128,7 +124,7 @@ export class AuthService {
     }
 
     const accessToken = this.generateAccessToken(user.id);
-    const refreshToken = await this.generateRefreshToken(user.id);
+    const refreshToken = await this.generateRefreshToken(user.id, rememberMe);
 
     const { password: _, ...userWithoutPassword } = user;
 
@@ -202,19 +198,31 @@ export class AuthService {
     return jwt.sign({ userId }, jwtSecret, { expiresIn: "15m" });
   }
 
-  private static async generateRefreshToken(userId: string): Promise<string> {
+  private static async generateRefreshToken(
+    userId: string,
+    rememberMe?: boolean
+  ): Promise<string> {
     const rawToken = crypto.randomBytes(32).toString("hex");
     const hashedToken = crypto
       .createHash("sha256")
       .update(rawToken)
       .digest("hex");
 
-    await RedisClient.instance.set(
-      `refresh:${hashedToken}`,
-      JSON.stringify({ userId }),
-      "EX",
-      7 * 24 * 60 * 60
-    );
+    if (rememberMe) {
+      await RedisClient.instance.set(
+        `refresh:${hashedToken}`,
+        JSON.stringify({ userId }),
+        "EX",
+        7 * 24 * 60 * 60 + 300
+      );
+    } else {
+      await RedisClient.instance.set(
+        `refresh:${hashedToken}`,
+        JSON.stringify({ userId }),
+        "EX",
+        24 * 60 * 60 + 300
+      );
+    }
 
     return rawToken;
   }
@@ -286,9 +294,9 @@ export class AuthService {
     const redis = RedisClient.instance;
     await redis.set(`reset:${user.id}`, hashedToken, "EX", 300);
 
-    // const resetPasswordUrl = `${process.env.FRONTEND_URL}/reset/${rawToken}/${user.email}`;
-    const resetPasswordUrl = `${process.env.FRONTEND_URL_PROD}/reset/${rawToken}/${user.email}`;
-
+    const resetPasswordUrl =
+      `${process.env.FRONTEND_URL_PROD}/reset/${rawToken}/${user.email}` ||
+      `${process.env.FRONTEND_URL}/reset/${rawToken}/${user.email}`;
 
     await sendPasswordResetEmail(email, resetPasswordUrl, 5);
   }
@@ -315,7 +323,7 @@ export class AuthService {
 
   static async logout(token: string) {
     const hashedToken = crypto.createHash("sha256").update(token).digest("hex");
-    
+
     await RedisClient.instance.del(`refresh:${hashedToken}`);
 
     return true;

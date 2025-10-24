@@ -1,6 +1,6 @@
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, Link } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
-import { ArrowLeft, Edit3, AlertTriangle } from "lucide-react";
+import { Edit3, AlertCircle, RefreshCw } from "lucide-react";
 import Button from "../../components/ui/Button";
 import {
   Card,
@@ -21,10 +21,11 @@ export default function EditAnnouncementPage() {
     data: announcement,
     isLoading,
     isError,
+    refetch,
+    isFetching,
   } = useQuery({
     queryKey: ["admin-announcement", id],
     queryFn: () => adminGetAnnouncement(id!),
-    enabled: !!id,
   });
 
   const breadcrumbItems = [
@@ -34,11 +35,6 @@ export default function EditAnnouncementPage() {
 
   const handleSuccess = () => {
     // Redirect back to manage announcements page after successful update
-    navigate("/admin/announcements");
-  };
-
-  const handleCancel = () => {
-    // Navigate back to manage announcements page
     navigate("/admin/announcements");
   };
 
@@ -58,19 +54,36 @@ export default function EditAnnouncementPage() {
       <div className="space-y-6">
         <Breadcrumb items={breadcrumbItems} />
 
-        <div className="text-center py-12">
-          <AlertTriangle className="mx-auto h-12 w-12 text-red-400 mb-4" />
-          <h3 className="text-lg font-semibold text-gray-900 mb-2">
-            Pengumuman tidak ditemukan
-          </h3>
-          <p className="text-gray-600 mb-6">
-            Pengumuman yang Anda cari tidak dapat ditemukan atau telah dihapus.
-          </p>
-          <Button onClick={handleCancel}>
-            <ArrowLeft className="mr-2 h-4 w-4" />
-            Kembali
-          </Button>
-        </div>
+        <Card>
+          <CardContent className="p-12 text-center">
+            <AlertCircle className="mx-auto h-12 w-12 text-red-500 mb-4" />
+            <h3 className="text-lg font-semibold text-gray-900 mb-2">
+              {!announcement
+                ? "Pengumuman Tidak Ditemukan"
+                : "Gagal Memuat Pengumuman"}
+            </h3>
+            <p className="text-gray-600 mb-6">
+              {!announcement
+                ? "Pengumuman yang Anda cari tidak ditemukan atau mungkin sudah dihapus."
+                : "Terjadi kesalahan saat memuat data pengumuman. Silakan coba lagi."}
+            </p>
+            <div className="flex flex-col sm:flex-row gap-3 justify-center">
+              {isError && (
+                <Button
+                  variant="outline"
+                  onClick={() => refetch()}
+                  loading={isFetching}
+                >
+                  <RefreshCw className="mr-2 h-4 w-4" />
+                  Coba Lagi
+                </Button>
+              )}
+              <Link to="/admin/announcements">
+                <Button>Kembali ke Kelola Pengumuman</Button>
+              </Link>
+            </div>
+          </CardContent>
+        </Card>
       </div>
     );
   }
@@ -81,23 +94,11 @@ export default function EditAnnouncementPage() {
       <Breadcrumb items={breadcrumbItems} />
 
       {/* Page Header */}
-      <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4">
-        <div>
-          <div className="flex items-center space-x-3 mb-2">
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={handleCancel}
-              className="p-2"
-            >
-              <ArrowLeft className="h-4 w-4" />
-            </Button>
-            <h1 className="text-3xl font-bold text-gray-900">
-              Edit Pengumuman
-            </h1>
-          </div>
-          <p className="text-gray-600">Edit pengumuman: {announcement.title}</p>
-        </div>
+      <div>
+        <h1 className="text-3xl font-bold text-gray-900">Edit Pengumuman</h1>
+        <p className="text-gray-600 mt-1">
+          Edit pengumuman: {announcement.title}
+        </p>
       </div>
 
       {/* Edit Form */}
@@ -113,7 +114,6 @@ export default function EditAnnouncementPage() {
             <AdminAnnouncementForm
               initial={announcement}
               onSuccess={handleSuccess}
-              onCancel={handleCancel}
             />
           </CardContent>
         </Card>

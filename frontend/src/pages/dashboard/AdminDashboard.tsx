@@ -18,56 +18,174 @@ import {
   CardTitle,
 } from "../../components/ui/Card";
 import Button from "../../components/ui/Button";
-import Select from "../../components/ui/Select";
 import StatusDonutChart from "./components/StatusDonutChart";
 import CategoryBarChart from "./components/CategoryBarChart";
 import AdminDashboardSkeleton from "./components/AdminDashboardSkeleton";
+import AdvancedFilter, {
+  FilterField,
+} from "../../components/common/AdvancedFilter";
 import { useAuthContext } from "../../contexts/AuthContext";
-import { getDashboardStats, type DashboardStats } from "../../services/reportService";
+import {
+  getDashboardStats,
+  type DashboardStats,
+} from "../../services/reportService";
 import { getAnnouncementsCount } from "../../services/announcementService";
 
 const AdminDashboard: React.FC = () => {
   const { user } = useAuthContext();
-  const [selectedPeriod, setSelectedPeriod] = useState("30");
-  
+  const [selectedPeriod, setSelectedPeriod] = useState("bulan-ini");
+  const [dateRange, setDateRange] = useState<{ from?: string; to?: string }>(
+    {}
+  );
+  const [displayDateRange, setDisplayDateRange] = useState<{
+    from?: string;
+    to?: string;
+  }>({});
+
   // State for real data - simple approach like AnnouncementsPage
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [dashboardData, setDashboardData] = useState<DashboardStats | null>(null);
+  const [dashboardData, setDashboardData] = useState<DashboardStats | null>(
+    null
+  );
   const [totalAnnouncements, setTotalAnnouncements] = useState<number>(0);
+
+  // Helper function to calculate date range based on period
+  const getDateRangeForPeriod = (
+    period: string
+  ): { from: string; to: string } | null => {
+    const today = new Date();
+
+    // Format date to YYYY-MM-DD in local timezone (not UTC)
+    const formatDate = (date: Date) => {
+      const year = date.getFullYear();
+      const month = String(date.getMonth() + 1).padStart(2, "0");
+      const day = String(date.getDate()).padStart(2, "0");
+      return `${year}-${month}-${day}`;
+    };
+
+    switch (period) {
+      case "hari-ini": {
+        return { from: formatDate(today), to: formatDate(today) };
+      }
+      case "kemarin": {
+        const yesterday = new Date(today);
+        yesterday.setDate(yesterday.getDate() - 1);
+        return { from: formatDate(yesterday), to: formatDate(yesterday) };
+      }
+      case "minggu-ini": {
+        // Minggu ini (Senin - Minggu)
+        const firstDayOfWeek = new Date(today);
+        const lastDayOfWeek = new Date(today);
+        const dayOfWeek = today.getDay();
+
+        // Calculate Monday (first day of week)
+        const diff = dayOfWeek === 0 ? 6 : dayOfWeek - 1; // Monday as first day
+        firstDayOfWeek.setDate(today.getDate() - diff);
+
+        // Calculate Sunday (last day of week)
+        const daysUntilSunday = dayOfWeek === 0 ? 0 : 7 - dayOfWeek;
+        lastDayOfWeek.setDate(today.getDate() + daysUntilSunday);
+
+        return {
+          from: formatDate(firstDayOfWeek),
+          to: formatDate(lastDayOfWeek),
+        };
+      }
+      case "bulan-ini": {
+        const firstDayOfMonth = new Date(
+          today.getFullYear(),
+          today.getMonth(),
+          1
+        );
+        const lastDayOfMonth = new Date(
+          today.getFullYear(),
+          today.getMonth() + 1,
+          0
+        );
+        return {
+          from: formatDate(firstDayOfMonth),
+          to: formatDate(lastDayOfMonth),
+        };
+      }
+      case "tahun-ini": {
+        const firstDayOfYear = new Date(today.getFullYear(), 0, 1);
+        const lastDayOfYear = new Date(today.getFullYear(), 11, 31);
+        return {
+          from: formatDate(firstDayOfYear),
+          to: formatDate(lastDayOfYear),
+        };
+      }
+      case "custom":
+        return null; // Use manual date range
+      default:
+        return null;
+    }
+  };
+
+  // Calculate active date range (either from period preset or manual)
+  const getActiveDateRange = () => {
+    if (selectedPeriod === "custom") {
+      return dateRange.from && dateRange.to ? dateRange : null;
+    }
+    return getDateRangeForPeriod(selectedPeriod);
+  };
+
+  // Update display date range whenever period changes
+  useEffect(() => {
+    if (selectedPeriod !== "custom") {
+      const calculatedRange = getDateRangeForPeriod(selectedPeriod);
+      if (calculatedRange) {
+        setDisplayDateRange(calculatedRange);
+      }
+    } else {
+      setDisplayDateRange(dateRange);
+    }
+  }, [selectedPeriod, dateRange]);
 
   // Fetch dashboard data - simple approach like AnnouncementsPage
   const fetchDashboardData = useCallback(async () => {
     try {
       setLoading(true);
       setError(null);
-      
-      // Convert selectedPeriod to days for filtering
-      const daysBack = selectedPeriod ? parseInt(selectedPeriod) : undefined;
-      
+
+      const activeDateRange = getActiveDateRange();
+
+      // If we have a date range, calculate days difference
+      let daysBack: number | undefined = undefined;
+      if (activeDateRange?.from && activeDateRange?.to) {
+        const fromDate = new Date(activeDateRange.from);
+        const toDate = new Date(activeDateRange.to);
+        const diffTime = Math.abs(toDate.getTime() - fromDate.getTime());
+        daysBack = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1;
+      }
+
       const [stats, announcementsCount] = await Promise.all([
         getDashboardStats(daysBack),
-        getAnnouncementsCount(daysBack)
+        getAnnouncementsCount(daysBack),
       ]);
-      
+
       setDashboardData(stats);
       setTotalAnnouncements(announcementsCount);
     } catch (err) {
-      console.error('Error fetching dashboard data:', err);
-      setError(err instanceof Error ? err.message : 'Failed to load dashboard data');
+      console.error("Error fetching dashboard data:", err);
+      setError(
+        err instanceof Error ? err.message : "Failed to load dashboard data"
+      );
     } finally {
       setLoading(false);
     }
-  }, [selectedPeriod]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedPeriod, dateRange]);
 
   useEffect(() => {
     fetchDashboardData();
-  }, [selectedPeriod, fetchDashboardData]);
+  }, [fetchDashboardData]);
 
   // Generate statistics cards from real data
   const getStats = () => {
     if (!dashboardData) return [];
-    
+
     return [
       {
         title: "Total Laporan",
@@ -107,7 +225,7 @@ const AdminDashboard: React.FC = () => {
   // Generate status chart data from real data (excludes CLOSED reports)
   const getStatusChartData = () => {
     if (!dashboardData) return [];
-    
+
     return [
       {
         name: "Pending",
@@ -116,7 +234,7 @@ const AdminDashboard: React.FC = () => {
         bgColor: "bg-yellow-100",
       },
       {
-        name: "Proses", 
+        name: "Proses",
         value: dashboardData.inProgressReports || 0,
         color: "#3b82f6",
         bgColor: "bg-blue-100",
@@ -139,33 +257,37 @@ const AdminDashboard: React.FC = () => {
   // Generate category chart data from real data (excludes CLOSED reports, shows all categories regardless of isPublic)
   const getCategoryChartData = () => {
     if (!dashboardData) return [];
-    
+
     const categoryColors = {
-      'INFRASTRUCTURE': "#3b82f6",
-      'CLEANLINESS': "#10b981", 
-      'LIGHTING': "#f59e0b",
-      'SECURITY': "#ef4444",
-      'UTILITIES': "#8b5cf6",
-      'ENVIRONMENT': "#06b6d4",
-      'SUGGESTION': "#f97316",
-      'OTHER': "#6b7280"
+      INFRASTRUCTURE: "#3b82f6",
+      CLEANLINESS: "#10b981",
+      LIGHTING: "#f59e0b",
+      SECURITY: "#ef4444",
+      UTILITIES: "#8b5cf6",
+      ENVIRONMENT: "#06b6d4",
+      SUGGESTION: "#f97316",
+      OTHER: "#6b7280",
     };
 
     const categoryLabels = {
-      'INFRASTRUCTURE': "Infrastruktur",
-      'CLEANLINESS': "Kebersihan",
-      'LIGHTING': "Penerangan", 
-      'SECURITY': "Keamanan",
-      'UTILITIES': "Utilitas",
-      'ENVIRONMENT': "Lingkungan",
-      'SUGGESTION': "Saran",
-      'OTHER': "Lainnya"
+      INFRASTRUCTURE: "Infrastruktur",
+      CLEANLINESS: "Kebersihan",
+      LIGHTING: "Penerangan",
+      SECURITY: "Keamanan",
+      UTILITIES: "Utilitas",
+      ENVIRONMENT: "Lingkungan",
+      SUGGESTION: "Saran",
+      OTHER: "Lainnya",
     };
-    
-    return dashboardData.categoryStats.map(item => ({
-      name: categoryLabels[item.category as keyof typeof categoryLabels] || item.category,
+
+    return dashboardData.categoryStats.map((item) => ({
+      name:
+        categoryLabels[item.category as keyof typeof categoryLabels] ||
+        item.category,
       count: item.count,
-      color: categoryColors[item.category as keyof typeof categoryColors] || "#6b7280"
+      color:
+        categoryColors[item.category as keyof typeof categoryColors] ||
+        "#6b7280",
     }));
   };
 
@@ -206,11 +328,57 @@ const AdminDashboard: React.FC = () => {
   ];
 
   const periodOptions = [
-    { value: "7", label: "7 Hari Terakhir" },
-    { value: "30", label: "30 Hari Terakhir" },
-    { value: "90", label: "3 Bulan Terakhir" },
-    { value: "365", label: "1 Tahun Terakhir" },
+    { value: "hari-ini", label: "Hari Ini" },
+    { value: "kemarin", label: "Kemarin" },
+    { value: "minggu-ini", label: "Minggu Ini" },
+    { value: "bulan-ini", label: "Bulan Ini" },
+    { value: "tahun-ini", label: "Tahun Ini" },
+    { value: "custom", label: "Lainnya" },
   ];
+
+  // Calculate active filter count
+  const activeFilterCount = (() => {
+    let count = 0;
+    if (selectedPeriod && selectedPeriod !== "bulan-ini") count++; // bulan-ini is default
+    if (selectedPeriod === "custom" && (dateRange.from || dateRange.to))
+      count++;
+    return count;
+  })();
+
+  // Filter fields for AdvancedFilter
+  const filterFields: FilterField[] = [
+    {
+      name: "period",
+      label: "Periode Waktu",
+      type: "select",
+      value: selectedPeriod,
+      onChange: (value) => {
+        setSelectedPeriod(value as string);
+        // Clear manual date range when switching to preset
+        if (value !== "custom") {
+          setDateRange({});
+        }
+      },
+      options: periodOptions,
+    },
+    {
+      name: "dateRange",
+      label: "Rentang Tanggal",
+      type: "daterange" as const,
+      value: selectedPeriod === "custom" ? dateRange : displayDateRange,
+      onChange: (value: string | { from?: string; to?: string }) => {
+        if (selectedPeriod === "custom") {
+          setDateRange(value as { from?: string; to?: string });
+        }
+      },
+      disabled: selectedPeriod !== "custom",
+    },
+  ];
+
+  const handleResetFilters = () => {
+    setSelectedPeriod("bulan-ini");
+    setDateRange({});
+  };
 
   return (
     <div className="space-y-6">
@@ -226,11 +394,10 @@ const AdminDashboard: React.FC = () => {
         </div>
 
         <div className="flex items-center space-x-3">
-          <Select
-            options={periodOptions}
-            value={selectedPeriod}
-            onChange={(e) => setSelectedPeriod(e.target.value)}
-            className="w-48"
+          <AdvancedFilter
+            fields={filterFields}
+            activeFilterCount={activeFilterCount}
+            onReset={handleResetFilters}
           />
         </div>
       </div>
@@ -250,10 +417,7 @@ const AdminDashboard: React.FC = () => {
             <div className="text-center text-red-600">
               <AlertTriangle className="h-8 w-8 mx-auto mb-2" />
               <p>Terjadi kesalahan saat memuat data: {error}</p>
-              <Button 
-                className="mt-4" 
-                onClick={() => window.location.reload()}
-              >
+              <Button className="mt-4" onClick={() => window.location.reload()}>
                 Muat Ulang
               </Button>
             </div>
@@ -293,9 +457,9 @@ const AdminDashboard: React.FC = () => {
           </div>
 
           {/* Quick Actions & Overview */}
-          <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 mt-8">
+          <div className="grid grid-cols-1 xl:grid-cols-4 gap-6 mt-8">
             {/* Status Chart */}
-            <Card className="lg:col-span-2">
+            <Card className="xl:col-span-2">
               <CardHeader>
                 <CardTitle className="flex items-center">
                   <AlertTriangle className="mr-2 h-5 w-5 text-orange-500" />
@@ -308,7 +472,7 @@ const AdminDashboard: React.FC = () => {
             </Card>
 
             {/* Category Chart */}
-            <Card className="lg:col-span-2">
+            <Card className="xl:col-span-2">
               <CardHeader>
                 <CardTitle className="flex items-center">
                   <FileText className="mr-2 h-5 w-5 text-blue-500" />
@@ -321,7 +485,7 @@ const AdminDashboard: React.FC = () => {
             </Card>
 
             {/* Recent Activities */}
-            <Card className="lg:col-span-4">
+            <Card className="xl:col-span-4">
               <CardHeader>
                 <CardTitle className="flex items-center">
                   <Activity className="mr-2 h-5 w-5 text-green-500" />
@@ -334,7 +498,10 @@ const AdminDashboard: React.FC = () => {
                     const Icon = activity.icon;
 
                     return (
-                      <div key={activity.id} className="flex items-start space-x-3">
+                      <div
+                        key={activity.id}
+                        className="flex items-start space-x-3"
+                      >
                         <div className="flex-shrink-0">
                           <div className="w-8 h-8 bg-gray-100 rounded-full flex items-center justify-center">
                             <Icon className="h-4 w-4 text-gray-600" />

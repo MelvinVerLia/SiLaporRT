@@ -1,4 +1,4 @@
-import { useParams, useLocation } from "react-router-dom";
+import { useParams, useLocation, Link } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { getAnnouncement } from "../../services/announcementService";
 import {
@@ -9,9 +9,10 @@ import {
 } from "../../components/ui/Card";
 import Badge from "../../components/ui/Badge";
 import Breadcrumb from "../../components/ui/Breadcrumb";
+import Button from "../../components/ui/Button";
 import AttachmentViewer from "../../components/ui/AttachmentViewer";
 import AnnouncementDetailSkeleton from "./components/AnnouncementDetailSkeleton";
-import { Pin, Calendar, Bell } from "lucide-react";
+import { Pin, Calendar, Bell, AlertCircle, RefreshCw } from "lucide-react";
 
 function formatDateTime(s?: string | null) {
   if (!s) return "-";
@@ -38,15 +39,47 @@ export default function AnnouncementDetailPage() {
     data: a,
     isLoading,
     isError,
+    refetch,
+    isFetching,
   } = useQuery({
     queryKey: ["announcement", id],
     queryFn: () => getAnnouncement(id!),
-    enabled: !!id,
   });
 
   if (isLoading) return <AnnouncementDetailSkeleton />;
-  if (isError || !a)
-    return <p className="text-sm text-red-600">Pengumuman tidak ditemukan.</p>;
+
+  if (isError || !a) {
+    return (
+      <Card>
+        <CardContent className="p-12 text-center">
+          <AlertCircle className="mx-auto h-12 w-12 text-red-500 mb-4" />
+          <h3 className="text-lg font-semibold text-gray-900 mb-2">
+            {!a ? "Pengumuman Tidak Ditemukan" : "Gagal Memuat Pengumuman"}
+          </h3>
+          <p className="text-gray-600 mb-6">
+            {!a
+              ? "Pengumuman yang Anda cari tidak ditemukan atau mungkin sudah dihapus."
+              : "Terjadi kesalahan saat memuat detail pengumuman. Silakan coba lagi."}
+          </p>
+          <div className="flex flex-col sm:flex-row gap-3 justify-center">
+            {isError && (
+              <Button
+                variant="outline"
+                onClick={() => refetch()}
+                loading={isFetching}
+              >
+                <RefreshCw className="mr-2 h-4 w-4" />
+                Coba Lagi
+              </Button>
+            )}
+            <Link to={isFromAdmin ? "/admin/announcements" : "/announcements"}>
+              <Button>Kembali ke Daftar Pengumuman</Button>
+            </Link>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
 
   const priorityVariant =
     a.priority === "URGENT"

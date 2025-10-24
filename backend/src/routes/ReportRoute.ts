@@ -10,8 +10,12 @@ const router = Router();
 router.get("/", ReportController.getAllReports);
 router.get("/get-recent", ReportController.getRecentReports);
 router.get("/my-reports", authenticateJWT, ReportController.getUserReports);
+router.get(
+  "/my-reports/stats",
+  authenticateJWT,
+  ReportController.getUserReportStatistics
+);
 router.get("/:reportId", ReportController.getReportById);
-// router.get("/:userId", ReportController.getReportById);
 
 router.post("/add", authenticateJWT, ReportController.createReport);
 
@@ -33,7 +37,7 @@ router.get(
 );
 
 // === ADMIN/RT ROUTES ===
-router.put("/:reportId/status", authenticateJWT, ReportController.updateStatus);
+router.put("/:reportId/status", ReportController.updateStatus);
 router.post(
   "/:reportId/response",
   authenticateJWT,

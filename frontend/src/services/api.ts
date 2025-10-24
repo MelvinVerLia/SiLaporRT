@@ -1,11 +1,9 @@
 import axios, { type AxiosRequestConfig } from "axios";
 
-// const API_BASE = import.meta.env.VITE_API_BASE_URL || "";
-const API_BASE_DEV = import.meta.env.VITE_API_BASE_URL_PROD || "";
+const API_BASE = import.meta.env.VITE_API_BASE_URL_PROD || import.meta.env.VITE_API_BASE_URL;
 
 const api = axios.create({
-  // baseURL: API_BASE,
-  baseURL: API_BASE_DEV,
+  baseURL: API_BASE,
   withCredentials: true,
   headers: { "Content-Type": "application/json" },
 });
@@ -22,14 +20,11 @@ export async function request(path: string, config: AxiosRequestConfig = {}) {
     if (error.response) {
       const status = error.response.status;
 
-      // 🔑 Handle expired access token
       if (status === 401) {
         try {
-          // Try refresh
           console.log("refreshed");
           await api.post("/auth/refresh", {}, { withCredentials: true });
 
-          // Retry original request
           const retryRes = await api.request({ url: path, ...config });
           const retryData = retryRes?.data ?? {};
           if (retryData?.success === false) {
@@ -42,7 +37,6 @@ export async function request(path: string, config: AxiosRequestConfig = {}) {
         }
       }
 
-      // Other errors
       const msg =
         error.response?.data?.message ||
         error.response?.statusText ||
@@ -50,12 +44,10 @@ export async function request(path: string, config: AxiosRequestConfig = {}) {
       throw { message: msg, status };
     }
 
-    // Network error (server unreachable)
     if (error.request) {
       throw { message: "Network error" };
     }
 
-    // Fallback
     throw { message: error?.message || "Request failed" };
   }
 }

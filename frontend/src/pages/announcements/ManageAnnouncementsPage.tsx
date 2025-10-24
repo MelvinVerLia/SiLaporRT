@@ -2,7 +2,6 @@ import { useState, useMemo } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
 import {
-  Plus,
   Pin,
   PinOff,
   Eye,
@@ -254,10 +253,6 @@ export default function ManageAnnouncementsPage() {
     });
   };
 
-  const handleCreateClick = () => {
-    navigate("/admin/announcements/create");
-  };
-
   const handleEditClick = (announcement: Announcement) => {
     navigate(`/admin/announcements/edit/${announcement.id}`);
   };
@@ -359,26 +354,17 @@ export default function ManageAnnouncementsPage() {
   return (
     <div className="space-y-6">
       {/* Page Header */}
-      <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4">
-        <div>
-          <h1 className="text-3xl font-bold text-gray-900">
-            Kelola Pengumuman
-          </h1>
-          <p className="text-gray-600 mt-1">
-            Buat dan atur pengumuman untuk warga RT
-          </p>
-        </div>
-
-        <Button onClick={handleCreateClick} className="w-full lg:w-auto">
-          <Plus className="mr-2 h-4 w-4" />
-          Buat Pengumuman
-        </Button>
+      <div>
+        <h1 className="text-3xl font-bold text-gray-900">Kelola Pengumuman</h1>
+        <p className="text-gray-600 mt-1">
+          Buat dan atur pengumuman untuk warga RT
+        </p>
       </div>
 
       {/* Announcements List */}
       <Card>
         <CardHeader>
-          <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+          <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4">
             <div className="flex items-center gap-3">
               <CardTitle>Daftar Pengumuman</CardTitle>
               <Badge variant="default" size="sm">
@@ -411,13 +397,9 @@ export default function ManageAnnouncementsPage() {
               <h3 className="text-lg font-semibold text-gray-900 mb-2">
                 Belum ada pengumuman
               </h3>
-              <p className="text-gray-600 mb-6">
+              <p className="text-gray-600">
                 Buat pengumuman pertama untuk warga RT
               </p>
-              <Button onClick={handleCreateClick}>
-                <Plus className="mr-2 h-4 w-4" />
-                Buat Pengumuman
-              </Button>
             </div>
           ) : (
             <>

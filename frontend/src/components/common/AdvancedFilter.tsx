@@ -13,6 +13,7 @@ export type FilterField = {
   placeholder?: string;
   value?: string | { from?: string; to?: string };
   onChange?: (value: string | { from?: string; to?: string }) => void;
+  disabled?: boolean;
 };
 
 export type AdvancedFilterProps = {
@@ -73,6 +74,7 @@ export default function AdvancedFilter({
             onChange={(e) => field.onChange?.(e.target.value)}
             options={field.options || []}
             className="w-full"
+            disabled={field.disabled}
           />
         );
 
@@ -85,6 +87,7 @@ export default function AdvancedFilter({
             onChange={(e) => field.onChange?.(e.target.value)}
             placeholder={field.placeholder}
             className="w-full"
+            disabled={field.disabled}
           />
         );
 
@@ -100,6 +103,7 @@ export default function AdvancedFilter({
               }
               placeholder="Dari tanggal"
               className="w-full"
+              disabled={field.disabled}
             />
             <Input
               type="date"
@@ -109,6 +113,7 @@ export default function AdvancedFilter({
               }
               placeholder="Sampai tanggal"
               className="w-full"
+              disabled={field.disabled}
             />
           </div>
         );
@@ -123,6 +128,7 @@ export default function AdvancedFilter({
             onChange={(e) => field.onChange?.(e.target.value)}
             placeholder={field.placeholder}
             className="w-full"
+            disabled={field.disabled}
           />
         );
 
