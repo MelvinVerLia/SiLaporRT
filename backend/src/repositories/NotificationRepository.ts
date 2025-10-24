@@ -1,4 +1,5 @@
 import prisma from "../config/prisma";
+import { NotificationCategory } from "@prisma/client";
 
 export class NotificationRepository {
   static async getNotificationByUserId(userId: string) {
@@ -41,7 +42,8 @@ export class NotificationRepository {
     title: string,
     body: string,
     clickUrl: string,
-    userId: string
+    userId: string,
+    category: NotificationCategory
   ) {
     const user = await prisma.user.findUnique({
       where: { id: userId },
@@ -50,7 +52,7 @@ export class NotificationRepository {
 
     if (user && user.role === "CITIZEN") {
       return await prisma.notification.create({
-        data: { title, body, clickUrl, userId },
+        data: { title, body, clickUrl, userId, category },
       });
     }
     return null;
@@ -74,10 +76,11 @@ export class NotificationRepository {
     title: string,
     body: string,
     clickUrl: string,
-    userId: string
+    userId: string,
+    category: NotificationCategory
   ) {
     return prisma.notification.create({
-      data: { title, body, clickUrl, userId },
+      data: { title, body, clickUrl, userId, category },
     });
   }
 
@@ -87,8 +90,69 @@ export class NotificationRepository {
       select: { id: true },
     });
     const adminIds = admin.map((a) => a.id);
-    return prisma.pushSubscription.findMany({
+    return await prisma.pushSubscription.findMany({
       where: { userId: { in: adminIds }, isActive: true },
+    });
+  }
+
+  static async getNotifications(userId: string) {
+    const [
+      recentNotifications,
+      allNotifications,
+      unreadNotifications,
+      readNotifications,
+      totalCount,
+      unreadCount,
+      readCount,
+    ] = await prisma.$transaction([
+      prisma.notification.findMany({
+        where: { userId, isRead: false },
+        take: 5,
+        orderBy: { createdAt: "desc" },
+      }),
+      prisma.notification.findMany({
+        where: { userId },
+        orderBy: [{ isRead: "asc" }, { createdAt: "desc" }],
+      }),
+      prisma.notification.findMany({
+        where: { userId, isRead: false },
+        orderBy: { createdAt: "desc" },
+      }),
+      prisma.notification.findMany({
+        where: { userId, isRead: true },
+        orderBy: { createdAt: "desc" },
+      }),
+      prisma.notification.count({ where: { userId } }),
+      prisma.notification.count({ where: { userId, isRead: false } }),
+      prisma.notification.count({ where: { userId, isRead: true } }),
+    ]);
+
+    return {
+      notification: {
+        recent: recentNotifications,
+        all: allNotifications,
+        unread: unreadNotifications,
+        read: readNotifications,
+      },
+      count: {
+        total: totalCount,
+        unread: unreadCount,
+        read: readCount,
+      },
+    };
+  }
+
+  static async readNotification(id: string) {
+    return prisma.notification.update({
+      where: { id },
+      data: { isRead: true },
+    });
+  }
+
+  static async readAllNotification(userId: string) {
+    return prisma.notification.updateMany({
+      where: { userId },
+      data: { isRead: true },
     });
   }
 }

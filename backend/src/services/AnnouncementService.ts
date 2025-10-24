@@ -123,7 +123,8 @@ export class AnnouncementService {
       `📢 Pengumuman Baru: "${announcement.title}"`,
       `Cek pengumuman terbaru berjudul "${announcement.title}" sekarang di aplikasi SiLaporRT.`,
       `${process.env.FRONTEND_URL}/announcements/${announcement.id}`,
-      "https://res.cloudinary.com/dgnedkivd/image/upload/v1757562088/silaporrt/dev/logo/logo_lnenhb.png"
+      "https://res.cloudinary.com/dgnedkivd/image/upload/v1757562088/silaporrt/dev/logo/logo_lnenhb.png",
+      "ANNOUNCEMENT"
     );
 
     return announcement;

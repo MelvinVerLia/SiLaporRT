@@ -18,6 +18,9 @@ import {
   validateForgotPasswordToken,
   changeForgotPassword,
   forgotPassword as sendForgotPassword,
+  getNotifications as apiGetNotifications,
+  markNotificationAsReadAll as apiMarkAll,
+  markNotificationRead as apiMarkRead,
 } from "../services/authService";
 
 export const useAuth = () => {
@@ -48,7 +51,7 @@ export const useAuth = () => {
       setError(null);
       try {
         const { user } = await apiLogin(credentials);
-        setUser( user );
+        setUser(user);
         return user;
       } catch (e: unknown) {
         console.log(e);
@@ -227,6 +230,36 @@ export const useAuth = () => {
     }
   }, []);
 
+  const getNotifications = useCallback(async () => {
+    try {
+      const response = await apiGetNotifications();
+      return response;
+    } catch (error) {
+      console.log(error);
+      setError({ message: "Gagal mengambil notifikasi" });
+    }
+  }, []);
+
+  const markAsReadAll = useCallback(async () => {
+    try {
+      const response = await apiMarkAll();
+      return response;
+    } catch (error) {
+      console.log(error);
+      setError({ message: "Gagal mengambil notifikasi" });
+    }
+  }, []);
+
+  const readNotification = useCallback(async (id: string) => {
+    try {
+      const response = await apiMarkRead(id);
+      return response;
+    } catch (error) {
+      console.log(error);
+      setError({ message: "Gagal mengambil notifikasi" });
+    }
+  }, []);
+
   return {
     user,
     isLoading,
@@ -246,5 +279,8 @@ export const useAuth = () => {
     verifyForgotPasswordToken,
     forgotPasswordChange,
     forgotPassword,
+    getNotifications,
+    readNotification,
+    markAsReadAll,
   };
 };
