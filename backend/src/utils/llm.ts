@@ -1,10 +1,10 @@
 import { GoogleGenerativeAI } from "@google/generative-ai";
-import fs from "fs";
+import dataset from "./dataset";
 
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY!);
 const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
 
-const category = fs.readFileSync("dataset.csv", "utf-8");
+const category = dataset;
 
 const generateCategory = async (title: string, content: string) => {
   try {
