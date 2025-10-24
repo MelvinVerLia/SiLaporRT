@@ -1,5 +1,5 @@
 import { request } from "./api";
-import { CreateReportFormData, Report } from "../types/report.types";
+import { CreateReportFormData, Report, ReportCategory } from "../types/report.types";
 import { CloudinaryFile } from "../types/announcement.types";
 
 export interface CreateReportPayload {
@@ -68,7 +68,7 @@ export async function createReport(
     const payload: CreateReportPayload = {
       title: formData.title,
       description: formData.description,
-      category: formData.category as string,
+      category: formData.category as ReportCategory,
       isAnonymous: formData.isAnonymous,
       isPublic: formData.isPublic,
       location: {
