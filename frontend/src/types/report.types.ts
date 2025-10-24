@@ -108,7 +108,6 @@ export interface ReportUpvote {
 export interface CreateReportFormData {
   title: string;
   description: string;
-  category: ReportCategory;
   isAnonymous: boolean;
   isPublic: boolean;
   location: Location | null;
