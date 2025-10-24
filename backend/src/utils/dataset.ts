@@ -1,4 +1,4 @@
-title,description,category
+export default `title,description,category
 Panel PJU terbuka taman,"PJU di Jl. Anggrek 4 padam sejak 14 hari, terutama pada pagi. Menyebabkan area gelap dan membahayakan pejalan kaki. Mohon perbaikan.",LIGHTING
 Poster liar dan vandalisme depan masjid,Tumpukan plastik hampir tiap hari tidak diangkut sejak 6 hari. Area RT 03 RW 03 menjadi kotor dan membahayakan pejalan kaki.,CLEANLINESS
 Jalan berlubang balai warga,RT 06 RW 05 Jl. Melati 4 di Kel. Anyelir mengalami kerusakan ringan selama 5 hari. Lubang berdiameter 40 cm mengganggu aktivitas warga.,INFRASTRUCTURE
@@ -1599,3 +1599,4 @@ Kerja bakti rutin jembatan kecil,Mohon dipertimbangkan program one gate system d
 Listrik padam saat hujan balai warga,Pasokan air bermasalah seminggu sekali sejak 10 hari di Jl. Anggrek 2. Dampak: menyebabkan bau menyengat. Mohon pengecekan meter/pompa.,UTILITIES
 Temuan dompet perempatan,Informasi umum: administrasi. Lokasi RT 07 RW 03 Kel. Anyelir. Mohon tindak lanjut.,OTHER
 Eceng gondok menutup kali taman,"Setelah hujan 10 hari, kali mengalami masalah. Terjadi longsor kecil dan menyebabkan bau menyengat.",ENVIRONMENT
+`
