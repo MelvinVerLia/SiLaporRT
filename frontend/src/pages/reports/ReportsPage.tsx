@@ -180,25 +180,7 @@ const ReportsPage: React.FC = () => {
           items &&
           items.map((r: Report) => <ReportListItem key={r.id} r={r} />)}
       </div>
-      {/* <Card>
-        <CardContent className="p-12 text-center">
-          <FileText className="mx-auto h-12 w-12 text-gray-400 mb-4" />
-          <h3 className="text-lg font-semibold text-gray-900 mb-2">
-            Belum Ada Laporan
-          </h3>
-          <p className="text-gray-600 mb-6">
-            Belum ada laporan yang sesuai dengan filter yang dipilih.
-          </p>
-          {isAuthenticated && (
-            <Link to="/create-report">
-              <Button>
-                <Plus className="mr-2 h-4 w-4" />
-                Buat Laporan Pertama
-              </Button>x
-            </Link>
-          )}
-        </CardContent>
-      </Card> */}
+
       {!isLoading && !isError && items.length === 0 && (
         <Card>
           <CardContent className="p-12 text-center">

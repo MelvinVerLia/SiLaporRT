@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React from "react";
 import { Link } from "react-router-dom";
 import {
   FileText,
@@ -27,7 +27,6 @@ import ReportListItem from "./reports/ReportListItem";
 import FaqItems from "../components/faq/FaqItems";
 import ReportListItemSkeleton from "./reports/components/ReportListItemSkeleton";
 import { useAuthContext } from "../contexts/AuthContext";
-import { useToast } from "../hooks/useToast";
 
 const HomePage: React.FC = () => {
   const { isAuthenticated } = useAuthContext();
@@ -35,16 +34,15 @@ const HomePage: React.FC = () => {
     queryKey: ["recent-reports"],
     queryFn: getRecentReports,
   });
-  const toast = useToast();
-  
-  useEffect(() => {
-    toast.success(
-      "Selamat datang di Aplikasi Pengaduan Masyarakat",
-      "Selamat Datang"
-    );
-    // toast.error("Selamat datang di Aplikasi Pengaduan Masyarakat", "Selamat Datang");
-    // toast.info("Selamat datang di Aplikasi Pengaduan Masyarakat", "Selamat Datang");
-  }, []);
+
+  // const toast = useToast();
+  // useEffect(() => {
+  //   toast.success(
+  //     "Selamat datang di Aplikasi Pengaduan Masyarakat",
+  //     "Selamat Datang"
+  //   );
+  // }, []);
+
   const items = data?.items ?? [];
 
   const stats = [
@@ -286,9 +284,22 @@ const HomePage: React.FC = () => {
                   </CardContent>
                 </Card>
               )}
-              {!isLoading &&
-                items &&
-                items.map((r: Report) => <ReportListItem key={r.id} r={r} />)}
+
+              {!isLoading && items.length > 0 ? (
+                items.map((r: Report) => <ReportListItem key={r.id} r={r} />)
+              ) : (
+                <Card>
+                  <CardContent className="p-12 text-center">
+                    <FileText className="mx-auto h-12 w-12 text-gray-400 mb-4" />
+                    <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                      Belum Ada Laporan
+                    </h3>
+                    <p className="text-gray-600">
+                      Laporan akan muncul ketika tersedia.
+                    </p>
+                  </CardContent>
+                </Card>
+              )}
             </div>
           </CardContent>
         </Card>

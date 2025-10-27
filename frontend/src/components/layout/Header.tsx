@@ -130,7 +130,7 @@ const Header: React.FC = () => {
     setUnreadNotificationsCount(response.count.unread);
     setReadNotificationsCount(response.count.read);
   };
-  
+
   useEffect(() => {
     fetchNotifications();
   }, [user]);
@@ -290,13 +290,15 @@ const Header: React.FC = () => {
                       <div>
                         <span className="mr-2">Notifications</span>
                       </div>
-                      <div
-                        className="flex gap-1 hover:cursor-pointer text-blue-600 hover:text-blue-800"
-                        onClick={markAllAsRead}
-                      >
-                        <EyeIcon className=" w-5 h-5" />
-                        <div className="text-[13px]">Mark all as read</div>
-                      </div>
+                      {unreadNotificationsCount > 0 && (
+                        <div
+                          className="flex gap-1 hover:cursor-pointer text-blue-600 hover:text-blue-800"
+                          onClick={markAllAsRead}
+                        >
+                          <EyeIcon className=" w-5 h-5" />
+                          <div className="text-[13px]">Mark all as read</div>
+                        </div>
+                      )}
                     </div>
 
                     <div className="max-h-64 overflow-y-auto divide-y divide-gray-100">

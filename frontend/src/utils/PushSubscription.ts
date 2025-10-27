@@ -1,5 +1,4 @@
 export async function subscribeUserToPush(userId: string) {
-  console.log("userId", userId);
   if (!("serviceWorker" in navigator)) return;
   const reg = await navigator.serviceWorker.ready;
 
