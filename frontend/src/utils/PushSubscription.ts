@@ -29,7 +29,7 @@ export async function subscribeUserToPush(userId: string) {
       }
     );
   } else {
-    await fetch(`${import.meta.env.VITE_API_BASE}/notification/subscribe`, {
+    await fetch(`${import.meta.env.VITE_API_BASE_URL}/notification/subscribe`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       credentials: "include",
