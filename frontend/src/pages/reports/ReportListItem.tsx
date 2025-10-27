@@ -42,9 +42,7 @@ const ReportListItem = ({ r }: { r: Report }) => {
       <Link to={`/reports/${r.id}`}>
         <CardContent className="p-6">
           <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-4">
-            {/* Main Content */}
             <div className="flex-1 space-y-2 min-w-0">
-              {/* Title and Badges */}
               <div className="space-y-2">
                 <h3 className="text-lg font-semibold text-gray-900 whitespace-pre-wrap break-words line-clamp-1">
                   {r.title}
@@ -64,18 +62,15 @@ const ReportListItem = ({ r }: { r: Report }) => {
                 </div>
               </div>
 
-              {/* Description */}
               <p className="text-gray-600 text-sm line-clamp-3 break-words">
                 {r.description}
               </p>
 
-              {/* Location */}
               <div className="flex items-center text-sm text-gray-500">
-                <MapPin className="mr-1 h-4 w-4" />
+                <MapPin className="mr-1 h-12 w-12 sm:h-4 sm:w-4" />
                 <span>{r.location.address}</span>
               </div>
 
-              {/* Meta Info */}
               <div className="flex items-center justify-between text-sm text-gray-500">
                 <div className="flex items-center space-x-4">
                   <span className="flex items-center">
