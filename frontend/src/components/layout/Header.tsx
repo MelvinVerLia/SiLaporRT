@@ -176,7 +176,6 @@ const Header: React.FC = () => {
     };
   }, []);
 
-  // Navigation items berdasarkan authentication status
   const getNavigationItems = () => {
     const publicItems = [
       { path: "/", label: "Beranda", icon: Home },
@@ -198,7 +197,6 @@ const Header: React.FC = () => {
 
   const navigationItems = getNavigationItems();
 
-  // User dropdown menu items
   const userDropdownItems = [
     { path: "/profile", label: "Profil Saya", icon: UserCircle },
     { path: "/my-reports", label: "Laporan Saya", icon: User },
@@ -217,7 +215,6 @@ const Header: React.FC = () => {
     <header className="sticky top-0 z-50 w-full border-b border-gray-200 bg-white shadow-sm">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="flex h-16 items-center justify-between">
-          {/* Logo & Brand */}
           <div className="flex items-center space-x-4">
             <Link
               to="/"
@@ -230,7 +227,6 @@ const Header: React.FC = () => {
             </Link>
           </div>
 
-          {/* Desktop Navigation */}
           <nav className="hidden lg:flex items-center space-x-1">
             {!isLoading &&
               navigationItems.map((item) => {
@@ -261,7 +257,6 @@ const Header: React.FC = () => {
             )}
           </nav>
 
-          {/* User Menu */}
           <div className="flex items-center space-x-4">
             {isAuthenticated && (
               <div

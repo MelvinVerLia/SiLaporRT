@@ -122,6 +122,7 @@ export class AnnouncementService {
     const url =
       `${process.env.FRONTEND_URL_PROD}/announcements/${announcement.id}` ||
       `${process.env.FRONTEND_URL}/announcements/${announcement.id}`;
+
     await NotificationService.sendNotificationAll(
       `📢 Pengumuman Baru: "${announcement.title}"`,
       `Cek pengumuman terbaru berjudul "${announcement.title}" sekarang di aplikasi SiLaporRT.`,

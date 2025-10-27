@@ -134,7 +134,6 @@ const HomePage: React.FC = () => {
               terorganisir.
             </p>
 
-            {/* Integrated Statistics */}
             <div className="flex flex-wrap justify-center lg:justify-start gap-6 lg:gap-8 mb-8">
               {stats.map((stat, index) => (
                 <div key={index} className="text-center lg:text-left">
@@ -150,7 +149,6 @@ const HomePage: React.FC = () => {
               ))}
             </div>
 
-            {/* Action Buttons */}
             {isAuthenticated ? (
               <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
                 <Link to="/create-report">
@@ -189,7 +187,6 @@ const HomePage: React.FC = () => {
             )}
           </div>
 
-          {/* Right Image */}
           <div className="flex justify-center lg:justify-end">
             <div className="relative">
               <img
@@ -202,7 +199,6 @@ const HomePage: React.FC = () => {
         </div>
       </section>
 
-      {/* Features Section */}
       <section>
         <Card>
           <CardHeader>
@@ -241,7 +237,6 @@ const HomePage: React.FC = () => {
         </Card>
       </section>
 
-      {/* Recent Reports */}
       <section>
         <Card>
           <CardHeader>
@@ -263,7 +258,6 @@ const HomePage: React.FC = () => {
             <div className="space-y-4">
               {isLoading && (
                 <>
-                  {/* Show 3 skeleton items while loading */}
                   {Array.from({ length: 3 }).map((_, index) => (
                     <ReportListItemSkeleton key={`skeleton-${index}`} />
                   ))}
@@ -300,7 +294,6 @@ const HomePage: React.FC = () => {
         </Card>
       </section>
 
-      {/* FAQ Section */}
       <section>
         <FaqItems />
       </section>
