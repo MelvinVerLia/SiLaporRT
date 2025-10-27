@@ -4,10 +4,6 @@ self.addEventListener("push", (event) => {
     body: data.body,
     icon: data.icon,
     data: { url: data.clickUrl || "/" },
-    requireInteraction: true, 
-    renotify: true,
-    vibrate: [200, 100, 200], 
-
   };
 
   event.waitUntil(self.registration.showNotification(data.title, options));

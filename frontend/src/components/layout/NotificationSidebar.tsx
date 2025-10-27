@@ -16,9 +16,7 @@ interface Props {
   notificationCount: number;
   unreadNotificationCount: number;
   readNotificationCount: number;
-  onNotificationClick: (
-    notification: Notification,
-  ) => void;
+  onNotificationClick: (notification: Notification) => void;
 }
 
 export default function NotificationSidebar({
@@ -158,9 +156,7 @@ export default function NotificationSidebar({
                                 : "bg-white hover:bg-gray-100"
                             }  flex items-center rounded-xl`
                           )}
-                          onClick={() =>
-                            onNotificationClick(n)
-                          }
+                          onClick={() => onNotificationClick(n)}
                         >
                           <div className="mx-4">
                             {renderCategoryIcon(n.category)}
@@ -185,7 +181,7 @@ export default function NotificationSidebar({
                       ))
                     ) : (
                       <div className="p-4 text-center text-gray-500 text-sm">
-                        No notifications found
+                        Tidak ada pemberitahuan
                       </div>
                     )}
                   </div>
@@ -198,9 +194,7 @@ export default function NotificationSidebar({
                         <div
                           key={n.id}
                           className="py-4 cursor-pointer transition-colors hover:bg-gray-100 flex items-center rounded-xl"
-                          onClick={() =>
-                            onNotificationClick(n)
-                          }
+                          onClick={() => onNotificationClick(n)}
                         >
                           <div className="mx-4">
                             {renderCategoryIcon(n.category)}
@@ -225,7 +219,7 @@ export default function NotificationSidebar({
                       ))
                     ) : (
                       <div className="p-4 text-center text-gray-500 text-sm">
-                        No notifications found
+                        Tidak ada pemberitahuan
                       </div>
                     )}
                   </div>
@@ -237,9 +231,7 @@ export default function NotificationSidebar({
                         <div
                           key={n.id}
                           className="py-4 cursor-pointer transition-colors hover:bg-gray-100 flex items-center rounded-xl"
-                          onClick={() =>
-                            onNotificationClick(n)
-                          }
+                          onClick={() => onNotificationClick(n)}
                         >
                           <div className="mx-4">
                             {renderCategoryIcon(n.category)}
@@ -264,7 +256,7 @@ export default function NotificationSidebar({
                       ))
                     ) : (
                       <div className="p-4 text-center text-gray-500 text-sm">
-                        No notifications found
+                        Tidak ada pemberitahuan
                       </div>
                     )}
                   </div>

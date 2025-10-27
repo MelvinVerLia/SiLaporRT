@@ -100,7 +100,6 @@ const ReportListItem = ({ r }: { r: Report }) => {
                 </div>
               </div>
 
-              {/* Author */}
               <div className="text-sm text-gray-500">
                 Dilaporkan oleh:{" "}
                 {r.isAnonymous
