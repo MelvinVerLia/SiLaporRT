@@ -5,11 +5,6 @@ import {
   Users,
   MapPin,
   TrendingUp,
-  Camera,
-  MessageSquare,
-  ThumbsUp,
-  Shield,
-  BarChart3,
   AlertCircle,
   RefreshCw,
 } from "lucide-react";
@@ -36,7 +31,7 @@ const HomePage: React.FC = () => {
     queryFn: getRecentReports,
   });
   const toast = useToast();
-  
+
   useEffect(() => {
     toast.success(
       "Selamat datang di Aplikasi Pengaduan Masyarakat",
@@ -52,8 +47,8 @@ const HomePage: React.FC = () => {
       title: "Total Laporan",
       value: "47",
       icon: FileText,
-      color: "text-blue-600",
-      bgColor: "bg-blue-100",
+      color: "text-primary-600",
+      bgColor: "bg-primary-100",
     },
     {
       title: "Sudah Selesai",
@@ -66,8 +61,8 @@ const HomePage: React.FC = () => {
       title: "Sedang Diproses",
       value: "12",
       icon: Users,
-      color: "text-orange-600",
-      bgColor: "bg-orange-100",
+      color: "text-blue-600",
+      bgColor: "bg-blue-100",
     },
     {
       title: "Warga Aktif",
@@ -80,53 +75,41 @@ const HomePage: React.FC = () => {
 
   const features = [
     {
-      icon: <MapPin className="w-8 h-8 text-blue-600" />,
+      imageUrl: "/assets/map.webp",
       title: "Pelaporan Lokasi Nyata",
       description:
         "Laporan terintegrasi dengan peta interaktif untuk menunjukkan lokasi kejadian secara akurat",
     },
     {
-      icon: <Camera className="w-8 h-8 text-green-600" />,
+      imageUrl: "/assets/documentation.webp",
       title: "Dokumentasi Visual",
       description:
         "Upload foto dan media pendukung untuk memperjelas konteks laporan Anda",
     },
     {
-      icon: <MessageSquare className="w-8 h-8 text-purple-600" />,
-      title: "Diskusi Komunitas",
+      imageUrl: "/assets/community.webp",
+      title: "Diskusi & Voting Komunitas",
       description:
-        "Warga dapat berdiskusi dan memberikan masukan pada setiap laporan yang dibuat",
+        "Warga dapat berdiskusi, memberikan masukan, dan memberi dukungan agar laporan diprioritaskan",
     },
     {
-      icon: <ThumbsUp className="w-8 h-8 text-orange-600" />,
-      title: "Voting Dukungan",
-      description:
-        "Berikan dukungan pada laporan agar dapat diprioritaskan penanganannya",
-    },
-    {
-      icon: <Shield className="w-8 h-8 text-red-600" />,
+      imageUrl: "/assets/response.webp",
       title: "Tanggapan Resmi RT",
       description:
         "Admin RT memberikan balasan dan update progress penanganan secara transparan",
     },
-    {
-      icon: <BarChart3 className="w-8 h-8 text-indigo-600" />,
-      title: "Statistik & Riwayat",
-      description:
-        "Data laporan dan analitik untuk mendukung pengambilan keputusan lingkungan",
-    },
   ];
 
   return (
-    <div className="space-y-16">
+    <div className="space-y-24">
       {/* Hero Section */}
       <section>
         <div className="grid lg:grid-cols-2 gap-12 lg:gap-16 items-center">
           {/* Left Content */}
           <div className="text-center lg:text-left">
-            <h1 className="text-4xl lg:text-5xl xl:text-6xl font-bold text-gray-900 mb-6 leading-tight">
+            <h1 className="text-4xl lg:text-5xl xl:text-6xl font-bold text-primary-500 mb-6 leading-tight">
               Laporkan Masalah
-              <span className="block text-blue-600">Lingkungan Anda</span>
+              <span className="block text-primary-600">Lingkungan Anda</span>
             </h1>
             <p className="text-lg lg:text-xl text-gray-600 mb-8 leading-relaxed">
               Platform digital untuk warga RT melaporkan masalah infrastruktur,
@@ -193,9 +176,9 @@ const HomePage: React.FC = () => {
           <div className="flex justify-center lg:justify-end">
             <div className="relative">
               <img
-                src="/assets/hero.png"
+                src="/assets/hero.webp"
                 alt="Platform Pelaporan RT"
-                className="w-full max-w-lg h-auto object-contain drop-shadow-2xl"
+                className="w-full max-w-lg h-auto object-contain"
               />
             </div>
           </div>
@@ -204,41 +187,64 @@ const HomePage: React.FC = () => {
 
       {/* Features Section */}
       <section>
-        <Card>
-          <CardHeader>
-            <div className="text-center">
-              <div className="text-sm font-semibold text-blue-600 uppercase tracking-wide mb-2">
-                SISTEM PELAPORAN RT
+        <div className="text-center mb-12">
+          <h2 className="text-2xl lg:text-3xl font-bold leading-tight mb-3">
+            Fitur-fitur SiLaporRT
+          </h2>
+          <p className="text-gray-600 leading-relaxed max-w-2xl mx-auto">
+            Fitur-fitur inovatif untuk memudahkan warga melaporkan masalah,
+            berkolaborasi, dan meningkatkan kualitas lingkungan secara
+            bersama-sama.
+          </p>
+        </div>
+
+        {/* Row pertama (2 features) - Aligned Left */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 mb-10 lg:pr-32">
+          {features.slice(0, 2).map((feature, index) => (
+            <div
+              key={index}
+              className="bg-white border border-gray-200 rounded-lg overflow-hidden shadow-sm"
+            >
+              <img
+                src={feature.imageUrl}
+                alt={feature.title}
+                className="w-full h-40 object-contain"
+              />
+              <div className="p-4 pt-0 text-center">
+                <h3 className="text-lg font-semibold text-gray-900 mb-1.5">
+                  {feature.title}
+                </h3>
+                <p className="text-sm text-gray-600 leading-relaxed">
+                  {feature.description}
+                </p>
               </div>
-              <CardTitle className="text-2xl lg:text-3xl font-bold leading-tight mb-3">
-                Fitur Unggulan SiLaporRT
-              </CardTitle>
-              <p className="text-gray-600 leading-relaxed">
-                Fitur-fitur inovatif untuk memudahkan warga melaporkan masalah,
-                berkolaborasi, dan meningkatkan kualitas lingkungan secara
-                bersama-sama.
-              </p>
             </div>
-          </CardHeader>
-          <CardContent>
-            <div className="grid md:grid-cols-3 gap-6">
-              {features.slice(0, 6).map((feature, index) => (
-                <div
-                  key={index}
-                  className="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow cursor-pointer bg-white"
-                >
-                  <div className="mb-4">{feature.icon}</div>
-                  <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                    {feature.title}
-                  </h3>
-                  <p className="text-sm text-gray-600 leading-relaxed">
-                    {feature.description}
-                  </p>
-                </div>
-              ))}
+          ))}
+        </div>
+
+        {/* Row kedua (2 features) - Aligned Right */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 lg:pl-32">
+          {features.slice(2, 4).map((feature, index) => (
+            <div
+              key={index + 2}
+              className="bg-white border border-gray-200 rounded-lg overflow-hidden shadow-sm"
+            >
+              <img
+                src={feature.imageUrl}
+                alt={feature.title}
+                className="w-full h-40 object-contain"
+              />
+              <div className="p-4 pt-0 text-center">
+                <h3 className="text-lg font-semibold text-gray-900 mb-1.5">
+                  {feature.title}
+                </h3>
+                <p className="text-sm text-gray-600 leading-relaxed">
+                  {feature.description}
+                </p>
+              </div>
             </div>
-          </CardContent>
-        </Card>
+          ))}
+        </div>
       </section>
 
       {/* Recent Reports */}
@@ -291,6 +297,17 @@ const HomePage: React.FC = () => {
                     </Button>
                   </CardContent>
                 </Card>
+              )}
+              {items.length === 0 && !isLoading && (
+                <div className="text-center py-12">
+                  <FileText className="mx-auto h-12 w-12 text-gray-400 mb-4" />
+                  <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                    Tidak ada laporan
+                  </h3>
+                  <p className="text-gray-600">
+                    Laporan akan muncul ketika tersedia.
+                  </p>
+                </div>
               )}
               {!isLoading &&
                 items &&

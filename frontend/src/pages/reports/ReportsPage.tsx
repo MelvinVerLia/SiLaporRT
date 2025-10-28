@@ -113,7 +113,7 @@ const ReportsPage: React.FC = () => {
     <div className="space-y-6">
       {/* Page Header */}
       <div>
-        <h1 className="text-3xl font-bold text-gray-900">Laporan Warga</h1>
+        <h1 className="text-3xl font-bold text-primary-600">Laporan Warga</h1>
         <p className="text-gray-600 mt-1">
           Lihat dan pantau laporan dari warga RT • {total} laporan
         </p>

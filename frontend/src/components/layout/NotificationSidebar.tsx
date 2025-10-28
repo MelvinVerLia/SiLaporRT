@@ -16,9 +16,7 @@ interface Props {
   notificationCount: number;
   unreadNotificationCount: number;
   readNotificationCount: number;
-  onNotificationClick: (
-    notification: Notification,
-  ) => void;
+  onNotificationClick: (notification: Notification) => void;
 }
 
 export default function NotificationSidebar({
@@ -52,7 +50,7 @@ export default function NotificationSidebar({
     switch (category) {
       case "REPORT":
         return tabvalue === "unread" ? (
-          <div className="flex items-center justify-center w-12 h-12 rounded-full bg-blue-100 text-blue-600">
+          <div className="flex items-center justify-center w-12 h-12 rounded-full bg-primary-100 text-primary-600">
             <FileText className="w-6 h-6" />
           </div>
         ) : tabvalue === "read" ? (
@@ -66,7 +64,7 @@ export default function NotificationSidebar({
         );
       case "ANNOUNCEMENT":
         return tabvalue === "unread" ? (
-          <div className="flex items-center justify-center w-12 h-12 rounded-full bg-blue-100 text-blue-600">
+          <div className="flex items-center justify-center w-12 h-12 rounded-full bg-primary-100 text-primary-600">
             <Paperclip className="w-6 h-6" />
           </div>
         ) : tabvalue === "read" ? (
@@ -126,7 +124,7 @@ export default function NotificationSidebar({
               <TabsList>
                 <TabsTrigger value="unread">
                   Belum Dibaca
-                  <span className="ml-2 text-xs bg-blue-100 text-blue-700 rounded-full px-2 py-0.5">
+                  <span className="ml-2 text-xs bg-primary-100 text-primary-700 rounded-full px-2 py-0.5">
                     {unreadNotificationCount}
                   </span>
                 </TabsTrigger>
@@ -158,9 +156,7 @@ export default function NotificationSidebar({
                                 : "bg-white hover:bg-gray-100"
                             }  flex items-center rounded-xl`
                           )}
-                          onClick={() =>
-                            onNotificationClick(n)
-                          }
+                          onClick={() => onNotificationClick(n)}
                         >
                           <div className="mx-4">
                             {renderCategoryIcon(n.category)}
@@ -198,9 +194,7 @@ export default function NotificationSidebar({
                         <div
                           key={n.id}
                           className="py-4 cursor-pointer transition-colors hover:bg-gray-100 flex items-center rounded-xl"
-                          onClick={() =>
-                            onNotificationClick(n)
-                          }
+                          onClick={() => onNotificationClick(n)}
                         >
                           <div className="mx-4">
                             {renderCategoryIcon(n.category)}
@@ -237,9 +231,7 @@ export default function NotificationSidebar({
                         <div
                           key={n.id}
                           className="py-4 cursor-pointer transition-colors hover:bg-gray-100 flex items-center rounded-xl"
-                          onClick={() =>
-                            onNotificationClick(n)
-                          }
+                          onClick={() => onNotificationClick(n)}
                         >
                           <div className="mx-4">
                             {renderCategoryIcon(n.category)}

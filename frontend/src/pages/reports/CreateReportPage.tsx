@@ -429,7 +429,7 @@ const CreateReportPage: React.FC = () => {
                         isAnonymous: e.target.checked,
                       }))
                     }
-                    className="w-4 h-4 text-blue-600 border-gray-300 rounded cursor-pointer"
+                    className="w-4 h-4 text-primary-600 border-gray-300 rounded cursor-pointer"
                   />
                 </div>
               </div>
@@ -460,7 +460,7 @@ const CreateReportPage: React.FC = () => {
                         isPublic: e.target.checked,
                       }))
                     }
-                    className="w-4 h-4 text-blue-600 border-gray-300 rounded cursor-pointer"
+                    className="w-4 h-4 text-primary-600 border-gray-300 rounded cursor-pointer"
                   />
                 </div>
               </div>
@@ -477,7 +477,7 @@ const CreateReportPage: React.FC = () => {
     <div className="space-y-6">
       {/* Header */}
       <div>
-        <h1 className="text-3xl font-bold text-gray-900">Buat Laporan</h1>
+        <h1 className="text-3xl font-bold text-primary-600">Buat Laporan</h1>
         <p className="text-gray-600 mt-1">
           Laporkan masalah di lingkungan RT Anda
         </p>
@@ -498,7 +498,7 @@ const CreateReportPage: React.FC = () => {
                     isCompleted
                       ? "bg-green-600 border-green-600 text-white"
                       : isActive
-                      ? "bg-blue-600 border-blue-600 text-white"
+                      ? "bg-primary-600 border-primary-600 text-white"
                       : "bg-white border-gray-300 text-gray-400"
                   }`}
                 >
@@ -512,7 +512,7 @@ const CreateReportPage: React.FC = () => {
                   <p
                     className={`text-sm font-medium ${
                       isActive
-                        ? "text-blue-600"
+                        ? "text-primary-600"
                         : isCompleted
                         ? "text-green-600"
                         : "text-gray-500"

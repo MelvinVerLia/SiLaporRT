@@ -139,7 +139,7 @@ const AttachmentViewer: React.FC<AttachmentViewerProps> = ({
         <div className="p-3">
           <div className="flex items-start justify-between">
             <div className="flex-1 min-w-0">
-              <h4 className="text-sm font-medium text-gray-900 truncate group-hover:text-blue-600 transition-colors duration-200">
+              <h4 className="text-sm font-medium text-gray-900 truncate group-hover:text-primary-600 transition-colors duration-200">
                 {attachment.filename}
               </h4>
               <div className="flex items-center space-x-2 mt-1">

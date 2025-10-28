@@ -35,9 +35,6 @@ const FaqItems = () => {
     <Card>
       <CardHeader>
         <div className="text-center">
-          <div className="text-sm font-semibold text-blue-600 uppercase tracking-wide mb-2">
-            PERTANYAAN UMUM
-          </div>
           <CardTitle className="text-2xl lg:text-3xl font-bold leading-tight mb-3">
             Pertanyaan yang Sering Diajukan
           </CardTitle>

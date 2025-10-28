@@ -30,26 +30,29 @@ const LoginForm: React.FC = () => {
   };
 
   const handleGoogleLogin = () => {
-    if (import.meta.env.VITE_API_BASE_URL_PROD) window.location.href = import.meta.env.VITE_API_BASE_URL_PROD + "/auth/google";
-    else window.location.href = import.meta.env.VITE_API_BASE_URL + "/auth/google";
+    if (import.meta.env.VITE_API_BASE_URL_PROD)
+      window.location.href =
+        import.meta.env.VITE_API_BASE_URL_PROD + "/auth/google";
+    else
+      window.location.href = import.meta.env.VITE_API_BASE_URL + "/auth/google";
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-l from-blue-200 to-white flex flex-col justify-center py-12 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-gradient-to-l from-primary-100 to-white flex flex-col justify-center py-12 px-4 sm:px-6 lg:px-8">
       <Card className="max-w-4xl w-full mx-auto shadow-xl border-0 bg-white/80 backdrop-blur-sm rounded-xl">
         {/* Logo positioned absolutely at the top of the card - visible on all screen sizes */}
         <div className="absolute top-4 left-8">
           <Link
             to="/"
-            className="flex items-center space-x-2 text-lg font-bold text-blue-600 hover:text-blue-700 transition-colors"
+            className="flex items-center space-x-2 text-lg font-bold text-primary-600 hover:text-primary-700 transition-colors"
           >
             <img
-              src="/assets/logo.png"
+              src="/assets/logo.webp"
               alt="Logo"
               className="h-8 w-8 md:h-10 md:w-10"
             />
             <span className="text-xl md:text-2xl">
-              SiLapor<span className="text-blue-950">RT</span>
+              SiLapor<span className="text-primary-700">RT</span>
             </span>
           </Link>
         </div>
@@ -59,7 +62,7 @@ const LoginForm: React.FC = () => {
           {/* Ilustrasi - Kolom kiri */}
           <div className="hidden md:flex md:w-1/2 items-center justify-center rounded-lg p-4 mt-12">
             <img
-              src="/assets/login.png"
+              src="/assets/login.webp"
               alt="Login Illustration"
               className="w-full h-full max-h-[500px] object-contain"
             />
@@ -78,7 +81,7 @@ const LoginForm: React.FC = () => {
                 Belum punya akun?{" "}
                 <Link
                   to="/register"
-                  className="font-semibold text-blue-600 hover:text-blue-700 transition-colors duration-200"
+                  className="font-semibold text-primary-600 hover:text-primary-700 transition-colors duration-200"
                 >
                   Daftar sekarang
                 </Link>
@@ -136,7 +139,7 @@ const LoginForm: React.FC = () => {
                     type="checkbox"
                     checked={rememberMe}
                     onChange={(e) => setRememberMe(e.target.checked)}
-                    className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 focus:ring-2"
+                    className="w-4 h-4 text-primary-600 bg-gray-100 border-gray-300 rounded focus:ring-primary-500 focus:ring-2"
                     disabled={isLoading}
                   />
                   <span className="text-sm text-gray-600 select-none">
@@ -146,7 +149,7 @@ const LoginForm: React.FC = () => {
 
                 <Link
                   to="/forgot-password"
-                  className="text-sm text-blue-600 hover:text-blue-700 font-medium transition-colors duration-200"
+                  className="text-sm text-primary-600 hover:text-primary-700 font-medium transition-colors duration-200"
                 >
                   Lupa password?
                 </Link>
@@ -161,7 +164,7 @@ const LoginForm: React.FC = () => {
 
               <Button
                 type="submit"
-                className="w-full bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 transform hover:scale-[1.02] transition-all duration-200 shadow-lg"
+                className="w-full bg-gradient-to-r from-primary-600 to-primary-700 hover:from-primary-700 hover:to-primary-700 transform hover:scale-[1.02] transition-all duration-200 shadow-lg"
                 loading={isLoading}
                 disabled={!email || !password}
               >
@@ -211,11 +214,14 @@ const LoginForm: React.FC = () => {
       <div className="mt-8 text-center px-4">
         <p className="text-xs text-gray-500">
           Dengan masuk, Anda menyetujui{" "}
-          <Link to="/terms" className="text-blue-600 hover:text-blue-700">
+          <Link to="/terms" className="text-primary-600 hover:text-primary-700">
             Syarat & Ketentuan
           </Link>{" "}
           dan{" "}
-          <Link to="/privacy" className="text-blue-600 hover:text-blue-700">
+          <Link
+            to="/privacy"
+            className="text-primary-600 hover:text-primary-700"
+          >
             Kebijakan Privasi
           </Link>
         </p>

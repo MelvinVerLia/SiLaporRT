@@ -12,7 +12,7 @@ const AccordionItem: React.FC<AccordionItemProps> = ({ question, answer }) => {
   return (
     <div className="border-b border-gray-200">
       <button
-        className="flex justify-between items-center w-full py-4 text-left font-semibold text-gray-800 hover:text-blue-600 transition-colors duration-200 hover:cursor-pointer"
+        className="flex justify-between items-center w-full py-4 text-left font-semibold text-gray-800 hover:text-primary-600 transition-colors duration-200 hover:cursor-pointer"
         onClick={() => setIsOpen(!isOpen)}
       >
         {question}

@@ -371,7 +371,7 @@ const MyReportsPage: React.FC = () => {
       {/* Page Header */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">Laporan Saya</h1>
+          <h1 className="text-3xl font-bold text-primary-600">Laporan Saya</h1>
           <p className="text-gray-600 mt-1">
             Kelola dan pantau semua laporan yang telah Anda buat • {total}{" "}
             laporan
@@ -434,8 +434,8 @@ const MyReportsPage: React.FC = () => {
                       {stats.inProgress}
                     </p>
                   </div>
-                  <div className="p-3 rounded-full bg-blue-100">
-                    <Pause className="h-6 w-6 text-blue-600" />
+                  <div className="p-3 rounded-full bg-primary-100">
+                    <Pause className="h-6 w-6 text-primary-600" />
                   </div>
                 </div>
               </CardContent>

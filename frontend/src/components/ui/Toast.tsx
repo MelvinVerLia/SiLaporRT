@@ -35,8 +35,8 @@ const styleMap = {
     icon: "text-yellow-600",
   },
   info: {
-    container: "bg-blue-50 border-blue-200 text-blue-800",
-    icon: "text-blue-600",
+    container: "bg-primary-50 border-primary-100 text-primary-700",
+    icon: "text-primary-600",
   },
 };
 

@@ -191,16 +191,16 @@ const AdminDashboard: React.FC = () => {
         title: "Total Laporan",
         value: dashboardData.totalReports.toString(),
         icon: FileText,
-        color: "text-blue-600",
-        bgColor: "bg-blue-100",
+        color: "text-primary-600",
+        bgColor: "bg-primary-100",
         href: "/admin/reports",
       },
       {
         title: "Menunggu Tindakan",
         value: dashboardData.pendingReports.toString(),
         icon: Clock,
-        color: "text-orange-600",
-        bgColor: "bg-orange-100",
+        color: "text-blue-600",
+        bgColor: "bg-blue-100",
         href: "/admin/reports",
       },
       {
@@ -237,7 +237,7 @@ const AdminDashboard: React.FC = () => {
         name: "Proses",
         value: dashboardData.inProgressReports || 0,
         color: "#3b82f6",
-        bgColor: "bg-blue-100",
+        bgColor: "bg-primary-100",
       },
       {
         name: "Selesai",
@@ -385,7 +385,7 @@ const AdminDashboard: React.FC = () => {
       {/* Header */}
       <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">
+          <h1 className="text-3xl font-bold text-primary-600">
             Dashboard Admin RT
           </h1>
           <p className="text-gray-600 mt-1">
@@ -462,7 +462,7 @@ const AdminDashboard: React.FC = () => {
             <Card className="xl:col-span-2">
               <CardHeader>
                 <CardTitle className="flex items-center">
-                  <AlertTriangle className="mr-2 h-5 w-5 text-orange-500" />
+                  <AlertTriangle className="mr-2 h-5 w-5 text-primary-500" />
                   Status Laporan
                 </CardTitle>
               </CardHeader>

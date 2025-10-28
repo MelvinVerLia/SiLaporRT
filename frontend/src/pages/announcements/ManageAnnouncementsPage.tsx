@@ -355,7 +355,7 @@ export default function ManageAnnouncementsPage() {
     <div className="space-y-6">
       {/* Page Header */}
       <div>
-        <h1 className="text-3xl font-bold text-gray-900">Kelola Pengumuman</h1>
+        <h1 className="text-3xl font-bold text-primary-600">Kelola Pengumuman</h1>
         <p className="text-gray-600 mt-1">
           Buat dan atur pengumuman untuk warga RT
         </p>
