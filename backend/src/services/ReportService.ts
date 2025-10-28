@@ -26,10 +26,14 @@ class ReportService {
       };
       const report = await ReportRepository.createReport(dataWithCategory);
 
+      const url =
+        `${process.env.FRONTEND_URL_PROD}/reports/${report.id}` ||
+        `${process.env.FRONTEND_URL}/reports/${report.id}`;
+
       await NotificationService.sendNotificationToAdmin(
         `Laporan "${report.title}" Telah Dibuat!`,
         `Laporan dah dibuat woi anjing beresin su`,
-        `${process.env.FRONTEND_URL}/reports/${report.id}`,
+        url,
         "https://res.cloudinary.com/dgnedkivd/image/upload/v1757562088/silaporrt/dev/logo/logo_lnenhb.png",
         "REPORT"
       );
@@ -118,12 +122,16 @@ class ReportService {
         reportId,
         status
       );
-      console.log("updated Report", updatedReport);
+
+      const url =
+        `${process.env.FRONTEND_URL_PROD}/reports/${updatedReport.id}` ||
+        `${process.env.FRONTEND_URL}/reports/${updatedReport.id}`;
+
       await NotificationService.sendNotificationByUserId(
         updatedReport.userId!,
         `Laporan "${updatedReport.title}" Telah Diperbarui!`,
         `Status laporan kamu kini berubah menjadi ${updatedReport.status}`,
-        `${process.env.FRONTEND_URL}/reports/${updatedReport.id}`,
+        url,
         "https://res.cloudinary.com/dgnedkivd/image/upload/v1757562088/silaporrt/dev/logo/logo_lnenhb.png",
         "REPORT"
       );

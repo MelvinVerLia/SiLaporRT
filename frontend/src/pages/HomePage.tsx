@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React from "react";
 import { Link } from "react-router-dom";
 import {
   FileText,
@@ -22,7 +22,6 @@ import ReportListItem from "./reports/ReportListItem";
 import FaqItems from "../components/faq/FaqItems";
 import ReportListItemSkeleton from "./reports/components/ReportListItemSkeleton";
 import { useAuthContext } from "../contexts/AuthContext";
-import { useToast } from "../hooks/useToast";
 
 const HomePage: React.FC = () => {
   const { isAuthenticated } = useAuthContext();
@@ -30,16 +29,15 @@ const HomePage: React.FC = () => {
     queryKey: ["recent-reports"],
     queryFn: getRecentReports,
   });
-  const toast = useToast();
 
-  useEffect(() => {
-    toast.success(
-      "Selamat datang di Aplikasi Pengaduan Masyarakat",
-      "Selamat Datang"
-    );
-    // toast.error("Selamat datang di Aplikasi Pengaduan Masyarakat", "Selamat Datang");
-    // toast.info("Selamat datang di Aplikasi Pengaduan Masyarakat", "Selamat Datang");
-  }, []);
+  // const toast = useToast();
+  // useEffect(() => {
+  //   toast.success(
+  //     "Selamat datang di Aplikasi Pengaduan Masyarakat",
+  //     "Selamat Datang"
+  //   );
+  // }, []);
+
   const items = data?.items ?? [];
 
   const stats = [
@@ -117,7 +115,6 @@ const HomePage: React.FC = () => {
               terorganisir.
             </p>
 
-            {/* Integrated Statistics */}
             <div className="flex flex-wrap justify-center lg:justify-start gap-6 lg:gap-8 mb-8">
               {stats.map((stat, index) => (
                 <div key={index} className="text-center lg:text-left">
@@ -133,7 +130,6 @@ const HomePage: React.FC = () => {
               ))}
             </div>
 
-            {/* Action Buttons */}
             {isAuthenticated ? (
               <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
                 <Link to="/create-report">
@@ -172,7 +168,6 @@ const HomePage: React.FC = () => {
             )}
           </div>
 
-          {/* Right Image */}
           <div className="flex justify-center lg:justify-end">
             <div className="relative">
               <img
@@ -185,7 +180,6 @@ const HomePage: React.FC = () => {
         </div>
       </section>
 
-      {/* Features Section */}
       <section>
         <div className="text-center mb-12">
           <h2 className="text-2xl lg:text-3xl font-bold leading-tight mb-3">
@@ -247,7 +241,6 @@ const HomePage: React.FC = () => {
         </div>
       </section>
 
-      {/* Recent Reports */}
       <section>
         <Card>
           <CardHeader>
@@ -269,7 +262,6 @@ const HomePage: React.FC = () => {
             <div className="space-y-4">
               {isLoading && (
                 <>
-                  {/* Show 3 skeleton items while loading */}
                   {Array.from({ length: 3 }).map((_, index) => (
                     <ReportListItemSkeleton key={`skeleton-${index}`} />
                   ))}
@@ -298,26 +290,27 @@ const HomePage: React.FC = () => {
                   </CardContent>
                 </Card>
               )}
-              {items.length === 0 && !isLoading && (
-                <div className="text-center py-12">
-                  <FileText className="mx-auto h-12 w-12 text-gray-400 mb-4" />
-                  <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                    Tidak ada laporan
-                  </h3>
-                  <p className="text-gray-600">
-                    Laporan akan muncul ketika tersedia.
-                  </p>
-                </div>
+
+              {!isLoading && items.length > 0 ? (
+                items.map((r: Report) => <ReportListItem key={r.id} r={r} />)
+              ) : (
+                <Card>
+                  <CardContent className="p-12 text-center">
+                    <FileText className="mx-auto h-12 w-12 text-gray-400 mb-4" />
+                    <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                      Belum Ada Laporan
+                    </h3>
+                    <p className="text-gray-600">
+                      Laporan akan muncul ketika tersedia.
+                    </p>
+                  </CardContent>
+                </Card>
               )}
-              {!isLoading &&
-                items &&
-                items.map((r: Report) => <ReportListItem key={r.id} r={r} />)}
             </div>
           </CardContent>
         </Card>
       </section>
 
-      {/* FAQ Section */}
       <section>
         <FaqItems />
       </section>

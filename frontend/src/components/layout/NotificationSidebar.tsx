@@ -94,7 +94,7 @@ export default function NotificationSidebar({
           />
 
           <motion.div
-            className="fixed top-0 right-0 h-full sm:w-[500px] w-full bg-white shadow-2xl z-50 flex flex-col rounded-l-2xl"
+            className="fixed top-0 right-0 h-full sm:w-[600px] w-full bg-white shadow-2xl z-50 flex flex-col"
             initial={{ x: "100%" }}
             animate={{ x: 0 }}
             exit={{ x: "100%" }}
@@ -144,7 +144,7 @@ export default function NotificationSidebar({
 
               <div className="flex-1 overflow-y-auto py-2 bg-gray-50">
                 <TabsContent value="all">
-                  <div className="flex flex-col gap-2 overflow-y-auto max-h-[80vh]">
+                  <div className="flex flex-col gap-2 overflow-y-auto max-h-[75vh] sm:max-h-[80vh]">
                     {notifications.length > 0 ? (
                       notifications.map((n) => (
                         <div
@@ -181,14 +181,14 @@ export default function NotificationSidebar({
                       ))
                     ) : (
                       <div className="p-4 text-center text-gray-500 text-sm">
-                        No notifications found
+                        Tidak ada pemberitahuan
                       </div>
                     )}
                   </div>
                 </TabsContent>
 
                 <TabsContent value="unread">
-                  <div className="flex flex-col gap-2 overflow-y-auto max-h-[80vh]">
+                  <div className="flex flex-col gap-2 overflow-y-auto max-h-[75vh] sm:max-h-[80vh]">
                     {unreadNotifications.length > 0 ? (
                       unreadNotifications.map((n) => (
                         <div
@@ -219,13 +219,13 @@ export default function NotificationSidebar({
                       ))
                     ) : (
                       <div className="p-4 text-center text-gray-500 text-sm">
-                        No notifications found
+                        Tidak ada pemberitahuan
                       </div>
                     )}
                   </div>
                 </TabsContent>
                 <TabsContent value="read">
-                  <div className="flex flex-col gap-2 overflow-y-auto max-h-[80vh]">
+                  <div className="flex flex-col gap-2 overflow-y-auto max-h-[75vh] sm:max-h-[80vh]">
                     {readNotifications.length > 0 ? (
                       readNotifications.map((n) => (
                         <div
@@ -256,7 +256,7 @@ export default function NotificationSidebar({
                       ))
                     ) : (
                       <div className="p-4 text-center text-gray-500 text-sm">
-                        No notifications found
+                        Tidak ada pemberitahuan
                       </div>
                     )}
                   </div>
