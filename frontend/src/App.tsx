@@ -7,7 +7,7 @@ import AdminLayout from "./components/layout/AdminLayout";
 import { ToastProvider } from "./contexts/ToastContext";
 
 // Pages
-import HomePage from "./pages/HomePage";
+import HomePage from "./pages/home/HomePage";
 import LoginForm from "./components/forms/LoginForm";
 import RegisterForm from "./components/forms/RegisterForm";
 import ForgotPasswordPage from "./pages/auth/ForgotPasswordPage";

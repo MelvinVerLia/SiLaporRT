@@ -13,15 +13,15 @@ import {
   CardContent,
   CardHeader,
   CardTitle,
-} from "../components/ui/Card";
-import Button from "../components/ui/Button";
-import { getRecentReports } from "../services/reportService";
-import { Report } from "../types/report.types";
+} from "../../components/ui/Card";
+import Button from "../../components/ui/Button";
+import { getRecentReports } from "../../services/reportService";
+import { Report } from "../../types/report.types";
 import { useQuery } from "@tanstack/react-query";
-import ReportListItem from "./reports/ReportListItem";
-import FaqItems from "../components/faq/FaqItems";
-import ReportListItemSkeleton from "./reports/components/ReportListItemSkeleton";
-import { useAuthContext } from "../contexts/AuthContext";
+import ReportListItem from "../reports/ReportListItem";
+import FaqItems from "./components/FaqItems";
+import ReportListItemSkeleton from "../reports/components/ReportListItemSkeleton";
+import { useAuthContext } from "../../contexts/AuthContext";
 
 const HomePage: React.FC = () => {
   const { isAuthenticated } = useAuthContext();

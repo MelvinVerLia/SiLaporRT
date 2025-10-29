@@ -3,7 +3,7 @@ import { Mail, Phone, Clock } from "lucide-react";
 
 const Footer: React.FC = () => {
   return (
-    <footer className="bg-gradient-to-br from-primary-700 to-primary-700 text-white py-6 mt-16">
+    <footer className="bg-gradient-to-br from-primary-700 to-primary-700 text-white py-6 mt-16 rounded-t-4xl">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid md:grid-cols-4 gap-8">
           <div className="md:col-span-2">
