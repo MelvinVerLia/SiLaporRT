@@ -55,21 +55,21 @@ const ForgotPasswordPage: React.FC = () => {
 
   if (isEmailSent) {
     return (
-      <div className="min-h-screen bg-gradient-to-l from-blue-200 to-white flex flex-col justify-center py-12 px-4 sm:px-6 lg:px-8">
+      <div className="min-h-screen bg-gradient-to-l from-primary-100 to-white flex flex-col justify-center py-12 px-4 sm:px-6 lg:px-8">
         <Card className="max-w-4xl w-full mx-auto shadow-xl border-0 bg-white/80 backdrop-blur-sm rounded-xl">
           {/* Logo */}
           <div className="absolute top-4 left-8">
             <Link
               to="/"
-              className="flex items-center space-x-2 text-lg font-bold text-blue-600 hover:text-blue-700 transition-colors"
+              className="flex items-center space-x-2 text-lg font-bold text-primary-600 hover:text-primary-700 transition-colors"
             >
               <img
-                src="/assets/logo.png"
+                src="/assets/logo.webp"
                 alt="Logo"
                 className="h-8 w-8 md:h-10 md:w-10"
               />
               <span className="text-xl md:text-2xl">
-                SiLapor<span className="text-blue-950">RT</span>
+                SiLapor<span className="text-primary-700">RT</span>
               </span>
             </Link>
           </div>
@@ -104,7 +104,7 @@ const ForgotPasswordPage: React.FC = () => {
 
                 <div className="space-y-4 text-gray-600">
                   <p>Kami telah mengirimkan link reset password ke:</p>
-                  <p className="font-semibold text-blue-600 bg-blue-50 p-3 rounded-lg">
+                  <p className="font-semibold text-primary-600 bg-primary-50 p-3 rounded-lg">
                     {email}
                   </p>
                   <p className="text-sm">
@@ -128,7 +128,7 @@ const ForgotPasswordPage: React.FC = () => {
                   <div className="flex items-center justify-center space-x-4 text-sm">
                     <Link
                       to="/login"
-                      className="flex items-center text-blue-600 hover:text-blue-700 font-medium transition-colors"
+                      className="flex items-center text-primary-600 hover:text-primary-700 font-medium transition-colors"
                     >
                       <ArrowLeft className="mr-1 h-4 w-4" />
                       Kembali ke Login
@@ -146,7 +146,7 @@ const ForgotPasswordPage: React.FC = () => {
             Tidak menerima email? Periksa folder spam atau{" "}
             <button
               onClick={handleResendEmail}
-              className="text-blue-600 hover:text-blue-700 underline"
+              className="text-primary-600 hover:text-primary-700 underline"
               disabled={isLoading}
             >
               kirim ulang
@@ -159,21 +159,21 @@ const ForgotPasswordPage: React.FC = () => {
 
   // Form state - Input email
   return (
-    <div className="min-h-screen bg-gradient-to-l from-blue-200 to-white flex flex-col justify-center py-12 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-gradient-to-l from-primary-100 to-white flex flex-col justify-center py-12 px-4 sm:px-6 lg:px-8">
       <Card className="max-w-4xl w-full mx-auto shadow-xl border-0 bg-white/80 backdrop-blur-sm rounded-xl">
         {/* Logo */}
         <div className="absolute top-4 left-8">
           <Link
             to="/"
-            className="flex items-center space-x-2 text-lg font-bold text-blue-600 hover:text-blue-700 transition-colors"
+            className="flex items-center space-x-2 text-lg font-bold text-primary-600 hover:text-primary-700 transition-colors"
           >
             <img
-              src="/assets/logo.png"
+              src="/assets/logo.webp"
               alt="Logo"
               className="h-8 w-8 md:h-10 md:w-10"
             />
             <span className="text-xl md:text-2xl">
-              SiLapor<span className="text-blue-950">RT</span>
+              SiLapor<span className="text-primary-700">RT</span>
             </span>
           </Link>
         </div>
@@ -182,8 +182,8 @@ const ForgotPasswordPage: React.FC = () => {
           {/* Ilustrasi - Kolom kiri */}
           <div className="hidden md:flex md:w-1/2 items-center justify-center rounded-lg p-4 mt-12">
             <div className="text-center">
-              <div className="w-32 h-32 mx-auto mb-6 bg-blue-100 rounded-full flex items-center justify-center">
-                <Mail className="w-16 h-16 text-blue-600" />
+              <div className="w-32 h-32 mx-auto mb-6 bg-primary-100 rounded-full flex items-center justify-center">
+                <Mail className="w-16 h-16 text-primary-600" />
               </div>
               <h3 className="text-lg font-semibold text-gray-900 mb-2">
                 Lupa Password?
@@ -223,7 +223,7 @@ const ForgotPasswordPage: React.FC = () => {
 
               <Button
                 type="submit"
-                className="w-full bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 transform hover:scale-[1.02] transition-all duration-200 shadow-lg"
+                className="w-full bg-gradient-to-r from-primary-600 to-primary-700 hover:from-primary-700 hover:to-primary-700 transform hover:scale-[1.02] transition-all duration-200 shadow-lg"
                 loading={isLoading}
                 disabled={!email || isLoading}
               >
@@ -237,7 +237,7 @@ const ForgotPasswordPage: React.FC = () => {
               <div className="flex items-center justify-center">
                 <Link
                   to="/login"
-                  className="flex items-center text-blue-600 hover:text-blue-700 font-medium transition-colors duration-200"
+                  className="flex items-center text-primary-600 hover:text-primary-700 font-medium transition-colors duration-200"
                 >
                   <ArrowLeft className="mr-2 h-4 w-4" />
                   Kembali ke Login
@@ -252,7 +252,7 @@ const ForgotPasswordPage: React.FC = () => {
       <div className="mt-8 text-center px-4">
         <p className="text-xs text-gray-500">
           Ingat password Anda?{" "}
-          <Link to="/login" className="text-blue-600 hover:text-blue-700">
+          <Link to="/login" className="text-primary-600 hover:text-primary-700">
             Masuk sekarang
           </Link>
         </p>

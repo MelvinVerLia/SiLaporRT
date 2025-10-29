@@ -138,7 +138,7 @@ const CloudinaryUpload: React.FC<Props> = ({
         <div className="flex flex-col items-center">
           <UploadCloud
             className={`h-8 w-8 mb-2 ${
-              hasFiles ? "text-green-600" : "text-blue-600"
+              hasFiles ? "text-green-600" : "text-primary-600"
             }`}
           />
           <p className="text-sm text-gray-600 text-center">
@@ -166,8 +166,8 @@ const CloudinaryUpload: React.FC<Props> = ({
       </div>
 
       {uploading && (
-        <div className="mt-2 flex items-center gap-2 text-sm text-blue-600">
-          <div className="animate-spin rounded-full h-4 w-4 border-2 border-blue-600 border-t-transparent"></div>
+        <div className="mt-2 flex items-center gap-2 text-sm text-primary-600">
+          <div className="animate-spin rounded-full h-4 w-4 border-2 border-primary-600 border-t-transparent"></div>
           Mengunggah...
         </div>
       )}

@@ -65,7 +65,7 @@ const FileTypeIcon: React.FC<FileTypeIconProps> = ({
 
     // Word documents
     if (["doc", "docx"].includes(fmt) || name.match(/\.(doc|docx)$/)) {
-      return <FileText className={`${iconSize} text-blue-600`} />;
+      return <FileText className={`${iconSize} text-primary-600`} />;
     }
 
     // Archive files

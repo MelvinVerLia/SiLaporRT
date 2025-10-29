@@ -285,7 +285,7 @@ const LocationPicker: React.FC<LocationPickerProps> = ({
             ref={autocompleteInputRef}
             type="text"
             placeholder="Cari lokasi..."
-            className="w-full p-3 border border-gray-300 rounded-lg mb-4 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            className="w-full p-3 border border-gray-300 rounded-lg mb-4 focus:ring-2 focus:ring-primary-500 focus:border-transparent"
           />
         </Autocomplete>
 
@@ -303,8 +303,8 @@ const LocationPicker: React.FC<LocationPickerProps> = ({
       {/* Action Buttons */}
       <div className="space-y-4">
         {!isFromMap && (
-          <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
-            <p className="text-sm text-blue-800">
+          <div className="p-4 bg-primary-50 border border-primary-100 rounded-lg">
+            <p className="text-sm text-primary-700">
               💡 Pilih lokasi dari peta untuk melanjutkan
             </p>
           </div>

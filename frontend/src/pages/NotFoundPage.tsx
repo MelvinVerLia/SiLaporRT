@@ -22,7 +22,7 @@ const NotFoundPage: React.FC = () => {
 
             {/* Error Message */}
             <div className="mb-8">
-              <h1 className="text-2xl font-bold text-gray-900 mb-3">
+              <h1 className="text-2xl font-bold text-primary-600 mb-3">
                 Halaman Tidak Ditemukan
               </h1>
               <p className="text-gray-600 leading-relaxed">

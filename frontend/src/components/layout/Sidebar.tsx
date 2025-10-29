@@ -143,18 +143,18 @@ const Sidebar: React.FC<SidebarProps> = ({ className }) => {
         <div className="flex items-center justify-between h-16 px-4 border-b border-gray-200">
           <Link
             to="/admin"
-            className="flex items-center space-x-2 text-xl font-bold text-blue-600 hover:text-blue-700 transition-colors"
+            className="flex items-center space-x-2 text-xl font-bold text-primary-600 hover:text-primary-700 transition-colors"
           >
-            <img src="/assets/logo.png" alt="Logo" className="h-8 w-8" />
+            <img src="/assets/logo.webp" alt="Logo" className="h-8 w-8" />
             <span>
-              SiLapor<span className="text-blue-950">RT</span>
+              SiLapor<span className="text-primary-700">RT</span>
             </span>
           </Link>
         </div>
 
         {/* Admin Badge */}
-        <div className="px-4 py-3 bg-blue-50 border-b border-gray-200">
-          <div className="text-xs font-medium text-blue-600 uppercase tracking-wide">
+        <div className="px-4 py-3 bg-primary-50 border-b border-gray-200">
+          <div className="text-xs font-medium text-primary-600 uppercase tracking-wide">
             Admin Panel
           </div>
           <div className="text-sm text-gray-600 mt-1">RT Administrator</div>
@@ -178,7 +178,7 @@ const Sidebar: React.FC<SidebarProps> = ({ className }) => {
                     className={cn(
                       "flex w-full items-center justify-between rounded-md px-3 py-2.5 text-sm font-medium transition-all duration-200",
                       isParentItemActive
-                        ? "bg-blue-100 text-blue-700"
+                        ? "bg-primary-100 text-primary-700"
                         : "text-gray-600 hover:bg-gray-100 hover:text-gray-900"
                     )}
                   >
@@ -199,7 +199,7 @@ const Sidebar: React.FC<SidebarProps> = ({ className }) => {
                     className={cn(
                       "flex items-center space-x-3 rounded-md px-3 py-2.5 text-sm font-medium transition-all duration-200",
                       isActive
-                        ? "bg-blue-100 text-blue-700"
+                        ? "bg-primary-100 text-primary-700"
                         : "text-gray-600 hover:bg-gray-100 hover:text-gray-900"
                     )}
                   >
@@ -223,7 +223,7 @@ const Sidebar: React.FC<SidebarProps> = ({ className }) => {
                           className={cn(
                             "flex items-center space-x-3 rounded-md px-3 py-2 text-sm transition-all duration-200",
                             isSubActive
-                              ? "bg-blue-50 text-blue-700 font-medium"
+                              ? "bg-primary-50 text-primary-700 font-medium"
                               : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"
                           )}
                         >
@@ -253,7 +253,7 @@ const Sidebar: React.FC<SidebarProps> = ({ className }) => {
             className={cn(
               "flex items-center space-x-3 rounded-md px-3 py-2.5 text-sm font-medium transition-colors",
               isActivePath("/admin/profile")
-                ? "bg-blue-100 text-blue-700"
+                ? "bg-primary-100 text-primary-700"
                 : "text-gray-600 hover:bg-gray-100 hover:text-gray-900"
             )}
           >
@@ -264,7 +264,7 @@ const Sidebar: React.FC<SidebarProps> = ({ className }) => {
           {/* User Info */}
           {user && (
             <div className="flex items-center space-x-3 px-3 py-2 bg-gray-50 rounded-md">
-              <div className="flex h-8 w-8 items-center justify-center rounded-full bg-blue-100 text-sm font-medium text-blue-600 overflow-hidden flex-shrink-0">
+              <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary-100 text-sm font-medium text-primary-600 overflow-hidden flex-shrink-0">
                 {user?.profile ? (
                   <img
                     src={user?.profile}

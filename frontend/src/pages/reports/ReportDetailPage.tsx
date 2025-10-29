@@ -395,7 +395,7 @@ const ReportDetailPage: React.FC = () => {
                       onClick={handleUpvoteClick}
                       className={`flex items-center transition-all duration-200 ${
                         hasUpvoted
-                          ? "bg-blue-600 text-white hover:bg-blue-700"
+                          ? "bg-primary-600 text-white hover:bg-primary-700"
                           : ""
                       } ${
                         handleUpvote.isPending
@@ -495,7 +495,7 @@ const ReportDetailPage: React.FC = () => {
                   {report.responses.map((response: Response) => (
                     <div
                       key={response.id}
-                      className="bg-blue-50 border border-blue-200 rounded-lg p-4"
+                      className="bg-primary-50 border border-primary-100 rounded-lg p-4"
                     >
                       <div className="flex items-start justify-between mb-2">
                         <div className="flex items-center">
@@ -607,7 +607,7 @@ const ReportDetailPage: React.FC = () => {
                       <div
                         className={`w-8 h-8 rounded-full overflow-hidden flex items-center justify-center text-sm font-medium ${
                           comment.user.role === "RT_ADMIN"
-                            ? "bg-blue-600 text-white"
+                            ? "bg-primary-600 text-white"
                             : "bg-gray-200 text-gray-600"
                         }`}
                       >
@@ -736,7 +736,7 @@ const ReportDetailPage: React.FC = () => {
                   <select
                     value={selectedStatus || report.status}
                     onChange={(e) => handleStatusChange(e.target.value)}
-                    className="w-full text-sm border border-gray-300 rounded px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    className="w-full text-sm border border-gray-300 rounded px-3 py-2 focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
                     disabled={updateStatusMutation.isPending}
                   >
                     <option value="PENDING">Menunggu</option>

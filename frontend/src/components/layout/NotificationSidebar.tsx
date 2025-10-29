@@ -50,7 +50,7 @@ export default function NotificationSidebar({
     switch (category) {
       case "REPORT":
         return tabvalue === "unread" ? (
-          <div className="flex items-center justify-center w-12 h-12 rounded-full bg-blue-100 text-blue-600">
+          <div className="flex items-center justify-center w-12 h-12 rounded-full bg-primary-100 text-primary-600">
             <FileText className="w-6 h-6" />
           </div>
         ) : tabvalue === "read" ? (
@@ -64,7 +64,7 @@ export default function NotificationSidebar({
         );
       case "ANNOUNCEMENT":
         return tabvalue === "unread" ? (
-          <div className="flex items-center justify-center w-12 h-12 rounded-full bg-blue-100 text-blue-600">
+          <div className="flex items-center justify-center w-12 h-12 rounded-full bg-primary-100 text-primary-600">
             <Paperclip className="w-6 h-6" />
           </div>
         ) : tabvalue === "read" ? (
@@ -124,7 +124,7 @@ export default function NotificationSidebar({
               <TabsList>
                 <TabsTrigger value="unread">
                   Belum Dibaca
-                  <span className="ml-2 text-xs bg-blue-100 text-blue-700 rounded-full px-2 py-0.5">
+                  <span className="ml-2 text-xs bg-primary-100 text-primary-700 rounded-full px-2 py-0.5">
                     {unreadNotificationCount}
                   </span>
                 </TabsTrigger>

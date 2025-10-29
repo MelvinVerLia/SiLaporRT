@@ -12,7 +12,8 @@ const OTPVerificationForm: React.FC = () => {
   const [canResend, setCanResend] = useState(false);
   const [isResending, setIsResending] = useState(false);
   const navigate = useNavigate();
-  const { register, resendOTP, isLoading, error, clearError } = useAuthContext();
+  const { register, resendOTP, isLoading, error, clearError } =
+    useAuthContext();
   const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
   const toast = useToast();
 
@@ -135,17 +136,17 @@ const OTPVerificationForm: React.FC = () => {
   // if (!email) return null;
 
   return (
-    <div className="min-h-screen bg-gradient-to-l from-blue-200 to-white flex flex-col justify-center py-12 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-gradient-to-l from-primary-100 to-white flex flex-col justify-center py-12 px-4 sm:px-6 lg:px-8">
       <Card className="max-w-md w-full mx-auto shadow-xl border-0 bg-white/80 backdrop-blur-sm rounded-xl">
         {/* Logo */}
         <div className="absolute top-4 left-8">
           <Link
             to="/"
-            className="flex items-center space-x-2 text-lg font-bold text-blue-600 hover:text-blue-700 transition-colors"
+            className="flex items-center space-x-2 text-lg font-bold text-primary-600 hover:text-primary-700 transition-colors"
           >
-            <img src="/assets/logo.png" alt="Logo" className="h-8 w-8" />
+            <img src="/assets/logo.webp" alt="Logo" className="h-8 w-8" />
             <span className="text-xl">
-              SiLapor<span className="text-blue-950">RT</span>
+              SiLapor<span className="text-primary-700">RT</span>
             </span>
           </Link>
         </div>
@@ -164,8 +165,8 @@ const OTPVerificationForm: React.FC = () => {
 
           {/* Header */}
           <div className="text-center mb-8">
-            <div className="mx-auto w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mb-4">
-              <Mail className="h-8 w-8 text-blue-600" />
+            <div className="mx-auto w-16 h-16 bg-primary-100 rounded-full flex items-center justify-center mb-4">
+              <Mail className="h-8 w-8 text-primary-600" />
             </div>
 
             <CardTitle className="text-2xl font-bold text-gray-900 mb-2">
@@ -208,7 +209,7 @@ const OTPVerificationForm: React.FC = () => {
                     value={digit}
                     onChange={(e) => handleOTPChange(index, e.target.value)}
                     onKeyDown={(e) => handleKeyDown(index, e)}
-                    className="w-12 h-12 text-center text-lg font-semibold border border-gray-300 rounded-lg focus:border-blue-500 focus:ring-2 focus:ring-blue-500 focus:ring-offset-0 transition-all duration-200"
+                    className="w-12 h-12 text-center text-lg font-semibold border border-gray-300 rounded-lg focus:border-primary-500 focus:ring-2 focus:ring-primary-500 focus:ring-offset-0 transition-all duration-200"
                     disabled={isLoading}
                   />
                 ))}
@@ -226,7 +227,7 @@ const OTPVerificationForm: React.FC = () => {
             {/* Submit Button */}
             {/* <Button
               type="submit"
-              className="w-full bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 transform hover:scale-[1.02] transition-all duration-200 shadow-lg"
+              className="w-full bg-gradient-to-r from-primary-600 to-primary-700 hover:from-primary-700 hover:to-primary-700 transform hover:scale-[1.02] transition-all duration-200 shadow-lg"
               loading={isLoading}
               disabled={otp.some((digit) => !digit) || isLoading}
             >
@@ -253,7 +254,7 @@ const OTPVerificationForm: React.FC = () => {
                     onClick={handleResendOTP}
                     disabled={!canResend || isResending}
                     loading={isResending}
-                    className="text-blue-600 hover:text-blue-700"
+                    className="text-primary-600 hover:text-primary-700"
                   >
                     <RefreshCw className="mr-2 h-4 w-4" />
                     {isResending ? "Mengirim..." : "Kirim Ulang Kode"}
@@ -271,7 +272,7 @@ const OTPVerificationForm: React.FC = () => {
                 Ingin menggunakan email lain?{" "}
                 <Link
                   to="/register"
-                  className="text-blue-600 hover:text-blue-700 font-medium"
+                  className="text-primary-600 hover:text-primary-700 font-medium"
                 >
                   Daftar ulang
                 </Link>

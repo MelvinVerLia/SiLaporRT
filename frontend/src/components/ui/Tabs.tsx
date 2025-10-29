@@ -67,7 +67,7 @@ const TabsTrigger: React.FC<{ value: string; children: React.ReactNode }> = ({
       className={cn(
         "pb-4 px-1 border-b-2 font-medium text-sm transition-colors cursor-pointer",
         active
-          ? "border-blue-500 text-blue-600"
+          ? "border-primary-500 text-primary-600"
           : "border-transparent text-gray-600 hover:text-gray-900"
       )}
     >

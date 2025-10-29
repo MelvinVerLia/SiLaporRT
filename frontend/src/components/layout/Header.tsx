@@ -139,13 +139,13 @@ const Header: React.FC = () => {
     switch (category) {
       case "REPORT":
         return (
-          <div className="flex items-center justify-center w-12 h-12 rounded-full bg-blue-100 text-blue-600">
+          <div className="flex items-center justify-center w-12 h-12 rounded-full bg-primary-100 text-primary-600">
             <FileText className="w-6 h-6" />
           </div>
         );
       case "ANNOUNCEMENT":
         return (
-          <div className="flex items-center justify-center w-12 h-12 rounded-full bg-blue-100 text-blue-600">
+          <div className="flex items-center justify-center w-12 h-12 rounded-full bg-primary-100 text-primary-600">
             <Paperclip className="w-6 h-6" />
           </div>
         );
@@ -212,17 +212,17 @@ const Header: React.FC = () => {
   ];
 
   return (
-    <header className="sticky top-0 z-50 w-full border-b border-gray-200 bg-white shadow-sm">
+    <header className="sticky top-0 z-50 w-full bg-white shadow-sm">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="flex h-16 items-center justify-between">
           <div className="flex items-center space-x-4">
             <Link
               to="/"
-              className="flex items-center space-x-2 text-xl font-bold text-blue-600 hover:text-blue-700 transition-colors"
+              className="flex items-center space-x-2 text-xl font-bold text-primary-500 hover:text-primary-700 transition-colors"
             >
-              <img src="/assets/logo.png" alt="Logo" className="h-8 w-8" />
+              <img src="/assets/logo.webp" alt="Logo" className="h-8 w-8" />
               <span>
-                SiLapor<span className="text-blue-950">RT</span>
+                SiLapor<span className="text-primary-700">RT</span>
               </span>
             </Link>
           </div>
@@ -240,7 +240,7 @@ const Header: React.FC = () => {
                     className={cn(
                       "flex items-center space-x-2 rounded-md px-3 py-2 text-sm font-medium transition-all duration-200",
                       isActive
-                        ? "bg-blue-100 text-blue-700"
+                        ? "bg-primary-100 text-primary-700"
                         : "text-gray-600 hover:bg-gray-100 hover:text-gray-900"
                     )}
                   >
@@ -292,7 +292,7 @@ const Header: React.FC = () => {
                       </div>
                       {unreadNotificationsCount > 0 && (
                         <div
-                          className="flex gap-1 hover:cursor-pointer text-blue-600 hover:text-blue-800"
+                          className="flex gap-1 hover:cursor-pointer text-primary-600 hover:text-primary-700"
                           onClick={markAllAsRead}
                         >
                           <EyeIcon className=" w-5 h-5" />
@@ -333,7 +333,7 @@ const Header: React.FC = () => {
                     </div>
 
                     <button
-                      className="flex items-center justify-center gap-1 text-xs text-blue-600 hover:text-blue-800 py-2 w-full border-t border-gray-200 transition-colors hover:cursor-pointer"
+                      className="flex items-center justify-center gap-1 text-xs text-primary-600 hover:text-primary-700 py-2 w-full border-t border-gray-200 transition-colors hover:cursor-pointer"
                       onClick={() => setNotificationSidebar(true)}
                     >
                       <ChevronDown className="w-4 h-4" />
@@ -361,7 +361,7 @@ const Header: React.FC = () => {
                   disabled={isLoggingOut}
                   className="flex items-center space-x-3 rounded-md px-3 py-2 text-sm hover:bg-gray-50 transition-colors hover:cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  <div className="flex h-8 w-8 items-center justify-center rounded-full bg-blue-100 text-sm font-medium text-blue-600 overflow-hidden">
+                  <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary-100 text-sm font-medium text-primary-600 overflow-hidden">
                     {user?.profile ? (
                       <img
                         src={user?.profile}
@@ -395,7 +395,7 @@ const Header: React.FC = () => {
                       {/* User Info Header */}
                       <div className="px-4 py-3 border-b border-gray-100">
                         <div className="flex items-center space-x-3">
-                          <div className="flex h-10 w-10 items-center justify-center rounded-full bg-blue-100 text-sm font-medium text-blue-600 overflow-hidden">
+                          <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary-100 text-sm font-medium text-primary-600 overflow-hidden">
                             {user?.profile ? (
                               <img
                                 src={user?.profile}
@@ -516,7 +516,7 @@ const Header: React.FC = () => {
                     className={cn(
                       "flex items-center space-x-3 rounded-md px-3 py-2 text-base font-medium transition-colors",
                       isActive
-                        ? "bg-blue-100 text-blue-700"
+                        ? "bg-primary-100 text-primary-700"
                         : "text-gray-600 hover:bg-gray-100 hover:text-gray-900"
                     )}
                   >
@@ -549,7 +549,7 @@ const Header: React.FC = () => {
               <div className="space-y-2">
                 {/* User Info */}
                 <div className="flex items-center space-x-3 px-3 py-3 bg-gray-50 rounded-md">
-                  <div className="flex h-12 w-12 items-center justify-center rounded-full bg-blue-100 text-base font-medium text-blue-600 overflow-hidden">
+                  <div className="flex h-12 w-12 items-center justify-center rounded-full bg-primary-100 text-base font-medium text-primary-600 overflow-hidden">
                     {user?.profile ? (
                       <img
                         src={user?.profile}
@@ -620,7 +620,7 @@ const Header: React.FC = () => {
                 <Link
                   to="/register"
                   onClick={closeMobileMenu}
-                  className="flex items-center space-x-3 rounded-md px-3 py-2 text-base font-medium text-blue-600 hover:bg-blue-50 transition-colors"
+                  className="flex items-center space-x-3 rounded-md px-3 py-2 text-base font-medium text-primary-600 hover:bg-primary-50 transition-colors"
                 >
                   <User className="h-5 w-5" />
                   <span>Daftar</span>

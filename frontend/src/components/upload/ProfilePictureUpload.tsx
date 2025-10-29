@@ -86,7 +86,7 @@ const ProfilePictureUpload = React.forwardRef<ProfilePictureUploadRef, Props>(
       <div className={`flex flex-col items-center ${className || ""}`}>
         <div className="relative">
           <div
-            className={`mx-auto w-32 h-32 bg-gradient-to-br relative from-blue-500 to-blue-600 rounded-full flex items-center justify-center text-white text-3xl font-bold mb-4 overflow-hidden ${
+            className={`mx-auto w-32 h-32 bg-gradient-to-br relative from-primary-500 to-primary-600 rounded-full flex items-center justify-center text-white text-3xl font-bold mb-4 overflow-hidden ${
               editable && !isUploading ? "cursor-pointer" : "cursor-default"
             } ${isUploading ? "opacity-75" : ""}`}
             onClick={() =>

@@ -339,7 +339,7 @@ export default function AdminAnnouncementForm({ initial, onSuccess }: Props) {
         </div>
       )}
       {(willBeHidden || notYetLive) && (
-        <div className="flex items-start gap-2 rounded-md border border-blue-200 bg-blue-50 p-3 text-sm text-blue-800">
+        <div className="flex items-start gap-2 rounded-md border border-primary-100 bg-primary-50 p-3 text-sm text-primary-700">
           <Calendar className="mt-0.5 h-4 w-4 shrink-0" />
           <div>
             {notYetLive && (
@@ -419,7 +419,7 @@ export default function AdminAnnouncementForm({ initial, onSuccess }: Props) {
               </label>
               <input
                 type="datetime-local"
-                className="flex h-10 w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm placeholder:text-gray-400 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-0"
+                className="flex h-10 w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm placeholder:text-gray-400 focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-0"
                 value={publishAt}
                 onChange={(e) => setPublishAt(e.target.value)}
               />
@@ -434,7 +434,7 @@ export default function AdminAnnouncementForm({ initial, onSuccess }: Props) {
               </label>
               <input
                 type="datetime-local"
-                className="flex h-10 w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm placeholder:text-gray-400 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-0"
+                className="flex h-10 w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm placeholder:text-gray-400 focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-0"
                 value={expireAt}
                 onChange={(e) => setExpireAt(e.target.value)}
               />

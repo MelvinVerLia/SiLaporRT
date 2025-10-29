@@ -14,7 +14,7 @@ const AdminLayout: React.FC = () => {
   }, [pathname]);
 
   return (
-    <div className="flex h-screen bg-gray-50 overflow-hidden">
+    <div className="flex h-screen bg-amber-50 overflow-hidden">
       {/* Sidebar */}
       <Sidebar />
 
