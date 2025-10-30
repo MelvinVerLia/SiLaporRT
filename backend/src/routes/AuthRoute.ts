@@ -34,5 +34,6 @@ router.get("/profile", authenticateJWT, AuthController.getProfile);
 router.delete("/delete-account", authenticateJWT, AuthController.deleteAccount);
 router.put("/update/profile", authenticateJWT, AuthController.updateProfile);
 router.put("/change-password", authenticateJWT, AuthController.changePassword);
+router.get("/all-users", authenticateJWT, AuthController.getAllUsers);
 
 export default router;

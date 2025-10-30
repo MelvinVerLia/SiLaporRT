@@ -328,4 +328,9 @@ export class AuthService {
 
     return true;
   }
+
+  static async getAllUsers() {
+    const users = await AuthRepository.getAllUsers();
+    return users;
+  }
 }

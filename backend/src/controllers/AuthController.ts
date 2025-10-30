@@ -391,4 +391,21 @@ export class AuthController {
         .json({ success: false, message: "Invalid refresh token" });
     }
   }
+
+  static async getAllUsers(req: Request, res: Response) {
+    try {
+      const users = await AuthService.getAllUsers();
+      return res.status(200).json({
+        success: true,
+        message: "All users retrieved successfully",
+        data: users,
+      });
+    } catch (error) {
+      return res.status(500).json({
+        success: false,
+        message:
+          error instanceof Error ? error.message : "Failed to fetch all users",
+      });
+    }
+  }
 }

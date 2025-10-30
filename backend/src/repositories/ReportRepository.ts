@@ -4,7 +4,6 @@ import { CreateReportData } from "../types/reportTypes";
 
 const visibleWhere = (includePrivate: boolean = false) => {
   if (includePrivate) {
-    // Admin can see all reports (both public and private)
     return {};
   }
   return {
@@ -88,11 +87,8 @@ class ReportRepository {
     dateTo,
   }: any) {
     try {
-      // If userId is provided, user should see all their own reports (public and private)
-      // Otherwise, apply visibility filter
       const where: any = userId ? {} : { ...visibleWhere(includePrivate) };
 
-      // Handle specific isPublic filter (for admin filtering)
       if (isPublic === "true" || isPublic === true) {
         where.isPublic = true;
       } else if (isPublic === "false" || isPublic === false) {
@@ -110,14 +106,12 @@ class ReportRepository {
       if (priority) where.priority = priority;
       if (status) where.status = status;
 
-      // Add date range filter
       if (dateFrom || dateTo) {
         where.createdAt = {};
         if (dateFrom) {
           where.createdAt.gte = new Date(dateFrom);
         }
         if (dateTo) {
-          // Set to end of day for dateTo
           const endDate = new Date(dateTo);
           endDate.setHours(23, 59, 59, 999);
           where.createdAt.lte = endDate;
@@ -242,7 +236,6 @@ class ReportRepository {
   static async toggleUpvote(reportId: string, userId: string) {
     try {
       return await prisma.$transaction(async (tx) => {
-        // Check if upvote already exists
         const existing = await tx.reportUpvote.findUnique({
           where: {
             reportId_userId: {
@@ -253,12 +246,10 @@ class ReportRepository {
         });
 
         if (existing) {
-          // Remove upvote
           await tx.reportUpvote.delete({
             where: { id: existing.id },
           });
 
-          // Decrement cached count
           await tx.report.update({
             where: { id: reportId },
             data: {
@@ -270,7 +261,6 @@ class ReportRepository {
 
           return { upvoted: false, message: "Upvote removed" };
         } else {
-          // Add upvote
           await tx.reportUpvote.create({
             data: { reportId, userId },
             include: {
@@ -278,7 +268,6 @@ class ReportRepository {
             },
           });
 
-          // Increment cached count
           await tx.report.update({
             where: { id: reportId },
             data: {
@@ -315,14 +304,14 @@ class ReportRepository {
     reportId: string,
     responderId: string,
     message: string,
-    attachments?: string[] 
+    attachments?: string[]
   ) {
     try {
       return await prisma.$transaction(async (tx) => {
         const response = await tx.response.create({
           data: {
             reportId,
-            responderId, 
+            responderId,
             message,
             ...(attachments &&
               attachments.length > 0 && {
@@ -330,7 +319,7 @@ class ReportRepository {
                   create: attachments.map((attachment) => ({
                     filename: attachment,
                     url: attachment,
-                    fileType: "image", 
+                    fileType: "image",
                   })),
                 },
               }),
@@ -342,15 +331,15 @@ class ReportRepository {
               select: {
                 userId: true,
                 title: true,
-              }
-            }
+              },
+            },
           },
         });
 
         await tx.report.update({
           where: { id: reportId },
           data: {
-            status: ReportStatus.IN_PROGRESS, 
+            status: ReportStatus.IN_PROGRESS,
           },
         });
 
@@ -394,24 +383,6 @@ class ReportRepository {
     }
   }
 
-  // static async getReportsByLocation(rt: string, rw: string) {
-  //   return await prisma.report.findMany({
-  //     where: {
-  //       location: {
-  //         rt,
-  //         rw,
-  //       },
-  //       isPublic: true,
-  //     },
-  //     include: {
-  //       location: true,
-  //       user: { select: { name: true, role: true } },
-  //       _count: { select: { reportUpvotes: true, reportComments: true } },
-  //     },
-  //     orderBy: { createdAt: "desc" },
-  //   });
-  // }
-
   static async getUserUpvoteStatus(reportId: string, userId: string) {
     try {
       const upvote = await prisma.reportUpvote.findUnique({
@@ -450,7 +421,6 @@ class ReportRepository {
 
   static async deleteReport(reportId: string, userId: string) {
     try {
-      // First verify the report belongs to the user
       const report = await prisma.report.findFirst({
         where: { id: reportId, userId: userId },
       });
@@ -459,7 +429,6 @@ class ReportRepository {
         throw new Error("Report not found or unauthorized");
       }
 
-      // Delete the report (this will cascade to related records)
       const deletedReport = await prisma.report.delete({
         where: { id: reportId },
       });
@@ -472,7 +441,6 @@ class ReportRepository {
 
   static async toggleVisibility(reportId: string, userId: string) {
     try {
-      // First verify the report belongs to the user
       const report = await prisma.report.findFirst({
         where: { id: reportId, userId: userId },
       });
@@ -481,7 +449,6 @@ class ReportRepository {
         throw new Error("Report not found or unauthorized");
       }
 
-      // Toggle the visibility
       const updatedReport = await prisma.report.update({
         where: { id: reportId },
         data: { isPublic: !report.isPublic },
@@ -517,6 +484,24 @@ class ReportRepository {
         inProgress,
         resolved,
         rejected,
+      };
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  static async getAllReportsStatistics() {
+    try {
+      const [total, finished, progress] = await prisma.$transaction([
+        prisma.report.count(),
+        prisma.report.count({ where: { status: "RESOLVED" } }),
+        prisma.report.count({ where: { status: "IN_PROGRESS" } }),
+      ]);
+
+      return {
+        total,
+        finished,
+        progress,
       };
     } catch (error) {
       throw error;

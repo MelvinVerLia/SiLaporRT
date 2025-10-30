@@ -83,7 +83,7 @@ export async function createReport(
         return {
           filename: file.original_filename || "file",
           url: file.secure_url,
-          fileType: extendedFile.fileType || classifyFile(file), 
+          fileType: extendedFile.fileType || classifyFile(file),
           provider: "cloudinary",
           publicId: file.public_id,
           resourceType: file.resource_type,
@@ -95,7 +95,7 @@ export async function createReport(
       }),
     };
 
-    console.log("Sending JSON payload with cloudinary attachments"); 
+    console.log("Sending JSON payload with cloudinary attachments");
 
     const res = await request("/reports/add", {
       method: "POST",
@@ -184,10 +184,10 @@ export async function getUserReportStatistics() {
   return res.data;
 }
 
-// export async function getRecentReports(search: string, category: string, status:string) {
-//   const res = await request("/reports/get-recent", { method: "GET" });
-//   return res.data;
-// }
+export async function getAllReportsStatistic() {
+  const res = await request("/reports/all-reports/stats", { method: "GET" });
+  return res.data;
+}
 
 // Dashboard Statistics Interface and Functions
 export interface DashboardStats {
@@ -207,14 +207,18 @@ export interface DashboardStats {
 export async function getReportsByStatus(status: string): Promise<Report[]> {
   try {
     const res = await request(`/reports/status/${status}`, {
-      method: "GET"
+      method: "GET",
     });
-       
+
     const statusData = res.data;
     if (statusData && statusData.reports && Array.isArray(statusData.reports)) {
       return statusData.reports;
     } else {
-      console.warn('Unexpected API response structure for status:', status, res);
+      console.warn(
+        "Unexpected API response structure for status:",
+        status,
+        res
+      );
       return [];
     }
   } catch (error) {
@@ -224,20 +228,32 @@ export async function getReportsByStatus(status: string): Promise<Report[]> {
 }
 
 // Get reports by category
-export async function getReportsByCategory(category: string): Promise<Report[]> {
+export async function getReportsByCategory(
+  category: string
+): Promise<Report[]> {
   try {
     console.log(`🔄 Fetching reports for category: ${category}`);
-    
+
     const res = await request(`/reports/category/${category}`, {
-      method: "GET"
+      method: "GET",
     });
-    
+
     const categoryData = res.data;
-    if (categoryData && categoryData.reports && Array.isArray(categoryData.reports)) {
-      console.log(`✅ Found ${categoryData.reports.length} reports for category ${category}`);
+    if (
+      categoryData &&
+      categoryData.reports &&
+      Array.isArray(categoryData.reports)
+    ) {
+      console.log(
+        `✅ Found ${categoryData.reports.length} reports for category ${category}`
+      );
       return categoryData.reports;
     } else {
-      console.warn('⚠️ Unexpected API response structure for category:', category, res);
+      console.warn(
+        "⚠️ Unexpected API response structure for category:",
+        category,
+        res
+      );
       return [];
     }
   } catch (error) {
@@ -246,17 +262,27 @@ export async function getReportsByCategory(category: string): Promise<Report[]> 
   }
 }
 
-export async function getDashboardStats(daysBack?: number): Promise<DashboardStats> {
+export async function getDashboardStats(
+  daysBack?: number
+): Promise<DashboardStats> {
   try {
-    console.log('🚀 Starting dashboard stats calculation...');
-    console.log('📅 Time period filter:', daysBack ? `${daysBack} days` : 'All time');
-    
+    console.log("🚀 Starting dashboard stats calculation...");
+    console.log(
+      "📅 Time period filter:",
+      daysBack ? `${daysBack} days` : "All time"
+    );
+
     // Fetch status data (exclude CLOSED reports)
-    const [pendingReports, inProgressReports, resolvedReports, rejectedReports] = await Promise.all([
-      getReportsByStatus('PENDING'),
-      getReportsByStatus('IN_PROGRESS'),
-      getReportsByStatus('RESOLVED'),
-      getReportsByStatus('REJECTED')
+    const [
+      pendingReports,
+      inProgressReports,
+      resolvedReports,
+      rejectedReports,
+    ] = await Promise.all([
+      getReportsByStatus("PENDING"),
+      getReportsByStatus("IN_PROGRESS"),
+      getReportsByStatus("RESOLVED"),
+      getReportsByStatus("REJECTED"),
       // Note: CLOSED reports are intentionally excluded from dashboard stats
     ]);
 
@@ -269,59 +295,93 @@ export async function getDashboardStats(daysBack?: number): Promise<DashboardSta
     if (daysBack) {
       const cutoffDate = new Date();
       cutoffDate.setDate(cutoffDate.getDate() - daysBack);
-      console.log('📅 Filtering reports after:', cutoffDate.toISOString());
+      console.log("📅 Filtering reports after:", cutoffDate.toISOString());
 
-      filteredPending = pendingReports.filter(r => new Date(r.createdAt) >= cutoffDate);
-      filteredInProgress = inProgressReports.filter(r => new Date(r.createdAt) >= cutoffDate);
-      filteredResolved = resolvedReports.filter(r => new Date(r.createdAt) >= cutoffDate);
-      filteredRejected = rejectedReports.filter(r => new Date(r.createdAt) >= cutoffDate);
+      filteredPending = pendingReports.filter(
+        (r) => new Date(r.createdAt) >= cutoffDate
+      );
+      filteredInProgress = inProgressReports.filter(
+        (r) => new Date(r.createdAt) >= cutoffDate
+      );
+      filteredResolved = resolvedReports.filter(
+        (r) => new Date(r.createdAt) >= cutoffDate
+      );
+      filteredRejected = rejectedReports.filter(
+        (r) => new Date(r.createdAt) >= cutoffDate
+      );
     }
 
-    console.log('📊 Status data fetched (excluding CLOSED):');
-    console.log('- Pending:', filteredPending.length);
-    console.log('- In Progress:', filteredInProgress.length);
-    console.log('- Resolved:', filteredResolved.length);
-    console.log('- Rejected:', filteredRejected.length);
-    
-    // Combine all active reports (non-CLOSED) for category calculation
-    const allActiveReports = [...filteredPending, ...filteredInProgress, ...filteredResolved, ...filteredRejected];
-    
-    // Calculate category stats from active reports only (ignore CLOSED status)
-    const categoryCount = allActiveReports.reduce((acc: Record<string, number>, report: Report) => {
-      if (report && report.category) {
-        acc[report.category] = (acc[report.category] || 0) + 1;
-      }
-      return acc;
-    }, {});
+    console.log("📊 Status data fetched (excluding CLOSED):");
+    console.log("- Pending:", filteredPending.length);
+    console.log("- In Progress:", filteredInProgress.length);
+    console.log("- Resolved:", filteredResolved.length);
+    console.log("- Rejected:", filteredRejected.length);
 
-    const statusSum = filteredPending.length + filteredInProgress.length + filteredResolved.length + filteredRejected.length;
+    // Combine all active reports (non-CLOSED) for category calculation
+    const allActiveReports = [
+      ...filteredPending,
+      ...filteredInProgress,
+      ...filteredResolved,
+      ...filteredRejected,
+    ];
+
+    // Calculate category stats from active reports only (ignore CLOSED status)
+    const categoryCount = allActiveReports.reduce(
+      (acc: Record<string, number>, report: Report) => {
+        if (report && report.category) {
+          acc[report.category] = (acc[report.category] || 0) + 1;
+        }
+        return acc;
+      },
+      {}
+    );
+
+    const statusSum =
+      filteredPending.length +
+      filteredInProgress.length +
+      filteredResolved.length +
+      filteredRejected.length;
     const totalReports = statusSum; // Use status sum as authoritative total
-    
-    console.log('✅ Using total reports (excluding CLOSED):', totalReports);
+
+    console.log("✅ Using total reports (excluding CLOSED):", totalReports);
 
     // Create category stats showing ALL categories (even if count is 0)
-    const allCategories = ['INFRASTRUCTURE', 'CLEANLINESS', 'LIGHTING', 'SECURITY', 'UTILITIES', 'ENVIRONMENT', 'SUGGESTION', 'OTHER'];
-    
-    const categoryStats = allCategories.map(category => {
-      const count = categoryCount[category] || 0;
-      return {
-        category,
-        count,
-        percentage: totalReports > 0 ? Math.round((count / totalReports) * 100) : 0
-      };
-    }).filter(item => item.count > 0); // Only show categories that have reports
+    const allCategories = [
+      "INFRASTRUCTURE",
+      "CLEANLINESS",
+      "LIGHTING",
+      "SECURITY",
+      "UTILITIES",
+      "ENVIRONMENT",
+      "SUGGESTION",
+      "OTHER",
+    ];
+
+    const categoryStats = allCategories
+      .map((category) => {
+        const count = categoryCount[category] || 0;
+        return {
+          category,
+          count,
+          percentage:
+            totalReports > 0 ? Math.round((count / totalReports) * 100) : 0,
+        };
+      })
+      .filter((item) => item.count > 0); // Only show categories that have reports
 
     // Get unique users from all active reports
-    console.log('👥 Calculating active users...');
-    
+    console.log("👥 Calculating active users...");
+
     // Filter reports that have user data (non-anonymous reports)
-    const reportsWithUsers = allActiveReports.filter(r => r && r.user && r.user.id);
-    console.log('- Reports with user data:', reportsWithUsers.length);
-    
+    const reportsWithUsers = allActiveReports.filter(
+      (r) => r && r.user && r.user.id
+    );
+    console.log("- Reports with user data:", reportsWithUsers.length);
+
     // Extract unique user IDs
-    const userIds = reportsWithUsers.map(r => r.user!.id);
+    const userIds = reportsWithUsers.map((r) => r.user!.id);
     const uniqueUsers = new Set(userIds);
-    console.log('- Active users count:', uniqueUsers.size);
+    console.log("- Active users count:", uniqueUsers.size);
 
     const stats: DashboardStats = {
       totalReports,
@@ -330,15 +390,14 @@ export async function getDashboardStats(daysBack?: number): Promise<DashboardSta
       resolvedReports: filteredResolved.length,
       rejectedReports: filteredRejected.length,
       activeUsers: uniqueUsers.size,
-      categoryStats
+      categoryStats,
     };
 
-    console.log('🎯 Final dashboard stats (CLOSED reports excluded):', stats);
-    
-    return stats;
+    console.log("🎯 Final dashboard stats (CLOSED reports excluded):", stats);
 
+    return stats;
   } catch (error) {
-    console.error('❌ Error calculating dashboard stats:', error);
+    console.error("❌ Error calculating dashboard stats:", error);
     throw error;
   }
 }

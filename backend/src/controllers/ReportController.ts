@@ -380,6 +380,22 @@ class ReportController {
       });
     }
   }
+
+  static async getAllReportsStatistics(req: Request, res: Response) {
+    try {
+      const stats = await ReportService.getAllReportsStatistics();
+      res.json({
+        success: true,
+        message: "All reports statistics retrieved successfully",
+        data: stats,
+      });
+    } catch (error: any) {
+      res.status(500).json({
+        success: false,
+        message: error.message || "Failed to fetch all reports statistics",
+      });
+    }
+  }
 }
 
 export default ReportController;

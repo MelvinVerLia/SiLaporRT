@@ -115,3 +115,8 @@ export async function markNotificationAsReadAll() {
   const res = await request("/notification/read-all", { method: "PUT" });
   return res;
 }
+
+export async function getAllUsers(){
+  const res = await request("/auth/all-users", { method: "GET" });
+  return res;
+}

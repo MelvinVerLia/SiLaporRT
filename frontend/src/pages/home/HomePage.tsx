@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import {
   FileText,
@@ -15,20 +15,28 @@ import {
   CardTitle,
 } from "../../components/ui/Card";
 import Button from "../../components/ui/Button";
-import { getRecentReports } from "../../services/reportService";
+import {
+  getRecentReports,
+  getAllReportsStatistic,
+} from "../../services/reportService";
 import { Report } from "../../types/report.types";
 import { useQuery } from "@tanstack/react-query";
 import ReportListItem from "../reports/ReportListItem";
 import FaqItems from "./components/FaqItems";
 import ReportListItemSkeleton from "../reports/components/ReportListItemSkeleton";
 import { useAuthContext } from "../../contexts/AuthContext";
+import CountUp from "react-countup";
 
 const HomePage: React.FC = () => {
-  const { isAuthenticated } = useAuthContext();
+  const { isAuthenticated, getAllUsersCount } = useAuthContext();
   const { data, isLoading, isError, refetch, isFetching } = useQuery({
     queryKey: ["recent-reports"],
     queryFn: getRecentReports,
   });
+  const [userTotal, setUserTotal] = useState<number>(0);
+  const [reportTotal, setReportTotal] = useState<number>(0);
+  const [inProgressTotal, setInProgressTotal] = useState<number>(0);
+  const [resolvedTotal, setResolvedTotal] = useState<number>(0);
 
   // const toast = useToast();
   // useEffect(() => {
@@ -40,31 +48,49 @@ const HomePage: React.FC = () => {
 
   const items = data?.items ?? [];
 
+  const fetchAllUserCount = async () => {
+    const count = await getAllUsersCount();
+    setUserTotal(count.data);
+  };
+
+  const fetchAllReportCount = async () => {
+    const count = await getAllReportsStatistic();
+    console.log(count);
+    setReportTotal(count.total);
+    setInProgressTotal(count.progress);
+    setResolvedTotal(count.finished);
+  };
+
+  useEffect(() => {
+    fetchAllUserCount();
+    fetchAllReportCount();
+  }, []);
+
   const stats = [
     {
       title: "Total Laporan",
-      value: "47",
+      value: reportTotal,
       icon: FileText,
       color: "text-primary-600",
       bgColor: "bg-primary-100",
     },
     {
-      title: "Sudah Selesai",
-      value: "32",
-      icon: TrendingUp,
-      color: "text-green-600",
-      bgColor: "bg-green-100",
-    },
-    {
       title: "Sedang Diproses",
-      value: "12",
+      value: inProgressTotal,
       icon: Users,
       color: "text-blue-600",
       bgColor: "bg-blue-100",
     },
     {
+      title: "Sudah Selesai",
+      value: resolvedTotal,
+      icon: TrendingUp,
+      color: "text-green-600",
+      bgColor: "bg-green-100",
+    },
+    {
       title: "Warga Aktif",
-      value: "156",
+      value: userTotal,
       icon: MapPin,
       color: "text-purple-600",
       bgColor: "bg-purple-100",
@@ -100,10 +126,8 @@ const HomePage: React.FC = () => {
 
   return (
     <div className="space-y-24">
-      {/* Hero Section */}
       <section>
         <div className="grid lg:grid-cols-2 gap-12 lg:gap-16 items-center">
-          {/* Left Content */}
           <div className="text-center lg:text-left">
             <h1 className="text-4xl lg:text-5xl xl:text-6xl font-bold text-primary-500 mb-6 leading-tight">
               Laporkan Masalah
@@ -117,11 +141,14 @@ const HomePage: React.FC = () => {
 
             <div className="flex flex-wrap justify-center lg:justify-start gap-6 lg:gap-8 mb-8">
               {stats.map((stat, index) => (
-                <div key={index} className="text-center lg:text-left">
+                <div
+                  key={index}
+                  className="text-5xl font-extrabold text-center text-black lg:text-left"
+                >
                   <div
                     className={`text-2xl lg:text-3xl font-bold ${stat.color} mb-1`}
                   >
-                    {stat.value}
+                    <CountUp start={0} end={stat.value} duration={1} useEasing={false} delay={0.5} />
                   </div>
                   <div className="text-xs lg:text-sm text-gray-600 font-medium">
                     {stat.title}
