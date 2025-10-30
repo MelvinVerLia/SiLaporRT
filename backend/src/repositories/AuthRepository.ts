@@ -70,4 +70,8 @@ export class AuthRepository {
       select: { id: true, role: true },
     });
   }
+
+  static async getAllUsers() {
+    return prisma.user.count({ where: { isDeleted: false, role: "CITIZEN" } });
+  }
 }

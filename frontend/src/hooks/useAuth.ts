@@ -21,6 +21,7 @@ import {
   getNotifications as apiGetNotifications,
   markNotificationAsReadAll as apiMarkAll,
   markNotificationRead as apiMarkRead,
+  getAllUsers as apiGetAllUsers,
 } from "../services/authService";
 
 export const useAuth = () => {
@@ -232,7 +233,7 @@ export const useAuth = () => {
 
   const getNotifications = useCallback(async () => {
     try {
-      if(!user) return;
+      if (!user) return;
       const response = await apiGetNotifications();
       return response;
     } catch (error) {
@@ -261,6 +262,16 @@ export const useAuth = () => {
     }
   }, []);
 
+  const getAllUsersCount = useCallback(async () => {
+    try {
+      const response = await apiGetAllUsers();
+      return response;
+    } catch (error) {
+      console.log(error);
+      setError({ message: "Gagal mengambil Total User" });
+    }
+  }, []);
+
   return {
     user,
     isLoading,
@@ -283,5 +294,6 @@ export const useAuth = () => {
     getNotifications,
     readNotification,
     markAsReadAll,
+    getAllUsersCount,
   };
 };

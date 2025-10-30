@@ -242,6 +242,15 @@ class ReportService {
       throw new Error(`Failed to fetch user report statistics: ${error}`);
     }
   }
+
+  static async getAllReportsStatistics() {
+    try {
+      const stats = await ReportRepository.getAllReportsStatistics();
+      return stats;
+    } catch (error) {
+      throw new Error(`Failed to fetch all reports statistics: ${error}`);
+    }
+  }
 }
 
 export default ReportService;
