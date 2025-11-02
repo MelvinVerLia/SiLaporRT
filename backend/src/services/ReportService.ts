@@ -26,13 +26,12 @@ class ReportService {
       };
       const report = await ReportRepository.createReport(dataWithCategory);
 
-      const url =
-        `${process.env.FRONTEND_URL_PROD}/reports/${report.id}` ||
-        `${process.env.FRONTEND_URL}/reports/${report.id}`;
+      const baseUrl = process.env.FRONTEND_URL_PROD ?? process.env.FRONTEND_URL;
+      const url = `${baseUrl}/reports/${report.id}`;
 
       await NotificationService.sendNotificationToAdmin(
         `Laporan "${report.title}" Telah Dibuat!`,
-        `Laporan dah dibuat woi anjing beresin su`,
+        `laporan baru telah diajukan. Silakan diproses lebih lanjut.`,
         url,
         "https://res.cloudinary.com/dgnedkivd/image/upload/v1757562088/silaporrt/dev/logo/logo_lnenhb.png",
         "REPORT"
@@ -123,9 +122,8 @@ class ReportService {
         status
       );
 
-      const url =
-        `${process.env.FRONTEND_URL_PROD}/reports/${updatedReport.id}` ||
-        `${process.env.FRONTEND_URL}/reports/${updatedReport.id}`;
+      const baseUrl = process.env.FRONTEND_URL_PROD || process.env.FRONTEND_URL;
+      const url = `${baseUrl}/reports/${updatedReport.id}`;
 
       await NotificationService.sendNotificationByUserId(
         updatedReport.userId!,
@@ -155,9 +153,10 @@ class ReportService {
         attachments
       );
 
-      const url =
-        `${process.env.FRONTEND_URL_PROD}/reports/${reportId}` ||
-        `${process.env.FRONTEND_URL}/reports/${reportId}`;
+      const baseUrl = process.env.FRONTEND_URL_PROD || process.env.FRONTEND_URL;
+
+      const url = `${baseUrl}/reports/${reportId}`;
+
       await NotificationService.sendNotificationByUserId(
         response?.report.userId!,
         `Laporan "${response?.report.title}" Telah Diperbarui!`,
@@ -166,6 +165,7 @@ class ReportService {
         "https://res.cloudinary.com/dgnedkivd/image/upload/v1757562088/silaporrt/dev/logo/logo_lnenhb.png",
         "REPORT"
       );
+      
       return {
         success: true,
         data: response,

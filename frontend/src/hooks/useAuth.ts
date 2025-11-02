@@ -240,7 +240,7 @@ export const useAuth = () => {
       console.log(error);
       setError({ message: "Gagal mengambil notifikasi" });
     }
-  }, []);
+  }, [user]);
 
   const markAsReadAll = useCallback(async () => {
     try {

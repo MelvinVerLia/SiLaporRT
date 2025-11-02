@@ -1,10 +1,10 @@
 import { createContext, useContext } from "react";
-import { useAuth } from "../hooks/useAuth"; // your existing hook
+import { useAuth } from "../hooks/useAuth"; 
 
 const AuthContext = createContext<ReturnType<typeof useAuth> | null>(null);
 
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
-  const auth = useAuth(); // 🔥 one instance for the whole app
+  const auth = useAuth(); 
   return <AuthContext.Provider value={auth}>{children}</AuthContext.Provider>;
 };
 
