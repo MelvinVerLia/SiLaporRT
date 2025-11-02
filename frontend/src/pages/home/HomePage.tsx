@@ -55,7 +55,6 @@ const HomePage: React.FC = () => {
 
   const fetchAllReportCount = async () => {
     const count = await getAllReportsStatistic();
-    console.log(count);
     setReportTotal(count.total);
     setInProgressTotal(count.progress);
     setResolvedTotal(count.finished);

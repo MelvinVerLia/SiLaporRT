@@ -119,10 +119,9 @@ export class AnnouncementService {
       attachments,
     });
 
-    const url =
-      `${process.env.FRONTEND_URL_PROD}/announcements/${announcement.id}` ||
-      `${process.env.FRONTEND_URL}/announcements/${announcement.id}`;
-
+    const baseUrl = process.env.FRONTEND_URL_PROD || process.env.FRONTEND_URL;
+    const url = `${baseUrl}/announcements/${announcement.id}`;
+    
     await NotificationService.sendNotificationAll(
       `📢 Pengumuman Baru: "${announcement.title}"`,
       `Cek pengumuman terbaru berjudul "${announcement.title}" sekarang di aplikasi SiLaporRT.`,
