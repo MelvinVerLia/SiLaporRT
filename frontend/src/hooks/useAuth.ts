@@ -45,7 +45,6 @@ export const useAuth = () => {
     initializeAuth();
   }, []);
 
-  // LOGIN: server set cookie; FE TIDAK menyimpan apa pun di localStorage
   const login = useCallback(
     async (credentials: LoginCredentials): Promise<User> => {
       setIsLoading(true);
@@ -92,16 +91,12 @@ export const useAuth = () => {
     }
   }, []);
 
-  // LOGOUT: hapus cookie di server; FE bersihkan state & arahkan ke login
   const logout = useCallback(async () => {
     setIsLoggingOut(true);
     try {
       await apiLogout();
-      // Tambahkan delay kecil untuk memberikan feedback visual yang baik
       await new Promise((resolve) => setTimeout(resolve, 800));
     } catch {
-      // abaikan error logout
-      // Tetap berikan delay meskipun ada error
       await new Promise((resolve) => setTimeout(resolve, 600));
     } finally {
       setUser(null);
@@ -114,7 +109,6 @@ export const useAuth = () => {
     setIsLoading(true);
     setError(null);
     try {
-      // TODO: panggil endpoint BE, contoh: await apiResendOTP(email)
       await resend(token);
       return true;
     } catch (e: unknown) {
@@ -145,8 +139,6 @@ export const useAuth = () => {
   );
 
   const updateProfile = useCallback(async (data: User) => {
-    // Note: setIsLoading tidak digunakan untuk updateProfile
-    // karena component yang memanggil punya loading state sendiri
     try {
       const newUser = await apiUpdateProfile(data);
       console.log("Profile updated:", newUser.data);
@@ -154,7 +146,6 @@ export const useAuth = () => {
       return true;
     } catch (e: unknown) {
       console.error("Update profile error:", e);
-      // Tidak set error state di sini, biarkan component handle
       return false;
     }
   }, []);
@@ -264,13 +255,14 @@ export const useAuth = () => {
 
   const getAllUsersCount = useCallback(async () => {
     try {
+      if (!user) return;
       const response = await apiGetAllUsers();
       return response;
     } catch (error) {
       console.log(error);
       setError({ message: "Gagal mengambil Total User" });
     }
-  }, []);
+  }, [user]);
 
   return {
     user,
