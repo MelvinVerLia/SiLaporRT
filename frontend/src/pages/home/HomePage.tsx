@@ -28,7 +28,7 @@ import { useAuthContext } from "../../contexts/AuthContext";
 import CountUp from "react-countup";
 
 const HomePage: React.FC = () => {
-  const { isAuthenticated, getAllUsersCount } = useAuthContext();
+  const { user, isAuthenticated, getAllUsersCount } = useAuthContext();
   const { data, isLoading, isError, refetch, isFetching } = useQuery({
     queryKey: ["recent-reports"],
     queryFn: getRecentReports,
@@ -63,7 +63,7 @@ const HomePage: React.FC = () => {
   useEffect(() => {
     fetchAllUserCount();
     fetchAllReportCount();
-  }, []);
+  }, [user]);
 
   const stats = [
     {
