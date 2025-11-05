@@ -114,6 +114,9 @@ export async function getReportList(params: {
   q: string;
   category: string;
   status: string;
+  sortBy?: string;
+  upvoteDateFrom?: string;
+  upvoteDateTo?: string;
 }) {
   const res = await request("/reports", { method: "GET", params });
   return res.data;

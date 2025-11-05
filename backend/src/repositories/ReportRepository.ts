@@ -85,6 +85,9 @@ class ReportRepository {
     isPublic,
     dateFrom,
     dateTo,
+    sortBy,
+    upvoteDateFrom,
+    upvoteDateTo,
   }: any) {
     try {
       const where: any = userId ? {} : { ...visibleWhere(includePrivate) };
@@ -121,6 +124,60 @@ class ReportRepository {
 
       const skip = (page - 1) * pageSize;
 
+      // Determine orderBy based on sortBy parameter
+      let orderBy: any = { createdAt: "desc" }; // Default: newest first
+
+      if (sortBy === "oldest") {
+        orderBy = { createdAt: "asc" };
+      } else if (sortBy === "most_liked") {
+        // For most liked, we'll need to do a raw query or use aggregation
+        // We'll fetch all matching reports and sort them by upvote count
+        const upvoteWhere: any = {};
+        if (upvoteDateFrom || upvoteDateTo) {
+          upvoteWhere.createdAt = {};
+          if (upvoteDateFrom) {
+            upvoteWhere.createdAt.gte = new Date(upvoteDateFrom);
+          }
+          if (upvoteDateTo) {
+            const endDate = new Date(upvoteDateTo);
+            endDate.setHours(23, 59, 59, 999);
+            upvoteWhere.createdAt.lte = endDate;
+          }
+        }
+
+        // Get total count
+        const total = await prisma.report.count({ where });
+
+        // Fetch reports with upvote counts
+        const reportsWithUpvotes = await prisma.report.findMany({
+          where,
+          include: {
+            location: true,
+            user: {
+              select: { id: true, name: true, email: true, isDeleted: true },
+            },
+            attachments: {
+              select: { id: true, filename: true, url: true, fileType: true },
+            },
+            reportUpvotes: {
+              where: upvoteWhere,
+              select: { id: true },
+            },
+          },
+        });
+
+        // Sort by upvote count and paginate
+        const sortedReports = reportsWithUpvotes
+          .sort((a, b) => b.reportUpvotes.length - a.reportUpvotes.length)
+          .slice(skip, skip + pageSize)
+          .map((report) => {
+            const { reportUpvotes, ...rest } = report;
+            return rest;
+          });
+
+        return { total, items: sortedReports };
+      }
+
       const [total, items] = await Promise.all([
         prisma.report.count({ where }),
         prisma.report.findMany({
@@ -136,7 +193,7 @@ class ReportRepository {
               select: { id: true, filename: true, url: true, fileType: true },
             },
           },
-          orderBy: { createdAt: "desc" },
+          orderBy,
         }),
       ]);
       return { total, items };
