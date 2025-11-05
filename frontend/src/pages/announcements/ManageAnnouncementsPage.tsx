@@ -41,6 +41,7 @@ export default function ManageAnnouncementsPage() {
   const [dateRange, setDateRange] = useState<{ from?: string; to?: string }>(
     {}
   );
+  const [sortBy, setSortBy] = useState("");
 
   const { data, isLoading, isError } = useQuery({
     queryKey: [
@@ -52,6 +53,7 @@ export default function ManageAnnouncementsPage() {
         selectedType,
         selectedPriority,
         dateRange,
+        sortBy,
       },
     ],
     queryFn: () =>
@@ -64,6 +66,7 @@ export default function ManageAnnouncementsPage() {
         priority: selectedPriority,
         dateFrom: dateRange.from,
         dateTo: dateRange.to,
+        sortBy,
       }),
     staleTime: 0,
   });
@@ -275,6 +278,7 @@ export default function ManageAnnouncementsPage() {
     setSelectedPriority("");
     setShowInactiveOnly(false);
     setDateRange({});
+    setSortBy("");
     setPage(1);
   };
 
@@ -285,8 +289,9 @@ export default function ManageAnnouncementsPage() {
     if (selectedPriority) count++;
     if (showInactiveOnly) count++;
     if (dateRange.from || dateRange.to) count++;
+    if (sortBy) count++;
     return count;
-  }, [selectedType, selectedPriority, showInactiveOnly, dateRange]);
+  }, [selectedType, selectedPriority, showInactiveOnly, dateRange, sortBy]);
 
   // Define filter fields for AdvancedFilter
   const filterFields: FilterField[] = [
@@ -337,6 +342,20 @@ export default function ManageAnnouncementsPage() {
       options: [
         { value: "active", label: "Aktif" },
         { value: "inactive", label: "Tidak Aktif" },
+      ],
+    },
+    {
+      name: "sortBy",
+      label: "Urutkan Berdasarkan",
+      type: "select",
+      value: sortBy,
+      onChange: (value) => {
+        setSortBy(value as string);
+        setPage(1);
+      },
+      options: [
+        { value: "", label: "Terbaru" },
+        { value: "oldest", label: "Terlama" },
       ],
     },
     {

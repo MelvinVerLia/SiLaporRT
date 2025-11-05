@@ -12,7 +12,9 @@ export async function adminListReports(params: {
   visibility?: string;
   dateFrom?: string;
   dateTo?: string;
-  sortBy?: "created" | "upvotes" | "priority";
+  sortBy?: string;
+  upvoteDateFrom?: string;
+  upvoteDateTo?: string;
   sortOrder?: "asc" | "desc";
 }) {
   const queryParams: Record<string, string | number | boolean | undefined> = {

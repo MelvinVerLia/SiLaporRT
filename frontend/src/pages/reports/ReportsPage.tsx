@@ -136,12 +136,6 @@ const ReportsPage: React.FC = () => {
     };
   };
 
-  // Calculate display date range based on selected period
-  const displayDateRange = useMemo(() => {
-    if (!selectedPeriod) return {};
-    return getDateRangeFromPeriod(selectedPeriod);
-  }, [selectedPeriod]);
-
   // Calculate active filter count
   const activeFilterCount = useMemo(() => {
     let count = 0;
@@ -200,7 +194,6 @@ const ReportsPage: React.FC = () => {
       },
       options: sortByOptions,
     },
-    
     ...(sortBy === "most_liked"
       ? [
           {
@@ -213,16 +206,6 @@ const ReportsPage: React.FC = () => {
               setPage(1);
             },
             options: periodOptions,
-          },
-          {
-            name: "dateRange",
-            label: "Rentang Tanggal",
-            type: "daterange" as const,
-            value: displayDateRange,
-            onChange: () => {
-              // Read-only, just for display
-            },
-            disabled: true,
           },
         ]
       : []),
