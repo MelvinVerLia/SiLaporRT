@@ -294,10 +294,9 @@ export class AuthService {
     const redis = RedisClient.instance;
     await redis.set(`reset:${user.id}`, hashedToken, "EX", 300);
 
-    const resetPasswordUrl =
-      `${process.env.FRONTEND_URL_PROD}/reset/${rawToken}/${user.email}` ||
-      `${process.env.FRONTEND_URL}/reset/${rawToken}/${user.email}`;
+    const baseUrl = process.env.FRONTEND_URL_PROD || process.env.FRONTEND_URL;
 
+    const resetPasswordUrl = `${baseUrl}/reset/${rawToken}/${user.email}`;
     await sendPasswordResetEmail(email, resetPasswordUrl, 5);
   }
 

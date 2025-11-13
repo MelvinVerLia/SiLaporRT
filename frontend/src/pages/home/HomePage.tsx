@@ -61,9 +61,11 @@ const HomePage: React.FC = () => {
   };
 
   useEffect(() => {
-    fetchAllUserCount();
-    fetchAllReportCount();
-  }, [user]);
+    if (isAuthenticated) {
+      fetchAllUserCount();
+      fetchAllReportCount();
+    }
+  }, [isAuthenticated]);
 
   const stats = [
     {
@@ -147,7 +149,13 @@ const HomePage: React.FC = () => {
                   <div
                     className={`text-2xl lg:text-3xl font-bold ${stat.color} mb-1`}
                   >
-                    <CountUp start={0} end={stat.value} duration={1} useEasing={false} delay={0.5} />
+                    <CountUp
+                      start={0}
+                      end={stat.value}
+                      duration={1}
+                      useEasing={false}
+                      delay={0.5}
+                    />
                   </div>
                   <div className="text-xs lg:text-sm text-gray-600 font-medium">
                     {stat.title}

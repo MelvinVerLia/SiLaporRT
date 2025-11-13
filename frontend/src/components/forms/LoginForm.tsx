@@ -16,7 +16,7 @@ const LoginForm: React.FC = () => {
   const location = useLocation();
   const { login, isLoading, error, clearError } = useAuthContext();
 
-  const from = (location.state as any)?.from?.pathname || "/";
+  const from = location.state?.from?.pathname || "/";
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

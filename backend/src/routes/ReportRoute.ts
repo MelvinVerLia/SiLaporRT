@@ -48,6 +48,7 @@ router.post(
   authenticateJWT,
   ReportController.addOfficialResponse
 );
+router.put("/:reportId/update-status", authenticateJWT,ReportController.updateReportStatus);
 
 // === FILTERING ROUTES ===
 router.get("/category/:category", ReportController.getReportsByCategory);

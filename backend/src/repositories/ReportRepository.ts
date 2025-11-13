@@ -507,6 +507,59 @@ class ReportRepository {
       throw error;
     }
   }
+
+  static async nextStep(currentStatus: ReportStatus) {
+    if (currentStatus === "PENDING") {
+      return "IN_PROGRESS";
+    } else if (currentStatus === "IN_PROGRESS") {
+      return "RESOLVED";
+    }
+  }
+  static async updateReportStatus(
+    reportId: string,
+    responderId: string,
+    attachments?: string[],
+    message?: string
+  ) {
+    const report = await prisma.report.findUnique({
+      where: { id: reportId },
+    });
+
+    console.log("current status", report?.status);
+
+    console.log("next status", this.nextStep(report?.status!));
+    // try {
+    //   const result = await prisma.$transaction(async (tx) => {
+    //     await tx.response.create({
+    //       data: {
+    //         reportId,
+    //         responderId,
+    //         message: message ?? "",
+    //         ...(attachments && attachments.length > 0
+    //           ? {
+    //               attachments: {
+    //                 create: attachments.map((attachment) => ({
+    //                   filename: attachment,
+    //                   url: attachment,
+    //                   fileType: "image",
+    //                 })),
+    //               },
+    //             }
+    //           : {}),
+    //       },
+    //     });
+
+    //     await tx.report.update({
+    //       where: { id: reportId },
+    //       data: { status },
+    //     });
+    //   });
+
+    //   return result;
+    // } catch (error) {
+    //   throw error;
+    // }
+  }
 }
 
 export default ReportRepository;

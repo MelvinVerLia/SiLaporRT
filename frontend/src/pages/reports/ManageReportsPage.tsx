@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useRef } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import {
@@ -12,6 +12,7 @@ import {
   CheckCircle,
   XCircle,
   Pause,
+  X,
 } from "lucide-react";
 import {
   adminListReports,
@@ -32,6 +33,7 @@ import AdvancedFilter, {
   FilterField,
 } from "../../components/common/AdvancedFilter";
 import ReportManageTableSkeleton from "./components/ReportManageTableSkeleton";
+import { updateReportStat } from "../../services/reportService";
 
 export default function ManageReportsPage() {
   const navigate = useNavigate();
@@ -50,6 +52,10 @@ export default function ManageReportsPage() {
     {}
   );
   const [selectedVisibility, setSelectedVisibility] = useState("");
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const dialogRef = useRef<HTMLDivElement>(null);
+  const [currentReportId, setCurrentReportId] = useState<string | null>(null);
+  const [message, setMessage] = useState<string | undefined>(undefined);
 
   // Update selected status when URL params change
   useEffect(() => {
@@ -58,6 +64,46 @@ export default function ManageReportsPage() {
       setSelectedStatus(statusParam);
     }
   }, [searchParams, selectedStatus]);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        dialogRef.current &&
+        !dialogRef.current.contains(event.target as Node)
+      ) {
+        closeDialog();
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
+
+  const closeDialog = () => {
+    document.body.style.overflow = "auto";
+    setIsDialogOpen(false);
+  };
+  const openDialog = () => {
+    if (isDialogOpen) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "auto";
+    }
+    setIsDialogOpen(true);
+  };
+
+  const updateReport = async (attachments?: string[], message?: string) => {
+    if (!currentReportId) return;
+    const response = await updateReportStat(
+      currentReportId,
+      attachments,
+      message
+    );
+    return response;
+  };
 
   const { data, isLoading, isError } = useQuery({
     queryKey: [
@@ -378,7 +424,7 @@ export default function ManageReportsPage() {
   ];
 
   return (
-    <div className="space-y-6">
+    <div className={`space-y-6`}>
       {/* Page Header */}
       <div>
         <h1 className="text-3xl font-bold text-primary-600">Kelola Laporan</h1>
@@ -558,21 +604,16 @@ export default function ManageReportsPage() {
                             </div>
                           </td>
                           <td className="py-5 pr-4">
-                            <select
-                              value={report.status}
-                              onChange={(e) => {
+                            <Button
+                              size="sm"
+                              onClick={(e) => {
                                 e.stopPropagation();
-                                handleStatusChange(report.id, e.target.value);
+                                openDialog();
+                                setCurrentReportId(report.id);
                               }}
-                              className="text-xs border rounded px-2 py-1"
-                              onClick={(e) => e.stopPropagation()}
                             >
-                              <option value="PENDING">Menunggu</option>
-                              <option value="IN_PROGRESS">Dalam Proses</option>
-                              <option value="RESOLVED">Selesai</option>
-                              <option value="REJECTED">Ditolak</option>
-                              <option value="CLOSED">Ditutup</option>
-                            </select>
+                              Next Step
+                            </Button>
                           </td>
                         </tr>
                       );
@@ -594,7 +635,6 @@ export default function ManageReportsPage() {
                     >
                       <CardContent className="p-4">
                         <div className="space-y-3">
-                          {/* Header */}
                           <div className="min-w-0">
                             <h3 className="text-sm font-medium text-gray-900 line-clamp-2 whitespace-pre-wrap break-words">
                               {report.title}
@@ -604,7 +644,6 @@ export default function ManageReportsPage() {
                             </p>
                           </div>
 
-                          {/* Location */}
                           <div className="flex items-center text-xs text-gray-500">
                             <MapPin className="h-3 w-3 mr-1" />
                             <span className="truncate">
@@ -612,7 +651,6 @@ export default function ManageReportsPage() {
                             </span>
                           </div>
 
-                          {/* Badges */}
                           <div className="flex flex-wrap gap-2">
                             <Badge variant="default" size="sm">
                               {getCategoryLabel(report.category)}
@@ -636,7 +674,6 @@ export default function ManageReportsPage() {
                             </Badge>
                           </div>
 
-                          {/* Stats */}
                           <div className="flex justify-between items-center text-xs text-gray-500">
                             <div className="flex items-center space-x-3">
                               <div className="flex items-center">
@@ -657,7 +694,6 @@ export default function ManageReportsPage() {
                             </div>
                           </div>
 
-                          {/* Status Update */}
                           <div className="pt-2 border-t border-gray-100">
                             <select
                               value={report.status}
@@ -698,6 +734,42 @@ export default function ManageReportsPage() {
           )}
         </CardContent>
       </Card>
+
+      {isDialogOpen && (
+        <>
+          <div className="fixed inset-0 bg-black/40 backdrop-blur-sm z-40 mb-0" />
+
+          <Card
+            ref={dialogRef}
+            className="absolute z-50 top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[400px] h-[300px] bg-gray-50 rounded-3xl "
+          >
+            <CardHeader className="flex flex-row justify-between ">
+              <CardTitle>Chupapimunyayo</CardTitle>
+              <X
+                className="w-5 h-5 hover:cursor-pointer"
+                onClick={closeDialog}
+              />
+            </CardHeader>
+
+            <CardContent>
+              <div className="flex justify-between flex-col gap-4">
+                <Input
+                  label="response"
+                  showCounter
+                  limit={200}
+                  onChange={(e) => setMessage(e.target.value)}
+                />
+                <Button
+                  className=""
+                  onClick={() => updateReport(undefined, message)}
+                >
+                  Submit
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        </>
+      )}
     </div>
   );
 }

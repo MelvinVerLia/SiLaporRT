@@ -1,5 +1,6 @@
 import { Request, Response } from "express";
 import ReportService from "../services/ReportService";
+import { ReportStatus } from "@prisma/client";
 
 // interface AuthenticatedRequest extends Request {
 //   user?: {
@@ -396,6 +397,37 @@ class ReportController {
       });
     }
   }
+  static async updateReportStatus(req: Request, res: Response) {
+    try {
+      const { reportId } = req.params;
+      const { attachments, message } = req.body;
+      const user = req.user as { id: string };
+
+      if (!reportId || !user.id) {
+        throw new Error("Report ID, status, and user ID are required");
+      }
+
+      await ReportService.updateReportStatus(
+        reportId,
+        user.id,
+        attachments,
+        message
+      );
+      res.json({
+        success: true,
+        message: "Report status updated successfully",
+        // data: result,
+      });
+    } catch (error: any) {
+      console.log("error", error);
+      res.status(500).json({
+        success: false,
+        message: error.message || "Failed to update report status",
+      });
+    }
+  }
+
+  
 }
 
 export default ReportController;

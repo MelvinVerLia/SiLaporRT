@@ -224,14 +224,13 @@ export const useAuth = () => {
 
   const getNotifications = useCallback(async () => {
     try {
-      if (!user) return;
       const response = await apiGetNotifications();
       return response;
     } catch (error) {
       console.log(error);
       setError({ message: "Gagal mengambil notifikasi" });
     }
-  }, [user]);
+  }, []);
 
   const markAsReadAll = useCallback(async () => {
     try {
@@ -255,14 +254,13 @@ export const useAuth = () => {
 
   const getAllUsersCount = useCallback(async () => {
     try {
-      if (!user) return;
       const response = await apiGetAllUsers();
       return response;
     } catch (error) {
       console.log(error);
       setError({ message: "Gagal mengambil Total User" });
     }
-  }, [user]);
+  }, []);
 
   return {
     user,

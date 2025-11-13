@@ -155,4 +155,14 @@ export class NotificationRepository {
       data: { isRead: true },
     });
   }
+
+  static async deleteAllReadNotification(userId: string) {
+    try {
+      return await prisma.notification.deleteMany({
+        where: { userId, isRead: true },
+      });
+    } catch (error) {
+      throw error;
+    }
+  }
 }

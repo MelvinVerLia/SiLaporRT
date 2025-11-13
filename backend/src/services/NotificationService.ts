@@ -165,4 +165,8 @@ export class NotificationService {
   static readNotification(id: string) {
     return NotificationRepository.readNotification(id);
   }
+
+  static deleteAllReadNotification(userId: string) {
+    return NotificationRepository.deleteAllReadNotification(userId);
+  }
 }

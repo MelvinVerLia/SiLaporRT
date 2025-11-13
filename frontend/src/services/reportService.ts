@@ -189,6 +189,23 @@ export async function getAllReportsStatistic() {
   return res.data;
 }
 
+export async function updateReportStat(
+  reportId: string,
+  attachments?: string[],
+  message?: string
+) {
+  try {
+    const res = await request(`/reports/${reportId}/update-status`, {
+      method: "PUT",
+      data: {  attachments, message },
+    });
+    return res;
+  } catch (error) {
+    console.error("❌ Error calculating dashboard stats:", error);
+    throw error;
+  }
+}
+
 // Dashboard Statistics Interface and Functions
 export interface DashboardStats {
   totalReports: number;

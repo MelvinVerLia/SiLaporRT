@@ -165,7 +165,7 @@ class ReportService {
         "https://res.cloudinary.com/dgnedkivd/image/upload/v1757562088/silaporrt/dev/logo/logo_lnenhb.png",
         "REPORT"
       );
-      
+
       return {
         success: true,
         data: response,
@@ -249,6 +249,24 @@ class ReportService {
       return stats;
     } catch (error) {
       throw new Error(`Failed to fetch all reports statistics: ${error}`);
+    }
+  }
+  static async updateReportStatus(
+    reportId: string,
+    responderId: string,
+    attachments?: string[],
+    message?: string
+  ) {
+    try {
+      const result = await ReportRepository.updateReportStatus(
+        reportId,
+        responderId,
+        attachments,
+        message
+      );
+      return result;
+    } catch (error) {
+      throw new Error(`Failed to update report status: ${error}`);
     }
   }
 }
