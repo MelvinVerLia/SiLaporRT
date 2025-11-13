@@ -52,6 +52,8 @@ export default function ManageReportsPage() {
     {}
   );
   const [selectedVisibility, setSelectedVisibility] = useState("");
+  const [sortBy, setSortBy] = useState("");
+  const [selectedPeriod, setSelectedPeriod] = useState("");
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const dialogRef = useRef<HTMLDivElement>(null);
   const [currentReportId, setCurrentReportId] = useState<string | null>(null);
@@ -64,6 +66,52 @@ export default function ManageReportsPage() {
       setSelectedStatus(statusParam);
     }
   }, [searchParams, selectedStatus]);
+
+  // Helper to calculate date range from period
+  const getDateRangeFromPeriod = (period: string) => {
+    const from = new Date();
+    const to = new Date();
+
+    switch (period) {
+      case "hari-ini":
+        from.setHours(0, 0, 0, 0);
+        to.setHours(23, 59, 59, 999);
+        break;
+      case "kemarin":
+        from.setDate(from.getDate() - 1);
+        from.setHours(0, 0, 0, 0);
+        to.setDate(to.getDate() - 1);
+        to.setHours(23, 59, 59, 999);
+        break;
+      case "minggu-ini": {
+        const dayOfWeek = from.getDay();
+        const diff = dayOfWeek === 0 ? 6 : dayOfWeek - 1;
+        from.setDate(from.getDate() - diff);
+        from.setHours(0, 0, 0, 0);
+        to.setHours(23, 59, 59, 999);
+        break;
+      }
+      case "bulan-ini":
+        from.setDate(1);
+        from.setHours(0, 0, 0, 0);
+        to.setMonth(to.getMonth() + 1, 0);
+        to.setHours(23, 59, 59, 999);
+        break;
+      case "tahun-ini":
+        from.setMonth(0, 1);
+        from.setHours(0, 0, 0, 0);
+        to.setMonth(11, 31);
+        to.setHours(23, 59, 59, 999);
+        break;
+      default:
+        return {};
+    }
+
+    return {
+      from: from.toISOString().split("T")[0],
+      to: to.toISOString().split("T")[0],
+    };
+  };
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -117,10 +165,13 @@ export default function ManageReportsPage() {
         selectedStatus,
         selectedVisibility,
         dateRange,
+        sortBy,
+        selectedPeriod,
       },
     ],
-    queryFn: () =>
-      adminListReports({
+    queryFn: () => {
+      const upvoteDateRange = selectedPeriod ? getDateRangeFromPeriod(selectedPeriod) : {};
+      return adminListReports({
         page,
         pageSize,
         q,
@@ -130,7 +181,11 @@ export default function ManageReportsPage() {
         visibility: selectedVisibility,
         dateFrom: dateRange.from,
         dateTo: dateRange.to,
-      }),
+        sortBy,
+        upvoteDateFrom: upvoteDateRange.from,
+        upvoteDateTo: upvoteDateRange.to,
+      });
+    },
     staleTime: 0,
   });
 
@@ -249,6 +304,21 @@ export default function ManageReportsPage() {
     { value: "CLOSED", label: "Ditutup" },
   ];
 
+  const sortByOptions = [
+    { value: "", label: "Terbaru" },
+    { value: "oldest", label: "Terlama" },
+    { value: "most_liked", label: "Paling Banyak Disukai" },
+  ];
+
+  const periodOptions = [
+    { value: "", label: "Semua Waktu" },
+    { value: "hari-ini", label: "Hari Ini" },
+    { value: "kemarin", label: "Kemarin" },
+    { value: "minggu-ini", label: "Minggu Ini" },
+    { value: "bulan-ini", label: "Bulan Ini" },
+    { value: "tahun-ini", label: "Tahun Ini" },
+  ];
+
   const getStatusBadge = (status: string) => {
     const variants = {
       PENDING: { variant: "warning" as const, label: "Menunggu", icon: Clock },
@@ -335,6 +405,8 @@ export default function ManageReportsPage() {
     setSelectedStatus("");
     setSelectedVisibility("");
     setDateRange({});
+    setSortBy("");
+    setSelectedPeriod("");
     setPage(1);
   };
 
@@ -346,6 +418,8 @@ export default function ManageReportsPage() {
     if (selectedStatus) count++;
     if (selectedVisibility) count++;
     if (dateRange.from || dateRange.to) count++;
+    if (sortBy) count++;
+    if (sortBy === "most_liked" && selectedPeriod) count++;
     return count;
   }, [
     selectedCategory,
@@ -353,6 +427,8 @@ export default function ManageReportsPage() {
     selectedStatus,
     selectedVisibility,
     dateRange,
+    sortBy,
+    selectedPeriod,
   ]);
 
   // Define filter fields for AdvancedFilter
@@ -396,6 +472,35 @@ export default function ManageReportsPage() {
       },
       options: statusOptions,
     },
+    {
+      name: "sortBy",
+      label: "Urutkan Berdasarkan",
+      type: "select",
+      value: sortBy,
+      onChange: (value) => {
+        setSortBy(value as string);
+        if (value !== "most_liked") {
+          setSelectedPeriod("");
+        }
+        setPage(1);
+      },
+      options: sortByOptions,
+    },
+    ...(sortBy === "most_liked"
+      ? [
+          {
+            name: "period",
+            label: "Periode Waktu",
+            type: "select" as const,
+            value: selectedPeriod,
+            onChange: (value: string | { from?: string; to?: string }) => {
+              setSelectedPeriod(value as string);
+              setPage(1);
+            },
+            options: periodOptions,
+          },
+        ]
+      : []),
     {
       name: "visibility",
       label: "Visibilitas",

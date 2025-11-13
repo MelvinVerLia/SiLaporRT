@@ -49,6 +49,8 @@ const MyReportsPage: React.FC = () => {
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(6);
   const [openDropdown, setOpenDropdown] = useState<string | null>(null);
+  const [sortBy, setSortBy] = useState("");
+  const [selectedPeriod, setSelectedPeriod] = useState("");
 
   // Clear cache when user changes (fixes cache issue when switching accounts)
   useEffect(() => {
@@ -76,21 +78,72 @@ const MyReportsPage: React.FC = () => {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
+  // Helper to calculate date range from period
+  const getDateRangeFromPeriod = (period: string) => {
+    const from = new Date();
+    const to = new Date();
+
+    switch (period) {
+      case "hari-ini":
+        from.setHours(0, 0, 0, 0);
+        to.setHours(23, 59, 59, 999);
+        break;
+      case "kemarin":
+        from.setDate(from.getDate() - 1);
+        from.setHours(0, 0, 0, 0);
+        to.setDate(to.getDate() - 1);
+        to.setHours(23, 59, 59, 999);
+        break;
+      case "minggu-ini": {
+        const dayOfWeek = from.getDay();
+        const diff = dayOfWeek === 0 ? 6 : dayOfWeek - 1;
+        from.setDate(from.getDate() - diff);
+        from.setHours(0, 0, 0, 0);
+        to.setHours(23, 59, 59, 999);
+        break;
+      }
+      case "bulan-ini":
+        from.setDate(1);
+        from.setHours(0, 0, 0, 0);
+        to.setMonth(to.getMonth() + 1, 0);
+        to.setHours(23, 59, 59, 999);
+        break;
+      case "tahun-ini":
+        from.setMonth(0, 1);
+        from.setHours(0, 0, 0, 0);
+        to.setMonth(11, 31);
+        to.setHours(23, 59, 59, 999);
+        break;
+      default:
+        return {};
+    }
+
+    return {
+      from: from.toISOString().split("T")[0],
+      to: to.toISOString().split("T")[0],
+    };
+  };
+
   // Query for user's reports
   const { data, isLoading, isError, error } = useQuery({
     queryKey: [
       "user-reports",
       user?.id,
-      { page, pageSize, q: searchTerm, selectedCategory, selectedStatus },
+      { page, pageSize, q: searchTerm, selectedCategory, selectedStatus, sortBy, selectedPeriod },
     ],
-    queryFn: () =>
-      getUserReports({
+    queryFn: () => {
+      const upvoteDateRange = selectedPeriod ? getDateRangeFromPeriod(selectedPeriod) : {};
+      return getUserReports({
         page,
         pageSize,
         q: searchTerm || undefined,
         category: selectedCategory || undefined,
         status: selectedStatus || undefined,
-      }),
+        sortBy,
+        upvoteDateFrom: upvoteDateRange.from,
+        upvoteDateTo: upvoteDateRange.to,
+      });
+    },
     enabled: !!user,
     staleTime: 5 * 60 * 1000, // Cache for 5 minutes
   });
@@ -268,18 +321,37 @@ const MyReportsPage: React.FC = () => {
     { value: "SUGGESTION", label: "Saran" },
   ];
 
+  const sortByOptions = [
+    { value: "", label: "Terbaru" },
+    { value: "oldest", label: "Terlama" },
+    { value: "most_liked", label: "Paling Banyak Disukai" },
+  ];
+
+  const periodOptions = [
+    { value: "", label: "Semua Waktu" },
+    { value: "hari-ini", label: "Hari Ini" },
+    { value: "kemarin", label: "Kemarin" },
+    { value: "minggu-ini", label: "Minggu Ini" },
+    { value: "bulan-ini", label: "Bulan Ini" },
+    { value: "tahun-ini", label: "Tahun Ini" },
+  ];
+
   // Calculate active filter count
   const activeFilterCount = useMemo(() => {
     let count = 0;
     if (selectedStatus) count++;
     if (selectedCategory) count++;
+    if (sortBy) count++;
+    if (sortBy === "most_liked" && selectedPeriod) count++;
     return count;
-  }, [selectedStatus, selectedCategory]);
+  }, [selectedStatus, selectedCategory, sortBy, selectedPeriod]);
 
   // Reset all filters
   const handleResetFilters = () => {
     setSelectedStatus("");
     setSelectedCategory("");
+    setSortBy("");
+    setSelectedPeriod("");
     setPage(1);
   };
 
@@ -296,6 +368,35 @@ const MyReportsPage: React.FC = () => {
       },
       options: statusOptions,
     },
+    {
+      name: "sortBy",
+      label: "Urutkan Berdasarkan",
+      type: "select",
+      value: sortBy,
+      onChange: (value) => {
+        setSortBy(value as string);
+        if (value !== "most_liked") {
+          setSelectedPeriod("");
+        }
+        setPage(1);
+      },
+      options: sortByOptions,
+    },
+    ...(sortBy === "most_liked"
+      ? [
+          {
+            name: "period",
+            label: "Periode Waktu",
+            type: "select" as const,
+            value: selectedPeriod,
+            onChange: (value: string | { from?: string; to?: string }) => {
+              setSelectedPeriod(value as string);
+              setPage(1);
+            },
+            options: periodOptions,
+          },
+        ]
+      : []),
     {
       name: "category",
       label: "Kategori",

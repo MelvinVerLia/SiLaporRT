@@ -40,6 +40,7 @@ export async function adminListAnnouncements(params: {
   pinnedFirst?: boolean;
   dateFrom?: string;
   dateTo?: string;
+  sortBy?: string;
 }) {
   const res = await request("/announcements/admin/list", {
     method: "GET",
