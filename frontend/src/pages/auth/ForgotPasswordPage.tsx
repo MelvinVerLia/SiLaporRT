@@ -55,8 +55,8 @@ const ForgotPasswordPage: React.FC = () => {
 
   if (isEmailSent) {
     return (
-      <div className="min-h-screen bg-gradient-to-l from-primary-100 to-white flex flex-col justify-center py-12 px-4 sm:px-6 lg:px-8">
-        <Card className="max-w-4xl w-full mx-auto shadow-xl border-0 bg-white/80 backdrop-blur-sm rounded-xl">
+      <div className="min-h-screen bg-gradient-to-l from-primary-100 to-white dark:from-gray-800 dark:to-gray-900 flex flex-col justify-center py-12 px-4 sm:px-6 lg:px-8">
+        <Card className="max-w-4xl w-full mx-auto shadow-xl border-0 bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-xl">
           {/* Logo */}
           <div className="absolute top-4 left-8">
             <Link
@@ -78,13 +78,13 @@ const ForgotPasswordPage: React.FC = () => {
             {/* Ilustrasi - Kolom kiri */}
             <div className="hidden md:flex md:w-1/2 items-center justify-center rounded-lg p-4 mt-12">
               <div className="text-center">
-                <div className="w-32 h-32 mx-auto mb-6 bg-green-100 rounded-full flex items-center justify-center">
-                  <Mail className="w-16 h-16 text-green-600" />
+                <div className="w-32 h-32 mx-auto mb-6 bg-green-100 dark:bg-green-900/30 rounded-full flex items-center justify-center">
+                  <Mail className="w-16 h-16 text-green-600 dark:text-green-400" />
                 </div>
-                <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-2">
                   Email Terkirim!
                 </h3>
-                <p className="text-gray-600">
+                <p className="text-gray-600 dark:text-gray-300">
                   Silakan periksa kotak masuk email Anda untuk melanjutkan reset
                   password.
                 </p>
@@ -94,17 +94,17 @@ const ForgotPasswordPage: React.FC = () => {
             {/* Content - Kolom kanan */}
             <div className="md:w-1/2 flex flex-col justify-center md:mt-12">
               <div className="text-center md:text-left">
-                <div className="md:hidden w-20 h-20 mx-auto mb-6 bg-green-100 rounded-full flex items-center justify-center">
-                  <Check className="w-10 h-10 text-green-600" />
+                <div className="md:hidden w-20 h-20 mx-auto mb-6 bg-green-100 dark:bg-green-900/30 rounded-full flex items-center justify-center">
+                  <Check className="w-10 h-10 text-green-600 dark:text-green-400" />
                 </div>
 
-                <CardTitle className="text-3xl font-bold text-gray-900 mb-4">
+                <CardTitle className="text-3xl font-bold text-gray-900 dark:text-gray-100 mb-4">
                   Periksa Email Anda
                 </CardTitle>
 
-                <div className="space-y-4 text-gray-600">
+                <div className="space-y-4 text-gray-600 dark:text-gray-300">
                   <p>Kami telah mengirimkan link reset password ke:</p>
-                  <p className="font-semibold text-primary-600 bg-primary-50 p-3 rounded-lg">
+                  <p className="font-semibold text-primary-600 dark:text-primary-400 bg-primary-50 dark:bg-primary-900/30 p-3 rounded-lg">
                     {email}
                   </p>
                   <p className="text-sm">
@@ -142,7 +142,7 @@ const ForgotPasswordPage: React.FC = () => {
 
         {/* Footer */}
         <div className="mt-8 text-center px-4">
-          <p className="text-xs text-gray-500">
+          <p className="text-xs text-gray-500 dark:text-gray-400">
             Tidak menerima email? Periksa folder spam atau{" "}
             <button
               onClick={handleResendEmail}
@@ -159,8 +159,8 @@ const ForgotPasswordPage: React.FC = () => {
 
   // Form state - Input email
   return (
-    <div className="min-h-screen bg-gradient-to-l from-primary-100 to-white flex flex-col justify-center py-12 px-4 sm:px-6 lg:px-8">
-      <Card className="max-w-4xl w-full mx-auto shadow-xl border-0 bg-white/80 backdrop-blur-sm rounded-xl">
+    <div className="min-h-screen bg-gradient-to-l from-primary-100 to-white dark:from-gray-800 dark:to-gray-900 flex flex-col justify-center py-12 px-4 sm:px-6 lg:px-8">
+      <Card className="max-w-4xl w-full mx-auto shadow-xl border-0 bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-xl">
         {/* Logo */}
         <div className="absolute top-4 left-8">
           <Link
@@ -182,13 +182,13 @@ const ForgotPasswordPage: React.FC = () => {
           {/* Ilustrasi - Kolom kiri */}
           <div className="hidden md:flex md:w-1/2 items-center justify-center rounded-lg p-4 mt-12">
             <div className="text-center">
-              <div className="w-32 h-32 mx-auto mb-6 bg-primary-100 rounded-full flex items-center justify-center">
-                <Mail className="w-16 h-16 text-primary-600" />
+              <div className="w-32 h-32 mx-auto mb-6 bg-primary-100 dark:bg-primary-900/30 rounded-full flex items-center justify-center">
+                <Mail className="w-16 h-16 text-primary-600 dark:text-primary-400" />
               </div>
-              <h3 className="text-lg font-semibold text-gray-900 mb-2">
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-2">
                 Lupa Password?
               </h3>
-              <p className="text-gray-600">
+              <p className="text-gray-600 dark:text-gray-300">
                 Jangan khawatir, kami akan mengirimkan instruksi reset password
                 ke email Anda.
               </p>
@@ -198,10 +198,10 @@ const ForgotPasswordPage: React.FC = () => {
           {/* Form - Kolom kanan */}
           <div className="md:w-1/2 flex flex-col justify-center md:mt-12">
             <div className="mb-6">
-              <CardTitle className="text-3xl font-bold text-gray-900 mb-2">
+              <CardTitle className="text-3xl font-bold text-gray-900 dark:text-gray-100 mb-2">
                 Reset Password
               </CardTitle>
-              <p className="text-sm text-gray-600">
+              <p className="text-sm text-gray-600 dark:text-gray-300">
                 Masukkan alamat email Anda dan kami akan mengirimkan link untuk
                 reset password.
               </p>
@@ -233,7 +233,7 @@ const ForgotPasswordPage: React.FC = () => {
             </form>
 
             {/* Back to Login */}
-            <div className="mt-6 pt-6 border-t border-gray-200">
+            <div className="mt-6 pt-6 border-t border-gray-200 dark:border-gray-700">
               <div className="flex items-center justify-center">
                 <Link
                   to="/login"
@@ -250,9 +250,9 @@ const ForgotPasswordPage: React.FC = () => {
 
       {/* Footer */}
       <div className="mt-8 text-center px-4">
-        <p className="text-xs text-gray-500">
+        <p className="text-xs text-gray-500 dark:text-gray-400">
           Ingat password Anda?{" "}
-          <Link to="/login" className="text-primary-600 hover:text-primary-700">
+          <Link to="/login" className="text-primary-600 dark:text-primary-400 hover:text-primary-700 dark:hover:text-primary-300">
             Masuk sekarang
           </Link>
         </p>

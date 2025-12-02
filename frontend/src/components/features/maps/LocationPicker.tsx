@@ -259,10 +259,10 @@ const LocationPicker: React.FC<LocationPickerProps> = ({
   return (
     <div className="space-y-4">
       <div className="text-center mb-4">
-        <h3 className="text-lg font-semibold text-gray-900 mb-1">
+        <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-1">
           Pilih Lokasi Kejadian
         </h3>
-        <p className="text-sm text-gray-600">
+        <p className="text-sm text-gray-600 dark:text-gray-300">
           Gunakan pencarian, klik pada peta, atau tombol lokasi saat ini
         </p>
       </div>
@@ -285,7 +285,7 @@ const LocationPicker: React.FC<LocationPickerProps> = ({
             ref={autocompleteInputRef}
             type="text"
             placeholder="Cari lokasi..."
-            className="w-full p-3 border border-gray-300 rounded-lg mb-4 focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+            className="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg mb-4 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 placeholder:text-gray-500 dark:placeholder:text-gray-400 focus:ring-2 focus:ring-primary-500 focus:border-transparent"
           />
         </Autocomplete>
 
@@ -325,10 +325,10 @@ const LocationPicker: React.FC<LocationPickerProps> = ({
 
         {/* Location Details - Only shown when coordinates exist */}
         {isFromMap && (
-          <div className="space-y-4 p-4 border border-gray-200 rounded-lg bg-white">
+          <div className="space-y-4 p-4 border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800">
             <div className="flex items-center justify-between">
-              <h4 className="font-medium text-gray-900">Detail Lokasi</h4>
-              <span className="text-xs text-green-600 bg-green-50 px-2 py-1 rounded">
+              <h4 className="font-medium text-gray-900 dark:text-gray-100">Detail Lokasi</h4>
+              <span className="text-xs text-green-600 dark:text-green-400 bg-green-50 dark:bg-green-900/30 px-2 py-1 rounded">
                 Dari Google Maps
               </span>
             </div>

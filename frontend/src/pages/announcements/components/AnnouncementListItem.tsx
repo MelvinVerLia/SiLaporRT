@@ -30,7 +30,7 @@ export default function AnnouncementListItem({ a }: { a: Announcement }) {
             <div className="flex-1 space-y-3 min-w-0">
               {/* Title + badges */}
               <div className="space-y-2">
-                <h3 className="text-lg font-semibold text-gray-900 whitespace-pre-wrap break-words line-clamp-1">
+                <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 whitespace-pre-wrap break-words line-clamp-1">
                   {a.title}
                 </h3>
                 <div className="flex flex-wrap gap-2">
@@ -54,12 +54,12 @@ export default function AnnouncementListItem({ a }: { a: Announcement }) {
               </div>
 
               {/* Snippet */}
-              <p className="text-gray-600 text-sm line-clamp-3 whitespace-pre-wrap break-words">
+              <p className="text-gray-600 dark:text-gray-300 text-sm line-clamp-3 whitespace-pre-wrap break-words">
                 {a.content}
               </p>
 
               {/* Meta */}
-              <div className="flex items-center justify-between text-sm text-gray-500">
+              <div className="flex items-center justify-between text-sm text-gray-500 dark:text-gray-300">
                 <div className="flex items-center gap-4">
                   <span className="inline-flex items-center">
                     <Calendar className="mr-1 h-4 w-4" />

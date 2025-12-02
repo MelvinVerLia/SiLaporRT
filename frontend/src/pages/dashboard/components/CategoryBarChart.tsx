@@ -50,23 +50,15 @@ const CategoryBarChart: React.FC<CategoryBarChartProps> = ({
           return (
             <div key={index} className="space-y-1">
               <div className="flex items-center justify-between">
-                <span
-                  className={`text-sm font-medium truncate ${
-                    item.count === 0 ? "text-gray-400" : "text-gray-700"
-                  }`}
-                >
+                <span className="text-sm font-medium text-gray-700 dark:text-gray-200 truncate">
                   {item.name}
                 </span>
-                <span
-                  className={`text-sm font-bold ml-2 ${
-                    item.count === 0 ? "text-gray-400" : "text-gray-900"
-                  }`}
-                >
+                <span className="text-sm font-bold text-gray-900 dark:text-gray-100 ml-2">
                   {item.count}
                 </span>
               </div>
 
-              <div className="w-full bg-gray-200 rounded-full h-2.5">
+              <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2.5">
                 <div
                   className="h-2.5 rounded-full transition-all duration-500 ease-out"
                   style={{

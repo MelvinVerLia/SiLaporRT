@@ -42,8 +42,8 @@ const ReportPreview: React.FC<ReportPreviewProps> = ({
   if (!hasTitle && !hasDescription && !hasLocation && !hasAttachments) {
     return (
       <div className="flex flex-col items-center justify-center py-12 text-center">
-        <FileText className="h-16 w-16 text-gray-300 mb-4" />
-        <p className="text-gray-500 text-sm">
+        <FileText className="h-16 w-16 text-gray-300 dark:text-gray-600 mb-4" />
+        <p className="text-gray-500 dark:text-gray-400 text-sm">
           Preview akan muncul saat Anda mengisi form
         </p>
       </div>
@@ -55,11 +55,11 @@ const ReportPreview: React.FC<ReportPreviewProps> = ({
       {/* Title */}
       {hasTitle && (
         <div>
-          <h3 className="text-lg font-bold text-gray-900 mb-1 whitespace-pre-wrap break-words">
+          <h3 className="text-lg font-bold text-gray-900 dark:text-gray-100 mb-1 whitespace-pre-wrap break-words">
             {title}
           </h3>
           {currentStep >= 4 && (
-            <div className="flex items-center gap-2 text-xs text-gray-500">
+            <div className="flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400">
               <Calendar className="h-3 w-3" />
               <span>{new Date().toLocaleDateString("id-ID")}</span>
             </div>
@@ -101,7 +101,7 @@ const ReportPreview: React.FC<ReportPreviewProps> = ({
       {/* Description */}
       {hasDescription && (
         <div>
-          <p className="text-sm text-gray-700 whitespace-pre-wrap break-words">
+          <p className="text-sm text-gray-700 dark:text-gray-300 whitespace-pre-wrap break-words">
             {description}
           </p>
         </div>
@@ -111,15 +111,15 @@ const ReportPreview: React.FC<ReportPreviewProps> = ({
       {hasLocation && (
         <div className="pt-3 border-t border-gray-200">
           <div className="flex items-start gap-2">
-            <MapPin className="h-4 w-4 text-gray-400 mt-0.5 flex-shrink-0" />
+            <MapPin className="h-4 w-4 text-gray-400 dark:text-gray-500 mt-0.5 flex-shrink-0" />
             <div className="flex-1 min-w-0">
-              <p className="text-sm font-medium text-gray-900">
+              <p className="text-sm font-medium text-gray-900 dark:text-gray-100">
                 {locationData.address}
               </p>
-              <p className="text-xs text-gray-600 mt-1">
+              <p className="text-xs text-gray-600 dark:text-gray-300 mt-1">
                 RT {locationData.rt} RW {locationData.rw}
               </p>
-              <p className="text-xs text-gray-600">
+              <p className="text-xs text-gray-600 dark:text-gray-300">
                 {locationData.kelurahan}, {locationData.kecamatan}
               </p>
             </div>
@@ -131,8 +131,8 @@ const ReportPreview: React.FC<ReportPreviewProps> = ({
       {hasAttachments && (
         <div className="pt-3 border-t border-gray-200">
           <div className="flex items-center gap-2 mb-2">
-            <FileText className="h-4 w-4 text-gray-400" />
-            <span className="text-sm font-medium text-gray-700">
+            <FileText className="h-4 w-4 text-gray-400 dark:text-gray-500" />
+            <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
               {attachments.length} Lampiran
             </span>
           </div>
@@ -150,8 +150,8 @@ const ReportPreview: React.FC<ReportPreviewProps> = ({
                   />
                 ) : (
                   <div className="w-full h-full flex flex-col items-center justify-center p-2">
-                    <FileText className="h-8 w-8 text-gray-400 mb-1" />
-                    <span className="text-xs text-gray-600 text-center truncate w-full px-1">
+                    <FileText className="h-8 w-8 text-gray-400 dark:text-gray-500 mb-1" />
+                    <span className="text-xs text-gray-600 dark:text-gray-300 text-center truncate w-full px-1">
                       {file.original_filename || "file"}
                     </span>
                   </div>

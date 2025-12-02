@@ -45,8 +45,8 @@ const StatusDonutChart: React.FC<StatusDonutChartProps> = ({
 
               {/* Center text */}
               <div className="absolute inset-0 flex flex-col items-center justify-center">
-                <span className="text-2xl font-bold text-gray-400">0</span>
-                <span className="text-sm text-gray-400">Total</span>
+                <span className="text-2xl font-bold text-gray-400 dark:text-gray-500">0</span>
+                <span className="text-sm text-gray-400 dark:text-gray-500">Total</span>
               </div>
             </div>
           </div>
@@ -61,13 +61,13 @@ const StatusDonutChart: React.FC<StatusDonutChartProps> = ({
                       className="w-3 h-3 rounded-full flex-shrink-0 opacity-30"
                       style={{ backgroundColor: item.color }}
                     />
-                    <span className="text-sm font-medium text-gray-500 truncate">
+                    <span className="text-sm font-medium text-gray-500 dark:text-gray-300 truncate">
                       {item.name}
                     </span>
                   </div>
                   <div className="flex items-center space-x-1 lg:ml-5 lg:justify-start justify-center">
-                    <span className="text-lg font-bold text-gray-400">0</span>
-                    <span className="text-sm text-gray-400">(0%)</span>
+                    <span className="text-lg font-bold text-gray-400 dark:text-gray-300">0</span>
+                    <span className="text-sm text-gray-400 dark:text-gray-300">(0%)</span>
                   </div>
                 </div>
               ))}
@@ -168,8 +168,8 @@ const StatusDonutChart: React.FC<StatusDonutChartProps> = ({
 
             {/* Center text */}
             <div className="absolute inset-0 flex flex-col items-center justify-center">
-              <span className="text-2xl font-bold text-gray-900">{total}</span>
-              <span className="text-sm text-gray-500">Total</span>
+              <span className="text-2xl font-bold text-gray-900 dark:text-gray-100">{total}</span>
+              <span className="text-sm text-gray-500 dark:text-gray-300">Total</span>
             </div>
           </div>
         </div>
@@ -184,15 +184,15 @@ const StatusDonutChart: React.FC<StatusDonutChartProps> = ({
                     className="w-3 h-3 rounded-full flex-shrink-0"
                     style={{ backgroundColor: item.color }}
                   />
-                  <span className="text-sm font-medium text-gray-700 truncate">
+                  <span className="text-sm font-medium text-gray-700 dark:text-gray-200 truncate">
                     {item.name}
                   </span>
                 </div>
                 <div className="flex items-center space-x-1 lg:ml-5 lg:justify-start justify-center">
-                  <span className="text-lg font-bold text-gray-900">
+                  <span className="text-lg font-bold text-gray-900 dark:text-gray-100">
                     {item.value}
                   </span>
-                  <span className="text-sm text-gray-500">
+                  <span className="text-sm text-gray-500 dark:text-gray-300">
                     ({total > 0 ? Math.round((item.value / total) * 100) : 0}%)
                   </span>
                 </div>

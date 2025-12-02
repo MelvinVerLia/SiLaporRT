@@ -151,10 +151,10 @@ const AttachmentModal: React.FC<AttachmentModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center backdrop-blur ">
-      <div className="relative bg-white rounded-lg shadow-xl max-w-5xl max-h-[90vh] w-full mx-4 overflow-hidden">
+    <div className="fixed inset-0 z-50 flex items-center justify-center backdrop-blur bg-black/40 dark:bg-black/60">
+      <div className="relative bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-5xl max-h-[90vh] w-full mx-4 overflow-hidden">
         {/* Header */}
-        <div className="flex items-center justify-between p-4 border-b border-gray-200">
+        <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700">
           <div className="flex items-center space-x-3">
             <FileTypeIcon
               fileType={attachment.fileType}

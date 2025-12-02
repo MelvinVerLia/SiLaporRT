@@ -110,7 +110,7 @@ const CloudinaryUpload: React.FC<Props> = ({
 
   return (
     <div className={className}>
-      <label className="block mb-2 text-sm font-medium text-gray-700">
+      <label className="block mb-2 text-sm font-medium text-gray-700 dark:text-gray-300">
         Lampiran {hasFiles && `(${attachments.length}/${maxFiles})`}
       </label>
 
@@ -120,8 +120,8 @@ const CloudinaryUpload: React.FC<Props> = ({
           border-2 border-dashed rounded-xl p-6 transition cursor-pointer
           ${
             hasFiles
-              ? "border-green-200 bg-green-50 hover:bg-green-100"
-              : "border-gray-300 bg-white hover:bg-gray-50"
+              ? "border-green-200 dark:border-green-700 bg-green-50 dark:bg-green-900/20 hover:bg-green-100 dark:hover:bg-green-900/30"
+              : "border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700"
           }
           ${
             attachments.length >= maxFiles
@@ -175,15 +175,15 @@ const CloudinaryUpload: React.FC<Props> = ({
       {/* File Preview - Tampilan terpusat untuk semua file */}
       {attachments.length > 0 && (
         <div className="mt-4 space-y-3">
-          <h4 className="text-sm font-medium text-gray-700">File Terlampir:</h4>
+          <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300">File Terlampir:</h4>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
             {attachments.map((attachment) => (
               <div
                 key={attachment.publicId}
-                className="relative group border border-gray-200 rounded-lg overflow-hidden bg-white hover:shadow-md transition-shadow"
+                className="relative group border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden bg-white dark:bg-gray-800 hover:shadow-md transition-shadow"
               >
                 {/* Preview Content */}
-                <div className="aspect-square flex items-center justify-center bg-gray-50">
+                <div className="aspect-square flex items-center justify-center bg-gray-50 dark:bg-gray-900">
                   {attachment.fileType === "image" ? (
                     <img
                       src={attachment.url}
@@ -192,11 +192,11 @@ const CloudinaryUpload: React.FC<Props> = ({
                     />
                   ) : (
                     <div className="flex flex-col items-center justify-center p-4 text-center">
-                      <FileText className="h-8 w-8 text-gray-400 mb-2" />
-                      <span className="text-xs text-gray-600 font-medium truncate w-full">
+                      <FileText className="h-8 w-8 text-gray-400 dark:text-gray-500 mb-2" />
+                      <span className="text-xs text-gray-600 dark:text-gray-300 font-medium truncate w-full">
                         {attachment.filename}
                       </span>
-                      <span className="text-xs text-gray-400 mt-1">
+                      <span className="text-xs text-gray-400 dark:text-gray-500 mt-1">
                         {attachment.format?.toUpperCase()}
                         {attachment.bytes &&
                           ` • ${Math.round(attachment.bytes / 1024)} KB`}
@@ -236,7 +236,7 @@ const CloudinaryUpload: React.FC<Props> = ({
 
                 {/* Type Badge */}
                 <div className="absolute top-2 left-2">
-                  <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium bg-white bg-opacity-90 text-gray-700 shadow-sm">
+                  <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium bg-white dark:bg-gray-800 bg-opacity-90 dark:bg-opacity-90 text-gray-700 dark:text-gray-300 shadow-sm">
                     {attachment.fileType === "image" ? (
                       <FileImage className="h-3 w-3" />
                     ) : attachment.fileType === "video" ? (

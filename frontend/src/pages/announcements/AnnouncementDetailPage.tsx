@@ -53,10 +53,10 @@ export default function AnnouncementDetailPage() {
       <Card>
         <CardContent className="p-12 text-center">
           <AlertCircle className="mx-auto h-12 w-12 text-red-500 mb-4" />
-          <h3 className="text-lg font-semibold text-gray-900 mb-2">
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-2">
             {!a ? "Pengumuman Tidak Ditemukan" : "Gagal Memuat Pengumuman"}
           </h3>
-          <p className="text-gray-600 mb-6">
+          <p className="text-gray-600 dark:text-gray-300 mb-6">
             {!a
               ? "Pengumuman yang Anda cari tidak ditemukan atau mungkin sudah dihapus."
               : "Terjadi kesalahan saat memuat detail pengumuman. Silakan coba lagi."}
@@ -120,11 +120,11 @@ export default function AnnouncementDetailPage() {
                 </Badge>
               </div>
 
-              <CardTitle className="text-2xl text-gray-900 mb-4 whitespace-pre-wrap break-words">
+              <CardTitle className="text-2xl text-gray-900 dark:text-gray-100 mb-4 whitespace-pre-wrap break-words">
                 {a.title}
               </CardTitle>
 
-              <div className="flex flex-col sm:flex-row sm:items-center gap-4 text-sm text-gray-600">
+              <div className="flex flex-col sm:flex-row sm:items-center gap-4 text-sm text-gray-600 dark:text-gray-300">
                 <span className="inline-flex items-center">
                   <Calendar className="mr-1 h-4 w-4" />
                   {formatDateTime(a.publishAt || a.createdAt)}
@@ -147,7 +147,7 @@ export default function AnnouncementDetailPage() {
               <CardTitle>Isi Pengumuman</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="prose prose-sm max-w-none whitespace-pre-wrap break-words text-gray-700">
+              <div className="prose prose-sm max-w-none whitespace-pre-wrap break-words text-gray-700 dark:text-gray-300">
                 {a.content}
               </div>
             </CardContent>
@@ -180,20 +180,20 @@ export default function AnnouncementDetailPage() {
             </CardHeader>
             <CardContent className="space-y-3 text-sm">
               <div className="flex items-center justify-between">
-                <span className="text-gray-600">Status Tayang</span>
-                <span className="font-medium">
+                <span className="text-gray-600 dark:text-gray-200">Status Tayang</span>
+                <span className="font-medium text-gray-900 dark:text-gray-100">
                   {a.isActive ? "Aktif" : "Nonaktif"}
                 </span>
               </div>
               <div className="flex items-center justify-between">
-                <span className="text-gray-600">Mulai Tayang</span>
-                <span className="font-medium">
+                <span className="text-gray-600 dark:text-gray-200">Mulai Tayang</span>
+                <span className="font-medium text-gray-900 dark:text-gray-100">
                   {formatDateTime(a.publishAt)}
                 </span>
               </div>
               <div className="flex items-center justify-between">
-                <span className="text-gray-600">Berakhir</span>
-                <span className="font-medium">
+                <span className="text-gray-600 dark:text-gray-200">Berakhir</span>
+                <span className="font-medium text-gray-900 dark:text-gray-100">
                   {formatDateTime(a.expireAt)}
                 </span>
               </div>

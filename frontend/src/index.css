@@ -1,10 +1,11 @@
 @import "tailwindcss";
 
-@theme inline {
-  /* Orange Color Palette - Primary Brand Colors */
+@theme {
   --color-primary-50: #fef9e7;
   --color-primary-100: #fff5d6;
   --color-primary-500: #fb9e3a;
   --color-primary-600: #e6521f;
   --color-primary-700: #ea2f14;
 }
+
+@variant dark (.dark &);
