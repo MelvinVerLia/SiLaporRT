@@ -299,7 +299,7 @@ const ReportDetailPage: React.FC = () => {
           <h3 className="text-lg font-semibold text-gray-900 mb-2">
             {!report ? "Laporan Tidak Ditemukan" : "Gagal Memuat Laporan"}
           </h3>
-          <p className="text-gray-600 mb-6">
+          <p className="text-gray-600 dark:text-gray-300 mb-6">
             {!report
               ? "Laporan yang Anda cari tidak ditemukan atau mungkin sudah dihapus."
               : "Terjadi kesalahan saat memuat detail laporan. Silakan coba lagi."}
@@ -386,7 +386,7 @@ const ReportDetailPage: React.FC = () => {
                   </GoogleMap>
                 </LoadScript>
               </div>
-              <div className="flex flex-col sm:flex-row sm:items-center gap-4 text-sm text-gray-600">
+              <div className="flex flex-col sm:flex-row sm:items-center gap-4 text-sm text-gray-600 dark:text-gray-300">
                 {isAuthenticated && (
                   <div className="flex items-center">
                     <Button
@@ -515,10 +515,10 @@ const ReportDetailPage: React.FC = () => {
                             <p className="font-medium text-gray-900">
                               {response.responder.name}
                             </p>
-                            <p className="text-sm text-gray-600">Admin RT</p>
+                            <p className="text-sm text-gray-600 dark:text-gray-300">Admin RT</p>
                           </div>
                         </div>
-                        <span className="text-sm text-gray-500">
+                        <span className="text-sm text-gray-500 dark:text-gray-300">
                           {formatDateTime(response.createdAt)}
                         </span>
                       </div>
@@ -641,7 +641,7 @@ const ReportDetailPage: React.FC = () => {
                               Penulis
                             </Badge>
                           )}
-                        <span className="text-sm text-gray-500">
+                        <span className="text-sm text-gray-500 dark:text-gray-300">
                           {formatDateTime(comment.createdAt)}
                         </span>
                       </div>
@@ -655,8 +655,8 @@ const ReportDetailPage: React.FC = () => {
 
               {report.reportComments.length === 0 && (
                 <div className="text-center py-8">
-                  <MessageCircle className="mx-auto h-8 w-8 text-gray-400 mb-2" />
-                  <p className="text-gray-500">Belum ada komentar</p>
+                  <MessageCircle className="mx-auto h-8 w-8 text-gray-400 dark:text-gray-300 mb-2" />
+                  <p className="text-gray-500 dark:text-gray-300">Belum ada komentar</p>
                 </div>
               )}
             </CardContent>
@@ -672,7 +672,7 @@ const ReportDetailPage: React.FC = () => {
             </CardHeader>
             <CardContent className="space-y-4">
               <div>
-                <label className="text-sm font-medium text-gray-600">
+                <label className="text-sm font-medium text-gray-600 dark:text-gray-200">
                   Status
                 </label>
                 <div className="mt-1">
@@ -681,40 +681,40 @@ const ReportDetailPage: React.FC = () => {
               </div>
 
               <div>
-                <label className="text-sm font-medium text-gray-600">
+                <label className="text-sm font-medium text-gray-600 dark:text-gray-200">
                   Kategori
                 </label>
-                <p className="mt-1 text-sm text-gray-900">
+                <p className="mt-1 text-sm text-gray-900 dark:text-gray-100">
                   {getCategoryLabel(report.category)}
                 </p>
               </div>
 
               <div>
-                <label className="text-sm font-medium text-gray-600">
+                <label className="text-sm font-medium text-gray-600 dark:text-gray-200">
                   Lokasi
                 </label>
-                <p className="mt-1 text-sm text-gray-900">
+                <p className="mt-1 text-sm text-gray-900 dark:text-gray-100">
                   {report.location.address}
                 </p>
-                <p className="text-xs text-gray-500">
+                <p className="text-xs text-gray-500 dark:text-gray-300">
                   RT {report.location.rt} RW {report.location.rw}
                 </p>
               </div>
 
               <div>
-                <label className="text-sm font-medium text-gray-600">
+                <label className="text-sm font-medium text-gray-600 dark:text-gray-200">
                   Dilaporkan
                 </label>
-                <p className="mt-1 text-sm text-gray-900">
+                <p className="mt-1 text-sm text-gray-900 dark:text-gray-100">
                   {formatDateTime(report.createdAt)}
                 </p>
               </div>
 
               <div>
-                <label className="text-sm font-medium text-gray-600">
+                <label className="text-sm font-medium text-gray-600 dark:text-gray-200">
                   Dukungan
                 </label>
-                <p className="mt-1 text-sm text-gray-900">
+                <p className="mt-1 text-sm text-gray-900 dark:text-gray-100">
                   {report.upvoteCount} warga
                 </p>
               </div>
@@ -730,7 +730,7 @@ const ReportDetailPage: React.FC = () => {
               <CardContent className="space-y-4">
                 {/* Status Update */}
                 <div>
-                  <label className="text-sm font-medium text-gray-600 mb-2 block">
+                  <label className="text-sm font-medium text-gray-600 dark:text-gray-200 mb-2 block">
                     Ubah Status
                   </label>
                   <select
@@ -749,7 +749,7 @@ const ReportDetailPage: React.FC = () => {
 
                 {/* Quick Response */}
                 <div>
-                  <label className="text-sm font-medium text-gray-600 mb-2 block">
+                  <label className="text-sm font-medium text-gray-600 dark:text-gray-200 mb-2 block">
                     Tanggapan Resmi
                   </label>
                   <Textarea

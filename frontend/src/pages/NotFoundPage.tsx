@@ -8,16 +8,16 @@ const NotFoundPage: React.FC = () => {
   const navigate = useNavigate();
 
   return (
-    <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center px-4 sm:px-6 lg:px-8">
       <div className="max-w-md w-full">
         <Card>
           <CardContent className="p-8 text-center">
             {/* 404 Illustration */}
             <div className="mb-6">
-              <div className="mx-auto w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mb-4">
-                <Search className="w-12 h-12 text-gray-400" />
+              <div className="mx-auto w-24 h-24 bg-gray-100 dark:bg-gray-700 rounded-full flex items-center justify-center mb-4">
+                <Search className="w-12 h-12 text-gray-400 dark:text-gray-300" />
               </div>
-              <div className="text-6xl font-bold text-gray-300 mb-2">404</div>
+              <div className="text-6xl font-bold text-gray-300 dark:text-gray-600 mb-2">404</div>
             </div>
 
             {/* Error Message */}
@@ -25,7 +25,7 @@ const NotFoundPage: React.FC = () => {
               <h1 className="text-2xl font-bold text-primary-600 mb-3">
                 Halaman Tidak Ditemukan
               </h1>
-              <p className="text-gray-600 leading-relaxed">
+              <p className="text-gray-600 dark:text-gray-300 leading-relaxed">
                 Maaf, halaman yang Anda cari tidak dapat ditemukan. Mungkin
                 halaman tersebut telah dipindahkan, dihapus, atau URL yang Anda
                 masukkan salah.
@@ -52,7 +52,7 @@ const NotFoundPage: React.FC = () => {
             </div>
 
             {/* Help Text */}
-            <div className="mt-6 text-xs text-gray-400">
+            <div className="mt-6 text-xs text-gray-400 dark:text-gray-500">
               Jika masalah terus berlanjut, silakan hubungi admin RT
             </div>
           </CardContent>

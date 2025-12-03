@@ -104,18 +104,18 @@ const ResetPasswordPage: React.FC = () => {
   // Invalid token state
   if (isTokenValid === false) {
     return (
-      <div className="min-h-screen bg-gradient-to-l from-primary-100 to-white flex flex-col justify-center py-12 px-4 sm:px-6 lg:px-8">
-        <Card className="max-w-md w-full mx-auto shadow-xl border-0 bg-white/80 backdrop-blur-sm rounded-xl">
+      <div className="min-h-screen bg-gradient-to-l from-primary-100 to-white dark:from-gray-800 dark:to-gray-900 flex flex-col justify-center py-12 px-4 sm:px-6 lg:px-8">
+        <Card className="max-w-md w-full mx-auto shadow-xl border-0 bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-xl">
           <CardContent className="p-8 text-center">
-            <div className="w-16 h-16 mx-auto mb-6 bg-red-100 rounded-full flex items-center justify-center">
-              <X className="w-8 h-8 text-red-600" />
+            <div className="w-16 h-16 mx-auto mb-6 bg-red-100 dark:bg-red-900/30 rounded-full flex items-center justify-center">
+              <X className="w-8 h-8 text-red-600 dark:text-red-400" />
             </div>
 
-            <CardTitle className="text-2xl font-bold text-gray-900 mb-4">
+            <CardTitle className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-4">
               Link Tidak Valid
             </CardTitle>
 
-            <p className="text-gray-600 mb-8">
+            <p className="text-gray-600 dark:text-gray-300 mb-8">
               Link reset password tidak valid atau sudah kedaluwarsa. Silakan
               buat permintaan reset password baru.
             </p>
@@ -139,18 +139,18 @@ const ResetPasswordPage: React.FC = () => {
   // Success state
   if (isResetSuccessful) {
     return (
-      <div className="min-h-screen bg-gradient-to-l from-primary-100 to-white flex flex-col justify-center py-12 px-4 sm:px-6 lg:px-8">
-        <Card className="max-w-md w-full mx-auto shadow-xl border-0 bg-white/80 backdrop-blur-sm rounded-xl">
+      <div className="min-h-screen bg-gradient-to-l from-primary-100 to-white dark:from-gray-800 dark:to-gray-900 flex flex-col justify-center py-12 px-4 sm:px-6 lg:px-8">
+        <Card className="max-w-md w-full mx-auto shadow-xl border-0 bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-xl">
           <CardContent className="p-8 text-center">
-            <div className="w-16 h-16 mx-auto mb-6 bg-green-100 rounded-full flex items-center justify-center">
-              <Check className="w-8 h-8 text-green-600" />
+            <div className="w-16 h-16 mx-auto mb-6 bg-green-100 dark:bg-green-900/30 rounded-full flex items-center justify-center">
+              <Check className="w-8 h-8 text-green-600 dark:text-green-400" />
             </div>
 
-            <CardTitle className="text-2xl font-bold text-gray-900 mb-4">
+            <CardTitle className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-4">
               Password Berhasil Diubah!
             </CardTitle>
 
-            <p className="text-gray-600 mb-8">
+            <p className="text-gray-600 dark:text-gray-300 mb-8">
               Password Anda telah berhasil diubah. Anda akan diarahkan ke
               halaman login dalam beberapa detik.
             </p>
@@ -162,8 +162,8 @@ const ResetPasswordPage: React.FC = () => {
 
   // Main reset password form
   return (
-    <div className="min-h-screen bg-gradient-to-l from-primary-100 to-white flex flex-col justify-center py-12 px-4 sm:px-6 lg:px-8">
-      <Card className="max-w-4xl w-full mx-auto shadow-xl border-0 bg-white/80 backdrop-blur-sm rounded-xl">
+    <div className="min-h-screen bg-gradient-to-l from-primary-100 to-white dark:from-gray-800 dark:to-gray-900 flex flex-col justify-center py-12 px-4 sm:px-6 lg:px-8">
+      <Card className="max-w-4xl w-full mx-auto shadow-xl border-0 bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-xl">
         {/* Logo */}
         <div className="absolute top-4 left-8">
           <Link
@@ -185,13 +185,13 @@ const ResetPasswordPage: React.FC = () => {
           {/* Ilustrasi - Kolom kiri */}
           <div className="hidden md:flex md:w-1/2 items-center justify-center rounded-lg p-4 mt-12">
             <div className="text-center">
-              <div className="w-32 h-32 mx-auto mb-6 bg-primary-100 rounded-full flex items-center justify-center">
-                <Lock className="w-16 h-16 text-primary-600" />
+              <div className="w-32 h-32 mx-auto mb-6 bg-primary-100 dark:bg-primary-900/30 rounded-full flex items-center justify-center">
+                <Lock className="w-16 h-16 text-primary-600 dark:text-primary-400" />
               </div>
-              <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                Buat Password Baru
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-2">
+                Password Baru Anda
               </h3>
-              <p className="text-gray-600">
+              <p className="text-gray-600 dark:text-gray-300">
                 Masukkan password baru yang aman untuk akun Anda.
               </p>
             </div>
@@ -225,7 +225,7 @@ const ResetPasswordPage: React.FC = () => {
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-10 text-gray-400 hover:text-gray-600 transition-colors duration-200 focus:outline-none"
+                  className="absolute right-3 top-10 text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 transition-colors duration-200 focus:outline-none"
                   disabled={isLoading}
                 >
                   {showPassword ? (
@@ -238,8 +238,8 @@ const ResetPasswordPage: React.FC = () => {
 
               {/* Password Criteria */}
               {password && (
-                <div className="bg-gray-50 rounded-lg p-2">
-                  <p className="text-sm font-medium text-gray-500 mb-2">
+                <div className="bg-gray-50 dark:bg-gray-700/50 rounded-lg p-2">
+                  <p className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-2">
                     Kriteria Password:
                   </p>
                   {Object.entries({
@@ -249,15 +249,15 @@ const ResetPasswordPage: React.FC = () => {
                       {passwordCriteria[
                         key as keyof typeof passwordCriteria
                       ] ? (
-                        <Check className="h-4 w-4 text-green-600 mr-2" />
+                        <Check className="h-4 w-4 text-green-600 dark:text-green-400 mr-2" />
                       ) : (
-                        <X className="h-4 w-4 text-gray-400 mr-2" />
+                        <X className="h-4 w-4 text-gray-400 dark:text-gray-500 mr-2" />
                       )}
                       <span
                         className={
                           passwordCriteria[key as keyof typeof passwordCriteria]
-                            ? "text-green-700"
-                            : "text-gray-600"
+                            ? "text-green-700 dark:text-green-400"
+                            : "text-gray-600 dark:text-gray-400"
                         }
                       >
                         {label}
@@ -287,7 +287,7 @@ const ResetPasswordPage: React.FC = () => {
                 <button
                   type="button"
                   onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                  className="absolute right-3 top-10 text-gray-400 hover:text-gray-600 transition-colors duration-200 focus:outline-none"
+                  className="absolute right-3 top-10 text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 transition-colors duration-200 focus:outline-none"
                   disabled={isLoading}
                 >
                   {showConfirmPassword ? (
@@ -299,8 +299,8 @@ const ResetPasswordPage: React.FC = () => {
               </div>
 
               {error && (
-                <div className="text-sm text-red-600 bg-red-50 border border-red-200 p-3 rounded-lg flex items-start space-x-2">
-                  <span className="text-red-500 mt-0.5">⚠</span>
+                <div className="text-sm text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-800 p-3 rounded-lg flex items-start space-x-2">
+                  <span className="text-red-500 dark:text-red-400 mt-0.5">⚠</span>
                   <span>{error}</span>
                 </div>
               )}

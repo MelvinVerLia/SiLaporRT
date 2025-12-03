@@ -124,10 +124,10 @@ const ProfileInformationTab: React.FC<ProfileInformationTabProps> = ({
       {/* Header Section */}
       <div className="flex items-start justify-between">
         <div>
-          <h3 className="text-lg font-semibold text-gray-900 mb-1">
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-1">
             Informasi Profil
           </h3>
-          <p className="text-sm text-gray-600">
+          <p className="text-sm text-gray-600 dark:text-gray-300">
             Kelola informasi pribadi dan kontak Anda
           </p>
         </div>

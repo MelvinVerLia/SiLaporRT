@@ -53,13 +53,13 @@ const RegisterForm: React.FC = () => {
     formData.password === formData.confirmPassword;
 
   return (
-    <div className="min-h-screen bg-gradient-to-l from-primary-100 to-white flex flex-col justify-center py-12 px-4 sm:px-6 lg:px-8">
-      <Card className="max-w-4xl w-full mx-auto shadow-xl border-0 bg-white/80 backdrop-blur-sm rounded-xl">
+    <div className="min-h-screen bg-gradient-to-l from-primary-100 to-white dark:from-gray-800 dark:to-gray-900 flex flex-col justify-center py-12 px-4 sm:px-6 lg:px-8">
+      <Card className="max-w-4xl w-full mx-auto shadow-xl border-0 bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-xl">
         {/* Logo positioned absolutely at the top of the card - visible on all screen sizes */}
         <div className="absolute top-4 left-8">
           <Link
             to="/"
-            className="flex items-center space-x-2 text-lg font-bold text-primary-600 hover:text-primary-700 transition-colors"
+            className="flex items-center space-x-2 text-lg font-bold text-primary-600 dark:text-primary-400 hover:text-primary-700 dark:hover:text-primary-300 transition-colors"
           >
             <img
               src="/assets/logo.webp"
@@ -67,7 +67,7 @@ const RegisterForm: React.FC = () => {
               className="h-8 w-8 md:h-10 md:w-10"
             />
             <span className="text-xl md:text-2xl">
-              SiLapor<span className="text-primary-700">RT</span>
+              SiLapor<span className="text-primary-700 dark:text-primary-400">RT</span>
             </span>
           </Link>
         </div>
@@ -87,12 +87,12 @@ const RegisterForm: React.FC = () => {
           <div className="md:w-1/2 flex flex-col justify-center md:mt-12">
             {/* Title dan Subtitle - Di atas form */}
             <div className="mb-6">
-              <CardTitle className="text-3xl font-bold text-gray-900 mb-2">
+              <CardTitle className="text-3xl font-bold text-gray-900 dark:text-gray-100 mb-2">
                 Bergabung dengan Kami
               </CardTitle>
 
               {/* Link Login - Di bawah title, sebelum form */}
-              <p className="text-sm text-gray-600">
+              <p className="text-sm text-gray-600 dark:text-gray-300">
                 Sudah punya akun?{" "}
                 <Link
                   to="/login"
@@ -160,7 +160,7 @@ const RegisterForm: React.FC = () => {
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-10 text-gray-400 hover:text-gray-600 transition-colors duration-200 focus:outline-none"
+                  className="absolute right-3 top-10 text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 transition-colors duration-200 focus:outline-none"
                   disabled={isLoading}
                   aria-label={
                     showPassword ? "Sembunyikan password" : "Tampilkan password"
@@ -194,7 +194,7 @@ const RegisterForm: React.FC = () => {
                 <button
                   type="button"
                   onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                  className="absolute right-3 top-10 text-gray-400 hover:text-gray-600 transition-colors duration-200 focus:outline-none"
+                  className="absolute right-3 top-10 text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 transition-colors duration-200 focus:outline-none"
                   disabled={isLoading}
                   aria-label={
                     showConfirmPassword
@@ -213,13 +213,13 @@ const RegisterForm: React.FC = () => {
                   <div className="mt-2 flex items-center space-x-1">
                     {passwordsMatch ? (
                       <>
-                        <Check className="h-4 w-4 text-green-500" />
-                        <span className="text-xs text-green-600">
-                          Password cocok
+                        <Check className="h-4 w-4 text-green-500 dark:text-green-400" />
+                        <span className="text-xs text-green-600 dark:text-green-400">
+                          Password cocok!
                         </span>
                       </>
                     ) : (
-                      <span className="text-xs text-red-600">
+                      <span className="text-xs text-red-600 dark:text-red-400">
                         Password tidak cocok
                       </span>
                     )}
@@ -249,7 +249,7 @@ const RegisterForm: React.FC = () => {
                     dan{" "}
                     <Link
                       to="/privacy"
-                      className="text-primary-600 hover:text-primary-700 font-medium"
+                      className="text-primary-600 dark:text-primary-400 hover:text-primary-700 dark:hover:text-primary-300 font-medium"
                     >
                       Kebijakan Privasi
                     </Link>{" "}
@@ -259,8 +259,8 @@ const RegisterForm: React.FC = () => {
               </div>
 
               {error && !error.field && (
-                <div className="text-sm text-red-600 bg-red-50 border border-red-200 p-3 rounded-lg flex items-start space-x-2">
-                  <span className="text-red-500 mt-0.5">⚠</span>
+                <div className="text-sm text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-800 p-3 rounded-lg flex items-start space-x-2">
+                  <span className="text-red-500 dark:text-red-400 mt-0.5">⚠</span>
                   <span>{error.message}</span>
                 </div>
               )}
@@ -289,7 +289,7 @@ const RegisterForm: React.FC = () => {
               <Button
                 type="button"
                 variant="outline"
-                className="w-full border-gray-300 hover:bg-gray-50 transition-colors duration-200"
+                className="w-full border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors duration-200"
                 onClick={handleGoogleRegister}
                 disabled={isLoading}
               >
@@ -313,7 +313,7 @@ const RegisterForm: React.FC = () => {
                 </svg>
                 Daftar dengan Google
               </Button>
-              <p className="text-xs text-gray-500 mt-3 text-center">
+              <p className="text-xs text-gray-500 dark:text-gray-400 mt-3 text-center">
                 Cepat dan mudah dalam 1 menit
               </p>
             </div>
@@ -323,15 +323,15 @@ const RegisterForm: React.FC = () => {
 
       {/* Footer */}
       <div className="mt-8 text-center px-4">
-        <p className="text-xs text-gray-500">
+        <p className="text-xs text-gray-500 dark:text-gray-300">
           Dengan mendaftar, Anda menyetujui{" "}
-          <Link to="/terms" className="text-primary-600 hover:text-primary-700">
+          <Link to="/terms" className="text-primary-600 dark:text-primary-400 hover:text-primary-700 dark:hover:text-primary-300">
             Syarat & Ketentuan
           </Link>{" "}
           dan{" "}
           <Link
             to="/privacy"
-            className="text-primary-600 hover:text-primary-700"
+            className="text-primary-600 dark:text-primary-400 hover:text-primary-700 dark:hover:text-primary-300"
           >
             Kebijakan Privasi
           </Link>

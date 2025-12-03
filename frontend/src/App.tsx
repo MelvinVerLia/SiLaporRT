@@ -5,6 +5,8 @@ import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import CitizenLayout from "./components/layout/CitizenLayout";
 import AdminLayout from "./components/layout/AdminLayout";
 import { ToastProvider } from "./contexts/ToastContext";
+import { ThemeProvider } from "./contexts/ThemeContext";
+import ThemeWrapper from "./components/ThemeWrapper";
 
 // Pages
 import HomePage from "./pages/home/HomePage";
@@ -45,10 +47,12 @@ function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
-        <ToastProvider>
-          <Router>
-            <div className="bg-gray-50">
-              <Routes>
+        <ThemeProvider>
+          <ThemeWrapper>
+            <ToastProvider>
+              <Router>
+                <div className="bg-gray-50 dark:bg-gray-900 min-h-screen">
+                  <Routes>
                 {/* Public-only routes (redirect ke "/" jika sudah login) */}
                 <Route
                   path="/login"
@@ -174,8 +178,10 @@ function App() {
           </Router>
           <ReactQueryDevtools initialIsOpen={false} />
         </ToastProvider>
-      </AuthProvider>
-    </QueryClientProvider>
+      </ThemeWrapper>
+    </ThemeProvider>
+  </AuthProvider>
+  </QueryClientProvider>
   );
 }
 

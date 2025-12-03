@@ -533,7 +533,7 @@ export default function ManageReportsPage() {
       {/* Page Header */}
       <div>
         <h1 className="text-3xl font-bold text-primary-600">Kelola Laporan</h1>
-        <p className="text-gray-600 mt-1">
+        <p className="text-gray-600 dark:text-gray-200 mt-1">
           Kelola dan tanggapi laporan dari warga RT
         </p>
       </div>
@@ -582,11 +582,11 @@ export default function ManageReportsPage() {
             </div>
           ) : items.length === 0 ? (
             <div className="text-center py-12">
-              <FileText className="mx-auto h-12 w-12 text-gray-400 mb-4" />
-              <h3 className="text-lg font-semibold text-gray-900 mb-2">
+              <FileText className="mx-auto h-12 w-12 text-gray-400 dark:text-gray-500 mb-4" />
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-2">
                 Tidak ada laporan
               </h3>
-              <p className="text-gray-600">
+              <p className="text-gray-600 dark:text-gray-300">
                 Belum ada laporan yang sesuai dengan filter yang dipilih
               </p>
             </div>
@@ -604,23 +604,23 @@ export default function ManageReportsPage() {
                     <col className="w-15/100" /> {/* Status - 15% */}
                   </colgroup>
                   <thead>
-                    <tr className="border-b border-gray-200">
-                      <th className="text-left py-4 pr-6 text-sm font-medium text-gray-600">
+                    <tr className="border-b border-gray-200 dark:border-gray-700">
+                      <th className="text-left py-4 pr-6 text-sm font-medium text-gray-600 dark:text-gray-300">
                         Laporan
                       </th>
-                      <th className="text-left py-4 pr-4 text-sm font-medium text-gray-600">
+                      <th className="text-left py-4 pr-4 text-sm font-medium text-gray-600 dark:text-gray-300">
                         Kategori
                       </th>
-                      <th className="text-left py-4 pr-4 text-sm font-medium text-gray-600">
+                      <th className="text-left py-4 pr-4 text-sm font-medium text-gray-600 dark:text-gray-300">
                         Prioritas
                       </th>
-                      <th className="text-left py-4 pr-4 text-sm font-medium text-gray-600">
+                      <th className="text-left py-4 pr-4 text-sm font-medium text-gray-600 dark:text-gray-300">
                         Visibilitas
                       </th>
-                      <th className="text-left py-4 text-sm font-medium text-gray-600">
+                      <th className="text-left py-4 text-sm font-medium text-gray-600 dark:text-gray-300">
                         Tanggal
                       </th>
-                      <th className="text-left py-4 pr-4 text-sm font-medium text-gray-600">
+                      <th className="text-left py-4 pr-4 text-sm font-medium text-gray-600 dark:text-gray-300">
                         Status
                       </th>
                     </tr>
@@ -632,13 +632,13 @@ export default function ManageReportsPage() {
                       return (
                         <tr
                           key={report.id}
-                          className="border-b border-gray-100 hover:bg-gray-50 transition-colors cursor-pointer"
+                          className="border-b border-gray-100 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors cursor-pointer"
                           onClick={() => handleViewClick(report)}
                         >
                           <td className="py-5 pr-6">
                             <div className="min-w-0 flex-1">
                               <p
-                                className="text-sm font-medium text-gray-900 line-clamp-1 leading-5"
+                                className="text-sm font-medium text-gray-900 dark:text-white line-clamp-1 leading-5"
                                 title={report.title}
                               >
                                 {report.title.length > 50
@@ -646,14 +646,14 @@ export default function ManageReportsPage() {
                                   : report.title}
                               </p>
                               <p
-                                className="text-sm text-gray-500 line-clamp-1 leading-5 mt-1"
+                                className="text-sm text-gray-500 dark:text-gray-300 line-clamp-1 leading-5 mt-1"
                                 title={report.description}
                               >
                                 {report.description.length > 50
                                   ? report.description.substring(0, 50) + "..."
                                   : report.description}
                               </p>
-                              <div className="flex items-center mt-2 text-xs text-gray-500">
+                              <div className="flex items-center mt-2 text-xs text-gray-500 dark:text-gray-300">
                                 <MapPin className="h-3 w-3 mr-1" />
                                 <span
                                   className="truncate"
@@ -694,17 +694,17 @@ export default function ManageReportsPage() {
                             </Badge>
                           </td>
                           <td className="py-5">
-                            <div className="text-xs text-gray-600">
+                            <div className="text-xs text-gray-600 dark:text-gray-300">
                               <p className="font-medium">
                                 {formatDate(report.createdAt)}
                               </p>
                               {report.user && !report.isAnonymous && (
-                                <p className="text-gray-500 truncate">
+                                <p className="text-gray-500 dark:text-gray-300 truncate">
                                   oleh {report.user.name}
                                 </p>
                               )}
                               {report.isAnonymous && (
-                                <p className="text-gray-500">Anonim</p>
+                                <p className="text-gray-500 dark:text-gray-300">Anonim</p>
                               )}
                             </div>
                           </td>
@@ -741,15 +741,15 @@ export default function ManageReportsPage() {
                       <CardContent className="p-4">
                         <div className="space-y-3">
                           <div className="min-w-0">
-                            <h3 className="text-sm font-medium text-gray-900 line-clamp-2 whitespace-pre-wrap break-words">
+                            <h3 className="text-sm font-medium text-gray-900 dark:text-white line-clamp-2 whitespace-pre-wrap break-words">
                               {report.title}
                             </h3>
-                            <p className="text-sm text-gray-500 line-clamp-2 mt-1 whitespace-pre-wrap break-words">
+                            <p className="text-sm text-gray-500 dark:text-gray-300 line-clamp-2 mt-1 whitespace-pre-wrap break-words">
                               {report.description}
                             </p>
                           </div>
 
-                          <div className="flex items-center text-xs text-gray-500">
+                          <div className="flex items-center text-xs text-gray-500 dark:text-gray-300">
                             <MapPin className="h-3 w-3 mr-1" />
                             <span className="truncate">
                               {report.location.address}
@@ -779,7 +779,7 @@ export default function ManageReportsPage() {
                             </Badge>
                           </div>
 
-                          <div className="flex justify-between items-center text-xs text-gray-500">
+                          <div className="flex justify-between items-center text-xs text-gray-500 dark:text-gray-300">
                             <div className="flex items-center space-x-3">
                               <div className="flex items-center">
                                 <ThumbsUp className="h-3 w-3 mr-1" />
@@ -842,11 +842,11 @@ export default function ManageReportsPage() {
 
       {isDialogOpen && (
         <>
-          <div className="fixed inset-0 bg-black/40 backdrop-blur-sm z-40 mb-0" />
+          <div className="fixed inset-0 bg-black/40 dark:bg-black/60 backdrop-blur-sm z-40 mb-0" />
 
           <Card
             ref={dialogRef}
-            className="absolute z-50 top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[400px] h-[300px] bg-gray-50 rounded-3xl "
+            className="absolute z-50 top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[400px] h-[300px] bg-gray-50 dark:bg-gray-800 rounded-3xl "
           >
             <CardHeader className="flex flex-row justify-between ">
               <CardTitle>Chupapimunyayo</CardTitle>

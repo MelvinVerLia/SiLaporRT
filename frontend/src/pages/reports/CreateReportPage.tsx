@@ -269,10 +269,10 @@ const CreateReportPage: React.FC = () => {
         return (
           <div className="space-y-4">
             <div className="text-center mb-4">
-              <h3 className="text-lg font-semibold text-gray-900 mb-1">
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-1">
                 Detail Laporan
               </h3>
-              <p className="text-sm text-gray-600">
+              <p className="text-sm text-gray-600 dark:text-gray-300">
                 Berikan informasi dasar tentang laporan Anda
               </p>
             </div>
@@ -347,10 +347,10 @@ const CreateReportPage: React.FC = () => {
         return (
           <div className="space-y-4">
             <div className="text-center mb-4">
-              <h3 className="text-lg font-semibold text-gray-900 mb-1">
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-1">
                 Lampiran (Opsional)
               </h3>
-              <p className="text-sm text-gray-600">
+              <p className="text-sm text-gray-600 dark:text-gray-300">
                 Tambahkan foto, video, atau dokumen sebagai bukti laporan Anda
               </p>
             </div>
@@ -385,10 +385,10 @@ const CreateReportPage: React.FC = () => {
         return (
           <div className="space-y-4">
             <div className="text-center mb-4">
-              <h3 className="text-lg font-semibold text-gray-900 mb-1">
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-1">
                 Submit Laporan
               </h3>
-              <p className="text-sm text-gray-600">
+              <p className="text-sm text-gray-600 dark:text-gray-300">
                 Atur privasi dan kirim laporan Anda
               </p>
             </div>
@@ -396,10 +396,10 @@ const CreateReportPage: React.FC = () => {
             {/* Pengaturan Privasi */}
             <div className="space-y-4">
               <div className="pb-3 border-b border-gray-200">
-                <h4 className="text-base font-medium text-gray-900 mb-1">
+                <h4 className="text-base font-medium text-gray-900 dark:text-gray-100 mb-1">
                   Pengaturan Privasi
                 </h4>
-                <p className="text-xs text-gray-500">
+                <p className="text-xs text-gray-500 dark:text-gray-300">
                   Tentukan bagaimana laporan Anda akan ditampilkan
                 </p>
               </div>
@@ -409,11 +409,11 @@ const CreateReportPage: React.FC = () => {
                 <div className="flex-1 pr-3">
                   <label
                     htmlFor="isAnonymous"
-                    className="block text-sm font-medium text-gray-900 mb-0.5 cursor-pointer"
+                    className="block text-sm font-medium text-gray-900 dark:text-gray-100 mb-0.5 cursor-pointer"
                   >
                     Laporan Anonim
                   </label>
-                  <p className="text-xs text-gray-600">
+                  <p className="text-xs text-gray-600 dark:text-gray-300">
                     Nama Anda tidak akan ditampilkan pada laporan ini. Hanya
                     admin yang dapat melihat identitas Anda.
                   </p>
@@ -439,11 +439,11 @@ const CreateReportPage: React.FC = () => {
                 <div className="flex-1 pr-3">
                   <label
                     htmlFor="isPublic"
-                    className="block text-sm font-medium text-gray-900 mb-0.5 cursor-pointer"
+                    className="block text-sm font-medium text-gray-900 dark:text-gray-100 mb-0.5 cursor-pointer"
                   >
                     Laporan Publik
                   </label>
-                  <p className="text-xs text-gray-600">
+                  <p className="text-xs text-gray-600 dark:text-gray-300">
                     Laporan dapat dilihat oleh semua warga di halaman publik.
                     Jika tidak dicentang, hanya Anda dan admin yang dapat
                     melihat.
@@ -478,7 +478,7 @@ const CreateReportPage: React.FC = () => {
       {/* Header */}
       <div>
         <h1 className="text-3xl font-bold text-primary-600">Buat Laporan</h1>
-        <p className="text-gray-600 mt-1">
+        <p className="text-gray-600 dark:text-gray-300 mt-1">
           Laporkan masalah di lingkungan RT Anda
         </p>
       </div>
@@ -499,7 +499,7 @@ const CreateReportPage: React.FC = () => {
                       ? "bg-green-600 border-green-600 text-white"
                       : isActive
                       ? "bg-primary-600 border-primary-600 text-white"
-                      : "bg-white border-gray-300 text-gray-400"
+                      : "bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600 text-gray-400 dark:text-gray-500"
                   }`}
                 >
                   {isCompleted ? (
@@ -515,12 +515,12 @@ const CreateReportPage: React.FC = () => {
                         ? "text-primary-600"
                         : isCompleted
                         ? "text-green-600"
-                        : "text-gray-500"
+                        : "text-gray-500 dark:text-gray-400"
                     }`}
                   >
                     {step.title}
                   </p>
-                  <p className="text-xs text-gray-400 hidden sm:block">
+                  <p className="text-xs text-gray-400 dark:text-gray-500 hidden sm:block">
                     {step.description}
                   </p>
                 </div>
@@ -642,17 +642,17 @@ const CreateReportPage: React.FC = () => {
           />
 
           {/* Modal Content */}
-          <div className="fixed inset-x-0 bottom-0 z-50 bg-white rounded-t-2xl shadow-xl max-h-[90vh] overflow-y-auto animate-slide-up">
-            <div className="sticky z-10 top-0 bg-white border-b border-gray-200 p-4 flex items-center justify-between">
-              <h3 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
+          <div className="fixed inset-x-0 bottom-0 z-50 bg-white dark:bg-gray-800 rounded-t-2xl shadow-xl max-h-[90vh] overflow-y-auto animate-slide-up">
+            <div className="sticky z-10 top-0 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 p-4 flex items-center justify-between">
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 flex items-center gap-2">
                 <FileText className="h-5 w-5" />
                 Preview Laporan
               </h3>
               <button
                 onClick={() => setIsPreviewModalOpen(false)}
-                className="p-2 rounded-lg hover:bg-gray-100 transition-colors"
+                className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
               >
-                <X className="h-5 w-5 text-gray-500" />
+                <X className="h-5 w-5 text-gray-500 dark:text-gray-400" />
               </button>
             </div>
 

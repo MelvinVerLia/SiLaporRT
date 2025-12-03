@@ -160,16 +160,16 @@ export default function AdvancedFilter({
 
       {/* Dropdown Panel */}
       {isOpen && (
-        <div className="absolute right-0 mt-2 w-80 bg-white rounded-lg shadow-xl border border-gray-200 z-50">
+        <div className="absolute right-0 mt-2 w-80 bg-white dark:bg-gray-800 rounded-lg shadow-xl border border-gray-200 dark:border-gray-700 z-50">
           {/* Header */}
-          <div className="flex items-center justify-between p-4 border-b border-gray-200">
+          <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700">
             <div className="flex items-center gap-2">
-              <Filter className="h-4 w-4 text-gray-600" />
-              <h3 className="font-semibold text-gray-900">Filter Lanjutan</h3>
+              <Filter className="h-4 w-4 text-gray-600 dark:text-gray-400" />
+              <h3 className="font-semibold text-gray-900 dark:text-gray-100">Filter Lanjutan</h3>
             </div>
             <button
               onClick={() => setIsOpen(false)}
-              className="text-gray-400 hover:text-gray-600 transition-colors"
+              className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
             >
               <X className="h-4 w-4" />
             </button>
@@ -180,7 +180,7 @@ export default function AdvancedFilter({
             <div className="space-y-4">
               {fields.map((field) => (
                 <div key={field.name}>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                     {field.label}
                   </label>
                   {renderField(field)}
@@ -190,7 +190,7 @@ export default function AdvancedFilter({
           </div>
 
           {/* Footer */}
-          <div className="flex items-center justify-between gap-2 p-4 border-t border-gray-200 bg-gray-50 rounded-b-lg">
+          <div className="flex items-center justify-between gap-2 p-4 border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 rounded-b-lg">
             <Button
               variant="outline"
               size="sm"

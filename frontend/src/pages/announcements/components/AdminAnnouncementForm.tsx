@@ -403,42 +403,42 @@ export default function AdminAnnouncementForm({ initial, onSuccess }: Props) {
       </div>
 
       {/* Scheduling */}
-      <Card className="border-gray-200">
-        <CardContent className="p-4">
+      <Card className="border-gray-200 dark:border-gray-700">
+        <CardContent className="p-4 bg-gray-50 dark:bg-gray-800">
           <div className="flex items-center mb-3">
-            <Calendar className="h-4 w-4 text-gray-600 mr-2" />
-            <h3 className="text-sm font-medium text-gray-900">
+            <Calendar className="h-4 w-4 text-gray-600 dark:text-gray-300 mr-2" />
+            <h3 className="text-sm font-medium text-gray-900 dark:text-gray-100">
               Jadwal Pengumuman
             </h3>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
-              <label className="block text-sm font-medium text-gray-700">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-200">
                 Mulai Tayang
               </label>
               <input
                 type="datetime-local"
-                className="flex h-10 w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm placeholder:text-gray-400 focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-0"
+                className="flex h-10 w-full rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 px-3 py-2 text-sm text-gray-900 dark:text-gray-100 placeholder:text-gray-400 dark:placeholder:text-gray-500 focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-0"
                 value={publishAt}
                 onChange={(e) => setPublishAt(e.target.value)}
               />
-              <p className="text-xs text-gray-500">
+              <p className="text-xs text-gray-500 dark:text-gray-300">
                 Kosongkan untuk langsung tayang
               </p>
             </div>
 
             <div className="space-y-2">
-              <label className="block text-sm font-medium text-gray-700">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-200">
                 Berakhir Pada
               </label>
               <input
                 type="datetime-local"
-                className="flex h-10 w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm placeholder:text-gray-400 focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-0"
+                className="flex h-10 w-full rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 px-3 py-2 text-sm text-gray-900 dark:text-gray-100 placeholder:text-gray-400 dark:placeholder:text-gray-500 focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-0"
                 value={expireAt}
                 onChange={(e) => setExpireAt(e.target.value)}
               />
-              <p className="text-xs text-gray-500">
+              <p className="text-xs text-gray-500 dark:text-gray-300">
                 Kosongkan jika tidak ada tanggal berakhir
               </p>
             </div>
@@ -454,17 +454,17 @@ export default function AdminAnnouncementForm({ initial, onSuccess }: Props) {
       </Card>
 
       {/* Advanced settings */}
-      <Card className="border-gray-200">
+      <Card className="border-gray-200 dark:border-gray-700">
         <CardContent className="p-4">
           <div className="flex items-center mb-3">
-            <Settings className="h-4 w-4 text-gray-600 mr-2" />
-            <h3 className="text-sm font-medium text-gray-900">
+            <Settings className="h-4 w-4 text-gray-600 dark:text-gray-300 mr-2" />
+            <h3 className="text-sm font-medium text-gray-900 dark:text-gray-100">
               Pengaturan Lanjutan
             </h3>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <label className="flex items-center gap-2 text-sm text-gray-800">
+            <label className="flex items-center gap-2 text-sm text-gray-800 dark:text-gray-200">
               <input
                 type="checkbox"
                 checked={isPinned}
@@ -473,7 +473,7 @@ export default function AdminAnnouncementForm({ initial, onSuccess }: Props) {
               Pin di atas
             </label>
 
-            <label className="flex items-center gap-2 text-sm text-gray-800">
+            <label className="flex items-center gap-2 text-sm text-gray-800 dark:text-gray-200">
               <input
                 type="checkbox"
                 checked={isActive}
@@ -486,11 +486,11 @@ export default function AdminAnnouncementForm({ initial, onSuccess }: Props) {
       </Card>
 
       {/* Attachments - Updated Section */}
-      <Card className="border-gray-200">
+      <Card className="border-gray-200 dark:border-gray-700">
         <CardContent className="p-4">
           <div className="flex items-center mb-3">
-            <Paperclip className="h-4 w-4 text-gray-600 mr-2" />
-            <h3 className="text-sm font-medium text-gray-900">Lampiran</h3>
+            <Paperclip className="h-4 w-4 text-gray-600 dark:text-gray-300 mr-2" />
+            <h3 className="text-sm font-medium text-gray-900 dark:text-gray-100">Lampiran</h3>
           </div>
 
           <CloudinaryUpload

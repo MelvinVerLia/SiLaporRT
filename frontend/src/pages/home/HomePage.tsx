@@ -28,7 +28,7 @@ import { useAuthContext } from "../../contexts/AuthContext";
 import CountUp from "react-countup";
 
 const HomePage: React.FC = () => {
-  const { user, isAuthenticated, getAllUsersCount } = useAuthContext();
+  const { isAuthenticated, getAllUsersCount } = useAuthContext();
   const { data, isLoading, isError, refetch, isFetching } = useQuery({
     queryKey: ["recent-reports"],
     queryFn: getRecentReports,
@@ -72,28 +72,28 @@ const HomePage: React.FC = () => {
       title: "Total Laporan",
       value: reportTotal,
       icon: FileText,
-      color: "text-primary-600",
+      color: "text-primary-600 dark:text-primary-400",
       bgColor: "bg-primary-100",
     },
     {
       title: "Sedang Diproses",
       value: inProgressTotal,
       icon: Users,
-      color: "text-blue-600",
+      color: "text-blue-600 dark:text-blue-400",
       bgColor: "bg-blue-100",
     },
     {
       title: "Sudah Selesai",
       value: resolvedTotal,
       icon: TrendingUp,
-      color: "text-green-600",
+      color: "text-green-600 dark:text-green-400",
       bgColor: "bg-green-100",
     },
     {
       title: "Warga Aktif",
       value: userTotal,
       icon: MapPin,
-      color: "text-purple-600",
+      color: "text-purple-600 dark:text-purple-400",
       bgColor: "bg-purple-100",
     },
   ];
@@ -130,11 +130,11 @@ const HomePage: React.FC = () => {
       <section>
         <div className="grid lg:grid-cols-2 gap-12 lg:gap-16 items-center">
           <div className="text-center lg:text-left">
-            <h1 className="text-4xl lg:text-5xl xl:text-6xl font-bold text-primary-500 mb-6 leading-tight">
+            <h1 className="text-4xl lg:text-5xl xl:text-6xl font-bold text-primary-500 dark:text-primary-400 mb-6 leading-tight">
               Laporkan Masalah
-              <span className="block text-primary-600">Lingkungan Anda</span>
+              <span className="block text-primary-600 dark:text-primary-400">Lingkungan Anda</span>
             </h1>
-            <p className="text-lg lg:text-xl text-gray-600 mb-8 leading-relaxed">
+            <p className="text-lg lg:text-xl text-gray-600 dark:text-gray-300 mb-8 leading-relaxed">
               Platform digital untuk warga RT melaporkan masalah infrastruktur,
               kebersihan, dan keamanan lingkungan secara cepat, transparan, dan
               terorganisir.
@@ -144,11 +144,9 @@ const HomePage: React.FC = () => {
               {stats.map((stat, index) => (
                 <div
                   key={index}
-                  className="text-5xl font-extrabold text-center text-black lg:text-left"
+                  className="text-5xl font-extrabold text-center text-black dark:text-white lg:text-left"
                 >
-                  <div
-                    className={`text-2xl lg:text-3xl font-bold ${stat.color} mb-1`}
-                  >
+                  <div className={`text-2xl lg:text-3xl font-bold ${stat.color} mb-1`}>
                     <CountUp
                       start={0}
                       end={stat.value}
@@ -157,7 +155,7 @@ const HomePage: React.FC = () => {
                       delay={0.5}
                     />
                   </div>
-                  <div className="text-xs lg:text-sm text-gray-600 font-medium">
+                  <div className="text-xs lg:text-sm text-gray-600 dark:text-gray-200 font-medium">
                     {stat.title}
                   </div>
                 </div>
@@ -216,10 +214,10 @@ const HomePage: React.FC = () => {
 
       <section>
         <div className="text-center mb-12">
-          <h2 className="text-2xl lg:text-3xl font-bold leading-tight mb-3">
+          <h2 className="text-2xl lg:text-3xl font-bold leading-tight mb-3 text-gray-800 dark:text-gray-100">
             Fitur-fitur SiLaporRT
           </h2>
-          <p className="text-gray-600 leading-relaxed max-w-2xl mx-auto">
+          <p className="text-gray-600 dark:text-gray-300 leading-relaxed max-w-2xl mx-auto">
             Fitur-fitur inovatif untuk memudahkan warga melaporkan masalah,
             berkolaborasi, dan meningkatkan kualitas lingkungan secara
             bersama-sama.
@@ -231,7 +229,7 @@ const HomePage: React.FC = () => {
           {features.slice(0, 2).map((feature, index) => (
             <div
               key={index}
-              className="bg-white border border-gray-200 rounded-lg overflow-hidden shadow-sm"
+              className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden shadow-sm"
             >
               <img
                 src={feature.imageUrl}
@@ -239,10 +237,10 @@ const HomePage: React.FC = () => {
                 className="w-full h-40 object-contain"
               />
               <div className="p-4 pt-0 text-center">
-                <h3 className="text-lg font-semibold text-gray-900 mb-1.5">
+                <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-1.5">
                   {feature.title}
                 </h3>
-                <p className="text-sm text-gray-600 leading-relaxed">
+                <p className="text-sm text-gray-600 dark:text-gray-300 leading-relaxed">
                   {feature.description}
                 </p>
               </div>
@@ -255,7 +253,7 @@ const HomePage: React.FC = () => {
           {features.slice(2, 4).map((feature, index) => (
             <div
               key={index + 2}
-              className="bg-white border border-gray-200 rounded-lg overflow-hidden shadow-sm"
+              className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden shadow-sm"
             >
               <img
                 src={feature.imageUrl}
@@ -263,10 +261,10 @@ const HomePage: React.FC = () => {
                 className="w-full h-40 object-contain"
               />
               <div className="p-4 pt-0 text-center">
-                <h3 className="text-lg font-semibold text-gray-900 mb-1.5">
+                <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-1.5">
                   {feature.title}
                 </h3>
-                <p className="text-sm text-gray-600 leading-relaxed">
+                <p className="text-sm text-gray-600 dark:text-gray-300 leading-relaxed">
                   {feature.description}
                 </p>
               </div>
@@ -281,7 +279,7 @@ const HomePage: React.FC = () => {
             <div className="flex justify-between items-center">
               <div>
                 <CardTitle>Laporan Terbaru</CardTitle>
-                <p className="text-sm text-gray-600 mt-1">
+                <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
                   Aktivitas terkini dari warga RT
                 </p>
               </div>
@@ -305,10 +303,10 @@ const HomePage: React.FC = () => {
                 <Card>
                   <CardContent className="p-12 text-center">
                     <AlertCircle className="mx-auto h-12 w-12 text-red-500 mb-4" />
-                    <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                    <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-2">
                       Gagal Memuat Laporan Terbaru
                     </h3>
-                    <p className="text-gray-600 mb-6">
+                    <p className="text-gray-600 dark:text-gray-300 mb-6">
                       Terjadi kesalahan saat memuat data laporan terbaru.
                       Silakan coba lagi.
                     </p>
@@ -330,11 +328,11 @@ const HomePage: React.FC = () => {
               ) : (
                 <Card>
                   <CardContent className="p-12 text-center">
-                    <FileText className="mx-auto h-12 w-12 text-gray-400 mb-4" />
-                    <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                    <FileText className="mx-auto h-12 w-12 text-gray-400 dark:text-gray-300 mb-4" />
+                    <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-2">
                       Belum Ada Laporan
                     </h3>
-                    <p className="text-gray-600">
+                    <p className="text-gray-600 dark:text-gray-300">
                       Laporan akan muncul ketika tersedia.
                     </p>
                   </CardContent>
