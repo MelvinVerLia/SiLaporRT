@@ -53,6 +53,7 @@ jobs:
         with:
           name: silaport-backend
           path: deploy-package
+          include-hidden-files: true
 
   deploy:
     runs-on: ubuntu-latest
@@ -88,4 +89,5 @@ jobs:
           app-name: "SiLaporRT-Backend"
           slot-name: "Production"
           package: ./deploy
+
 
