@@ -25,9 +25,6 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Generate Prisma Client
-        run: npx prisma generate
-
       - name: Build
         run: npm run build --if-present
 
@@ -89,5 +86,6 @@ jobs:
           app-name: "SiLaporRT-Backend"
           slot-name: "Production"
           package: ./deploy
+
 
 
