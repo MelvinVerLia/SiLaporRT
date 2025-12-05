@@ -71,6 +71,7 @@ jobs:
           pwd
           ls -la
           ls -la ./deploy
+          ls -la ./deploy/node_modules
           ls -la ./deploy/node_modules/.prisma/client || echo "No .prisma/client found"
 
       - name: Login to Azure
@@ -86,6 +87,7 @@ jobs:
           app-name: "SiLaporRT-Backend"
           slot-name: "Production"
           package: ./deploy
+
 
 
 
