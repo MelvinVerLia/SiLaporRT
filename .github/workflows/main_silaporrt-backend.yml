@@ -23,7 +23,7 @@ jobs:
           node-version: "22.x"
 
       - name: Install dependencies
-        run: npm ci
+        run: npm install
 
       - name: Build
         run: npm run build --if-present
@@ -87,6 +87,7 @@ jobs:
           app-name: "SiLaporRT-Backend"
           slot-name: "Production"
           package: ./deploy
+
 
 
 
