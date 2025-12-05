@@ -25,7 +25,7 @@ const ProfileHeader: React.FC<ProfileHeaderProps> = ({
   // Extract dominant color from profile picture
   useEffect(() => {
     if (!user?.profile) {
-      setCoverColor("#3b82f6"); // Default blue
+      setCoverColor("#1e3a5f"); // Default dark blue for dark mode
       return;
     }
 
@@ -73,12 +73,12 @@ const ProfileHeader: React.FC<ProfileHeaderProps> = ({
         setCoverColor(`rgb(${r}, ${g}, ${b})`);
       } catch (error) {
         console.error("Error extracting color:", error);
-        setCoverColor("#3b82f6");
+        setCoverColor("#1e3a5f");
       }
     };
 
     img.onerror = () => {
-      setCoverColor("#3b82f6"); // Fallback to default
+      setCoverColor("#1e3a5f"); // Fallback to default dark blue
     };
   }, [user?.profile]);
 
@@ -115,7 +115,7 @@ const ProfileHeader: React.FC<ProfileHeaderProps> = ({
         <div className="flex flex-col sm:flex-row items-center sm:items-end sm:gap-6">
           {/* Profile Picture */}
           <div className="flex-shrink-0 relative">
-            <div className="ring-4 ring-white rounded-full">
+            <div className="ring-4 ring-white dark:ring-gray-800 rounded-full">
               <ProfilePictureUpload
                 ref={uploadRef}
                 currentUrl={user.profile || ""}
@@ -130,7 +130,7 @@ const ProfileHeader: React.FC<ProfileHeaderProps> = ({
           {/* User Info */}
           <div className="flex-1 text-center sm:text-left">
             <div className="flex flex-col sm:flex-row sm:items-center gap-3 mb-2">
-              <h2 className="text-2xl font-bold text-gray-900">{user.name}</h2>
+              <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100">{user.name}</h2>
               <Badge
                 variant={roleBadge.variant}
                 className="flex items-center w-fit mx-auto sm:mx-0"
@@ -140,7 +140,7 @@ const ProfileHeader: React.FC<ProfileHeaderProps> = ({
               </Badge>
             </div>
 
-            <div className="flex items-center gap-2 justify-center sm:justify-start text-sm text-gray-600">
+            <div className="flex items-center gap-2 justify-center sm:justify-start text-sm text-gray-600 dark:text-gray-300">
               <Calendar className="h-4 w-4" />
               <span>Bergabung {formatJoinDate(user.createdAt!)}</span>
             </div>

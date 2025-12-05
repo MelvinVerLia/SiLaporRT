@@ -54,6 +54,9 @@ class ReportService {
     dateFrom?: string;
     dateTo?: string;
     userId?: string;
+    sortBy?: string;
+    upvoteDateFrom?: string;
+    upvoteDateTo?: string;
   }) {
     const page = Math.max(1, parseInt(params.page ?? "1", 10) || 1);
     const pageSize = Math.min(
@@ -75,6 +78,9 @@ class ReportService {
         isPublic: params.isPublic,
         dateFrom: params.dateFrom,
         dateTo: params.dateTo,
+        sortBy: params.sortBy,
+        upvoteDateFrom: params.upvoteDateFrom,
+        upvoteDateTo: params.upvoteDateTo,
       });
       return { page, pageSize, total, items };
     } catch (error) {
@@ -165,7 +171,7 @@ class ReportService {
         "https://res.cloudinary.com/dgnedkivd/image/upload/v1757562088/silaporrt/dev/logo/logo_lnenhb.png",
         "REPORT"
       );
-      
+
       return {
         success: true,
         data: response,
@@ -249,6 +255,24 @@ class ReportService {
       return stats;
     } catch (error) {
       throw new Error(`Failed to fetch all reports statistics: ${error}`);
+    }
+  }
+  static async updateReportStatus(
+    reportId: string,
+    responderId: string,
+    attachments?: string[],
+    message?: string
+  ) {
+    try {
+      const result = await ReportRepository.updateReportStatus(
+        reportId,
+        responderId,
+        attachments,
+        message
+      );
+      return result;
+    } catch (error) {
+      throw new Error(`Failed to update report status: ${error}`);
     }
   }
 }

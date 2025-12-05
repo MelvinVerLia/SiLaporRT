@@ -100,10 +100,10 @@ const PasswordChangeForm: React.FC<PasswordChangeFormProps> = ({
       {/* Header Section */}
       <div className="flex items-start justify-between">
         <div>
-          <h3 className="text-lg font-semibold text-gray-900 mb-1">
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-1">
             Ubah Password
           </h3>
-          <p className="text-sm text-gray-600">
+          <p className="text-sm text-gray-600 dark:text-gray-300">
             Perbarui password Anda untuk menjaga keamanan akun
           </p>
         </div>
@@ -136,7 +136,7 @@ const PasswordChangeForm: React.FC<PasswordChangeFormProps> = ({
             <button
               type="button"
               onClick={() => setShowPassword(!showPassword)}
-              className="absolute right-3 top-10 text-gray-400 hover:text-gray-600 transition-colors duration-200 focus:outline-none"
+              className="absolute right-3 top-10 text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 transition-colors duration-200 focus:outline-none"
               disabled={isChanging}
             >
               {showPassword ? (
@@ -161,7 +161,7 @@ const PasswordChangeForm: React.FC<PasswordChangeFormProps> = ({
             <button
               type="button"
               onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-              className="absolute right-3 top-10 text-gray-400 hover:text-gray-600 transition-colors duration-200 focus:outline-none"
+              className="absolute right-3 top-10 text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 transition-colors duration-200 focus:outline-none"
               disabled={isChanging}
             >
               {showConfirmPassword ? (

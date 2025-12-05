@@ -23,7 +23,7 @@ export default function CreateAnnouncementPage() {
         <h1 className="text-3xl font-bold text-primary-600">
           Buat Pengumuman Baru
         </h1>
-        <p className="text-gray-600 mt-1">
+        <p className="text-gray-600 dark:text-gray-200 mt-1">
           Buat pengumuman baru untuk warga RT
         </p>
       </div>

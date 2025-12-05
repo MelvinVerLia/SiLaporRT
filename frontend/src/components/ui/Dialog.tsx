@@ -38,7 +38,7 @@ const Dialog: React.FC<DialogProps> = ({
 
           <motion.div
             className={cn(
-              "relative z-10 w-full max-w-md rounded-3xl bg-gradient-to-br from-white to-gray-50 shadow-xl border border-gray-100/50 overflow-hidden",
+              "relative z-10 w-full max-w-md rounded-3xl bg-gradient-to-br from-white to-gray-50 dark:from-gray-800 dark:to-gray-900 shadow-xl border border-gray-100/50 dark:border-gray-700/50 overflow-hidden",
               className
             )}
             initial={{ opacity: 0, scale: 0.9, y: 40 }}
@@ -54,7 +54,7 @@ const Dialog: React.FC<DialogProps> = ({
               </div>
               <div className="flex-1">
                 {title && (
-                  <h2 className="text-2xl font-bold text-gray-900 leading-tight mb-4 text-center">
+                  <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100 leading-tight mb-4 text-center">
                     {title}
                   </h2>
                 )}

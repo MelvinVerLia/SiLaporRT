@@ -116,7 +116,8 @@ export class AnnouncementRepository {
     showInactiveOnly,
     dateFrom,
     dateTo,
-  }: ListParams & { includeInactive?: boolean; showInactiveOnly?: boolean }) {
+    sortBy,
+  }: ListParams & { includeInactive?: boolean; showInactiveOnly?: boolean; sortBy?: string }) {
     // Auto-deactivate expired announcements before fetching (admin juga perlu melihat status yang akurat)
     await this.autoDeactivateExpired();
 
@@ -156,17 +157,30 @@ export class AnnouncementRepository {
 
     const skip = (page - 1) * pageSize;
 
-    // New ordering logic for better UX:
-    // 1. Pinned announcements first
-    // 2. Most recently updated first (when create/edit, it goes to top)
-    // 3. Creation date as fallback
-    const orderBy = pinnedFirst
-      ? [
-          { isPinned: "desc" as const },
-          { updatedAt: "desc" as const },
-          { createdAt: "desc" as const },
-        ]
-      : [{ updatedAt: "desc" as const }, { createdAt: "desc" as const }];
+    // Determine orderBy based on sortBy parameter
+    let orderBy: any;
+    if (sortBy === "oldest") {
+      // Oldest first
+      orderBy = pinnedFirst
+        ? [
+            { isPinned: "desc" as const },
+            { createdAt: "asc" as const },
+          ]
+        : [{ createdAt: "asc" as const }];
+    } else {
+      // Default: Newest first
+      // 1. Pinned announcements first
+      // 2. Most recently updated first (when create/edit, it goes to top)
+      // 3. Creation date as fallback
+      orderBy = pinnedFirst
+        ? [
+            { isPinned: "desc" as const },
+            { updatedAt: "desc" as const },
+            { createdAt: "desc" as const },
+          ]
+        : [{ updatedAt: "desc" as const }, { createdAt: "desc" as const }];
+    }
+
     const [total, items] = await Promise.all([
       prisma.announcement.count({ where }),
       prisma.announcement.findMany({

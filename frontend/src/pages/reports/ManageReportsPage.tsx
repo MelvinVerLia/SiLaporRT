@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useRef } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import {
@@ -12,6 +12,7 @@ import {
   CheckCircle,
   XCircle,
   Pause,
+  X,
 } from "lucide-react";
 import {
   adminListReports,
@@ -32,6 +33,7 @@ import AdvancedFilter, {
   FilterField,
 } from "../../components/common/AdvancedFilter";
 import ReportManageTableSkeleton from "./components/ReportManageTableSkeleton";
+import { updateReportStat } from "../../services/reportService";
 
 export default function ManageReportsPage() {
   const navigate = useNavigate();
@@ -50,6 +52,12 @@ export default function ManageReportsPage() {
     {}
   );
   const [selectedVisibility, setSelectedVisibility] = useState("");
+  const [sortBy, setSortBy] = useState("");
+  const [selectedPeriod, setSelectedPeriod] = useState("");
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const dialogRef = useRef<HTMLDivElement>(null);
+  const [currentReportId, setCurrentReportId] = useState<string | null>(null);
+  const [message, setMessage] = useState<string | undefined>(undefined);
 
   // Update selected status when URL params change
   useEffect(() => {
@@ -58,6 +66,92 @@ export default function ManageReportsPage() {
       setSelectedStatus(statusParam);
     }
   }, [searchParams, selectedStatus]);
+
+  // Helper to calculate date range from period
+  const getDateRangeFromPeriod = (period: string) => {
+    const from = new Date();
+    const to = new Date();
+
+    switch (period) {
+      case "hari-ini":
+        from.setHours(0, 0, 0, 0);
+        to.setHours(23, 59, 59, 999);
+        break;
+      case "kemarin":
+        from.setDate(from.getDate() - 1);
+        from.setHours(0, 0, 0, 0);
+        to.setDate(to.getDate() - 1);
+        to.setHours(23, 59, 59, 999);
+        break;
+      case "minggu-ini": {
+        const dayOfWeek = from.getDay();
+        const diff = dayOfWeek === 0 ? 6 : dayOfWeek - 1;
+        from.setDate(from.getDate() - diff);
+        from.setHours(0, 0, 0, 0);
+        to.setHours(23, 59, 59, 999);
+        break;
+      }
+      case "bulan-ini":
+        from.setDate(1);
+        from.setHours(0, 0, 0, 0);
+        to.setMonth(to.getMonth() + 1, 0);
+        to.setHours(23, 59, 59, 999);
+        break;
+      case "tahun-ini":
+        from.setMonth(0, 1);
+        from.setHours(0, 0, 0, 0);
+        to.setMonth(11, 31);
+        to.setHours(23, 59, 59, 999);
+        break;
+      default:
+        return {};
+    }
+
+    return {
+      from: from.toISOString().split("T")[0],
+      to: to.toISOString().split("T")[0],
+    };
+  };
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        dialogRef.current &&
+        !dialogRef.current.contains(event.target as Node)
+      ) {
+        closeDialog();
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
+
+  const closeDialog = () => {
+    document.body.style.overflow = "auto";
+    setIsDialogOpen(false);
+  };
+  const openDialog = () => {
+    if (isDialogOpen) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "auto";
+    }
+    setIsDialogOpen(true);
+  };
+
+  const updateReport = async (attachments?: string[], message?: string) => {
+    if (!currentReportId) return;
+    const response = await updateReportStat(
+      currentReportId,
+      attachments,
+      message
+    );
+    return response;
+  };
 
   const { data, isLoading, isError } = useQuery({
     queryKey: [
@@ -71,10 +165,13 @@ export default function ManageReportsPage() {
         selectedStatus,
         selectedVisibility,
         dateRange,
+        sortBy,
+        selectedPeriod,
       },
     ],
-    queryFn: () =>
-      adminListReports({
+    queryFn: () => {
+      const upvoteDateRange = selectedPeriod ? getDateRangeFromPeriod(selectedPeriod) : {};
+      return adminListReports({
         page,
         pageSize,
         q,
@@ -84,7 +181,11 @@ export default function ManageReportsPage() {
         visibility: selectedVisibility,
         dateFrom: dateRange.from,
         dateTo: dateRange.to,
-      }),
+        sortBy,
+        upvoteDateFrom: upvoteDateRange.from,
+        upvoteDateTo: upvoteDateRange.to,
+      });
+    },
     staleTime: 0,
   });
 
@@ -203,6 +304,21 @@ export default function ManageReportsPage() {
     { value: "CLOSED", label: "Ditutup" },
   ];
 
+  const sortByOptions = [
+    { value: "", label: "Terbaru" },
+    { value: "oldest", label: "Terlama" },
+    { value: "most_liked", label: "Paling Banyak Disukai" },
+  ];
+
+  const periodOptions = [
+    { value: "", label: "Semua Waktu" },
+    { value: "hari-ini", label: "Hari Ini" },
+    { value: "kemarin", label: "Kemarin" },
+    { value: "minggu-ini", label: "Minggu Ini" },
+    { value: "bulan-ini", label: "Bulan Ini" },
+    { value: "tahun-ini", label: "Tahun Ini" },
+  ];
+
   const getStatusBadge = (status: string) => {
     const variants = {
       PENDING: { variant: "warning" as const, label: "Menunggu", icon: Clock },
@@ -289,6 +405,8 @@ export default function ManageReportsPage() {
     setSelectedStatus("");
     setSelectedVisibility("");
     setDateRange({});
+    setSortBy("");
+    setSelectedPeriod("");
     setPage(1);
   };
 
@@ -300,6 +418,8 @@ export default function ManageReportsPage() {
     if (selectedStatus) count++;
     if (selectedVisibility) count++;
     if (dateRange.from || dateRange.to) count++;
+    if (sortBy) count++;
+    if (sortBy === "most_liked" && selectedPeriod) count++;
     return count;
   }, [
     selectedCategory,
@@ -307,6 +427,8 @@ export default function ManageReportsPage() {
     selectedStatus,
     selectedVisibility,
     dateRange,
+    sortBy,
+    selectedPeriod,
   ]);
 
   // Define filter fields for AdvancedFilter
@@ -351,6 +473,35 @@ export default function ManageReportsPage() {
       options: statusOptions,
     },
     {
+      name: "sortBy",
+      label: "Urutkan Berdasarkan",
+      type: "select",
+      value: sortBy,
+      onChange: (value) => {
+        setSortBy(value as string);
+        if (value !== "most_liked") {
+          setSelectedPeriod("");
+        }
+        setPage(1);
+      },
+      options: sortByOptions,
+    },
+    ...(sortBy === "most_liked"
+      ? [
+          {
+            name: "period",
+            label: "Periode Waktu",
+            type: "select" as const,
+            value: selectedPeriod,
+            onChange: (value: string | { from?: string; to?: string }) => {
+              setSelectedPeriod(value as string);
+              setPage(1);
+            },
+            options: periodOptions,
+          },
+        ]
+      : []),
+    {
       name: "visibility",
       label: "Visibilitas",
       type: "select",
@@ -378,11 +529,11 @@ export default function ManageReportsPage() {
   ];
 
   return (
-    <div className="space-y-6">
+    <div className={`space-y-6`}>
       {/* Page Header */}
       <div>
         <h1 className="text-3xl font-bold text-primary-600">Kelola Laporan</h1>
-        <p className="text-gray-600 mt-1">
+        <p className="text-gray-600 dark:text-gray-200 mt-1">
           Kelola dan tanggapi laporan dari warga RT
         </p>
       </div>
@@ -431,11 +582,11 @@ export default function ManageReportsPage() {
             </div>
           ) : items.length === 0 ? (
             <div className="text-center py-12">
-              <FileText className="mx-auto h-12 w-12 text-gray-400 mb-4" />
-              <h3 className="text-lg font-semibold text-gray-900 mb-2">
+              <FileText className="mx-auto h-12 w-12 text-gray-400 dark:text-gray-500 mb-4" />
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-2">
                 Tidak ada laporan
               </h3>
-              <p className="text-gray-600">
+              <p className="text-gray-600 dark:text-gray-300">
                 Belum ada laporan yang sesuai dengan filter yang dipilih
               </p>
             </div>
@@ -453,23 +604,23 @@ export default function ManageReportsPage() {
                     <col className="w-15/100" /> {/* Status - 15% */}
                   </colgroup>
                   <thead>
-                    <tr className="border-b border-gray-200">
-                      <th className="text-left py-4 pr-6 text-sm font-medium text-gray-600">
+                    <tr className="border-b border-gray-200 dark:border-gray-700">
+                      <th className="text-left py-4 pr-6 text-sm font-medium text-gray-600 dark:text-gray-300">
                         Laporan
                       </th>
-                      <th className="text-left py-4 pr-4 text-sm font-medium text-gray-600">
+                      <th className="text-left py-4 pr-4 text-sm font-medium text-gray-600 dark:text-gray-300">
                         Kategori
                       </th>
-                      <th className="text-left py-4 pr-4 text-sm font-medium text-gray-600">
+                      <th className="text-left py-4 pr-4 text-sm font-medium text-gray-600 dark:text-gray-300">
                         Prioritas
                       </th>
-                      <th className="text-left py-4 pr-4 text-sm font-medium text-gray-600">
+                      <th className="text-left py-4 pr-4 text-sm font-medium text-gray-600 dark:text-gray-300">
                         Visibilitas
                       </th>
-                      <th className="text-left py-4 text-sm font-medium text-gray-600">
+                      <th className="text-left py-4 text-sm font-medium text-gray-600 dark:text-gray-300">
                         Tanggal
                       </th>
-                      <th className="text-left py-4 pr-4 text-sm font-medium text-gray-600">
+                      <th className="text-left py-4 pr-4 text-sm font-medium text-gray-600 dark:text-gray-300">
                         Status
                       </th>
                     </tr>
@@ -481,13 +632,13 @@ export default function ManageReportsPage() {
                       return (
                         <tr
                           key={report.id}
-                          className="border-b border-gray-100 hover:bg-gray-50 transition-colors cursor-pointer"
+                          className="border-b border-gray-100 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors cursor-pointer"
                           onClick={() => handleViewClick(report)}
                         >
                           <td className="py-5 pr-6">
                             <div className="min-w-0 flex-1">
                               <p
-                                className="text-sm font-medium text-gray-900 line-clamp-1 leading-5"
+                                className="text-sm font-medium text-gray-900 dark:text-white line-clamp-1 leading-5"
                                 title={report.title}
                               >
                                 {report.title.length > 50
@@ -495,14 +646,14 @@ export default function ManageReportsPage() {
                                   : report.title}
                               </p>
                               <p
-                                className="text-sm text-gray-500 line-clamp-1 leading-5 mt-1"
+                                className="text-sm text-gray-500 dark:text-gray-300 line-clamp-1 leading-5 mt-1"
                                 title={report.description}
                               >
                                 {report.description.length > 50
                                   ? report.description.substring(0, 50) + "..."
                                   : report.description}
                               </p>
-                              <div className="flex items-center mt-2 text-xs text-gray-500">
+                              <div className="flex items-center mt-2 text-xs text-gray-500 dark:text-gray-300">
                                 <MapPin className="h-3 w-3 mr-1" />
                                 <span
                                   className="truncate"
@@ -543,36 +694,31 @@ export default function ManageReportsPage() {
                             </Badge>
                           </td>
                           <td className="py-5">
-                            <div className="text-xs text-gray-600">
+                            <div className="text-xs text-gray-600 dark:text-gray-300">
                               <p className="font-medium">
                                 {formatDate(report.createdAt)}
                               </p>
                               {report.user && !report.isAnonymous && (
-                                <p className="text-gray-500 truncate">
+                                <p className="text-gray-500 dark:text-gray-300 truncate">
                                   oleh {report.user.name}
                                 </p>
                               )}
                               {report.isAnonymous && (
-                                <p className="text-gray-500">Anonim</p>
+                                <p className="text-gray-500 dark:text-gray-300">Anonim</p>
                               )}
                             </div>
                           </td>
                           <td className="py-5 pr-4">
-                            <select
-                              value={report.status}
-                              onChange={(e) => {
+                            <Button
+                              size="sm"
+                              onClick={(e) => {
                                 e.stopPropagation();
-                                handleStatusChange(report.id, e.target.value);
+                                openDialog();
+                                setCurrentReportId(report.id);
                               }}
-                              className="text-xs border rounded px-2 py-1"
-                              onClick={(e) => e.stopPropagation()}
                             >
-                              <option value="PENDING">Menunggu</option>
-                              <option value="IN_PROGRESS">Dalam Proses</option>
-                              <option value="RESOLVED">Selesai</option>
-                              <option value="REJECTED">Ditolak</option>
-                              <option value="CLOSED">Ditutup</option>
-                            </select>
+                              Next Step
+                            </Button>
                           </td>
                         </tr>
                       );
@@ -594,25 +740,22 @@ export default function ManageReportsPage() {
                     >
                       <CardContent className="p-4">
                         <div className="space-y-3">
-                          {/* Header */}
                           <div className="min-w-0">
-                            <h3 className="text-sm font-medium text-gray-900 line-clamp-2 whitespace-pre-wrap break-words">
+                            <h3 className="text-sm font-medium text-gray-900 dark:text-white line-clamp-2 whitespace-pre-wrap break-words">
                               {report.title}
                             </h3>
-                            <p className="text-sm text-gray-500 line-clamp-2 mt-1 whitespace-pre-wrap break-words">
+                            <p className="text-sm text-gray-500 dark:text-gray-300 line-clamp-2 mt-1 whitespace-pre-wrap break-words">
                               {report.description}
                             </p>
                           </div>
 
-                          {/* Location */}
-                          <div className="flex items-center text-xs text-gray-500">
+                          <div className="flex items-center text-xs text-gray-500 dark:text-gray-300">
                             <MapPin className="h-3 w-3 mr-1" />
                             <span className="truncate">
                               {report.location.address}
                             </span>
                           </div>
 
-                          {/* Badges */}
                           <div className="flex flex-wrap gap-2">
                             <Badge variant="default" size="sm">
                               {getCategoryLabel(report.category)}
@@ -636,8 +779,7 @@ export default function ManageReportsPage() {
                             </Badge>
                           </div>
 
-                          {/* Stats */}
-                          <div className="flex justify-between items-center text-xs text-gray-500">
+                          <div className="flex justify-between items-center text-xs text-gray-500 dark:text-gray-300">
                             <div className="flex items-center space-x-3">
                               <div className="flex items-center">
                                 <ThumbsUp className="h-3 w-3 mr-1" />
@@ -657,7 +799,6 @@ export default function ManageReportsPage() {
                             </div>
                           </div>
 
-                          {/* Status Update */}
                           <div className="pt-2 border-t border-gray-100">
                             <select
                               value={report.status}
@@ -698,6 +839,42 @@ export default function ManageReportsPage() {
           )}
         </CardContent>
       </Card>
+
+      {isDialogOpen && (
+        <>
+          <div className="fixed inset-0 bg-black/40 dark:bg-black/60 backdrop-blur-sm z-40 mb-0" />
+
+          <Card
+            ref={dialogRef}
+            className="absolute z-50 top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[400px] h-[300px] bg-gray-50 dark:bg-gray-800 rounded-3xl "
+          >
+            <CardHeader className="flex flex-row justify-between ">
+              <CardTitle>Chupapimunyayo</CardTitle>
+              <X
+                className="w-5 h-5 hover:cursor-pointer"
+                onClick={closeDialog}
+              />
+            </CardHeader>
+
+            <CardContent>
+              <div className="flex justify-between flex-col gap-4">
+                <Input
+                  label="response"
+                  showCounter
+                  limit={200}
+                  onChange={(e) => setMessage(e.target.value)}
+                />
+                <Button
+                  className=""
+                  onClick={() => updateReport(undefined, message)}
+                >
+                  Submit
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        </>
+      )}
     </div>
   );
 }

@@ -101,7 +101,7 @@ export default function NotificationSidebar({
             transition={{ type: "tween", duration: 0.3 }}
           >
             <div className="p-4 border-gray-200 flex justify-between items-center bg-gray-50">
-              <h2 className="text-lg font-semibold text-gray-800">
+              <h2 className="text-lg font-semibold text-gray-700 dark:text-gray-300">
                 {tabvalue === "unread"
                   ? "Belum Dibaca "
                   : tabvalue === "read"
@@ -162,15 +162,15 @@ export default function NotificationSidebar({
                             {renderCategoryIcon(n.category)}
                           </div>
                           <div className="">
-                            <p className="text-sm font-medium text-gray-800">
+                            <p className="text-sm font-medium text-gray-700 dark:text-gray-300">
                               {n.title}
                             </p>
                             <p>
-                              <span className="text-xs text-gray-500 line-clamp-2">
+                              <span className="text-xs text-gray-500 dark:text-gray-400 line-clamp-2">
                                 {n.body}
                               </span>
                             </p>
-                            <p className="text-xs text-gray-500">
+                            <p className="text-xs text-gray-500 dark:text-gray-400">
                               {formatDistanceToNow(new Date(n.createdAt), {
                                 addSuffix: true,
                                 locale: id,
@@ -180,7 +180,7 @@ export default function NotificationSidebar({
                         </div>
                       ))
                     ) : (
-                      <div className="p-4 text-center text-gray-500 text-sm">
+                      <div className="p-4 text-center text-gray-500 dark:text-gray-400 text-sm">
                         Tidak ada pemberitahuan
                       </div>
                     )}
@@ -200,15 +200,15 @@ export default function NotificationSidebar({
                             {renderCategoryIcon(n.category)}
                           </div>
                           <div className="">
-                            <p className="text-sm font-medium text-gray-800">
+                            <p className="text-sm font-medium text-gray-700 dark:text-gray-300">
                               {n.title}
                             </p>
                             <p>
-                              <span className="text-xs text-gray-500 line-clamp-2">
+                              <span className="text-xs text-gray-500 dark:text-gray-400 line-clamp-2">
                                 {n.body}
                               </span>
                             </p>
-                            <p className="text-xs text-gray-500">
+                            <p className="text-xs text-gray-500 dark:text-gray-400">
                               {formatDistanceToNow(new Date(n.createdAt), {
                                 addSuffix: true,
                                 locale: id,
@@ -218,7 +218,7 @@ export default function NotificationSidebar({
                         </div>
                       ))
                     ) : (
-                      <div className="p-4 text-center text-gray-500 text-sm">
+                      <div className="p-4 text-center text-gray-500 dark:text-gray-400 text-sm">
                         Tidak ada pemberitahuan
                       </div>
                     )}
@@ -237,15 +237,15 @@ export default function NotificationSidebar({
                             {renderCategoryIcon(n.category)}
                           </div>
                           <div className="">
-                            <p className="text-sm font-medium text-gray-800">
+                            <p className="text-sm font-medium text-gray-700 dark:text-gray-300">
                               {n.title}
                             </p>
                             <p>
-                              <span className="text-xs text-gray-500 line-clamp-2">
+                              <span className="text-xs text-gray-500 dark:text-gray-400 line-clamp-2">
                                 {n.body}
                               </span>
                             </p>
-                            <p className="text-xs text-gray-500">
+                            <p className="text-xs text-gray-500 dark:text-gray-400">
                               {formatDistanceToNow(new Date(n.createdAt), {
                                 addSuffix: true,
                                 locale: id,

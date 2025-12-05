@@ -14,6 +14,7 @@ import {
 } from "lucide-react";
 import { cn } from "../../utils/cn";
 import { useAuthContext } from "../../contexts/AuthContext";
+import ThemeToggle from "../ui/ThemeToggle";
 
 interface SidebarProps {
   className?: string;
@@ -112,7 +113,7 @@ const Sidebar: React.FC<SidebarProps> = ({ className }) => {
       {/* Mobile Menu Button */}
       <button
         onClick={toggleMobileMenu}
-        className="lg:hidden fixed top-8 right-8 z-50 p-2 rounded-md bg-white shadow-md text-gray-600 hover:text-gray-900"
+        className="lg:hidden fixed top-8 right-8 z-50 p-2 rounded-md bg-white dark:bg-gray-800 shadow-md text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-gray-100"
       >
         {isMobileMenuOpen ? (
           <X className="h-6 w-6" />
@@ -124,7 +125,7 @@ const Sidebar: React.FC<SidebarProps> = ({ className }) => {
       {/* Overlay for mobile */}
       {isMobileMenuOpen && (
         <div
-          className="fixed inset-0 bg-black/50 z-30 lg:hidden transition-opacity duration-300"
+          className="fixed inset-0 bg-black/50 dark:bg-black/70 z-30 lg:hidden transition-opacity duration-300"
           onClick={toggleMobileMenu}
         />
       )}
@@ -132,7 +133,7 @@ const Sidebar: React.FC<SidebarProps> = ({ className }) => {
       {/* Sidebar */}
       <aside
         className={cn(
-          "fixed lg:static inset-y-0 left-0 z-40 flex flex-col bg-white border-r border-gray-200 transition-all duration-300 w-64",
+          "fixed lg:static inset-y-0 left-0 z-40 flex flex-col bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 transition-all duration-300 w-64",
           isMobileMenuOpen
             ? "translate-x-0"
             : "-translate-x-full lg:translate-x-0",
@@ -140,10 +141,10 @@ const Sidebar: React.FC<SidebarProps> = ({ className }) => {
         )}
       >
         {/* Header/Logo Section */}
-        <div className="flex items-center justify-between h-16 px-4 border-b border-gray-200">
+        <div className="flex items-center justify-between h-16 px-4 border-b border-gray-200 dark:border-gray-700">
           <Link
             to="/admin"
-            className="flex items-center space-x-2 text-xl font-bold text-primary-600 hover:text-primary-700 transition-colors"
+            className="flex items-center space-x-2 text-xl font-bold text-primary-600 dark:text-primary-400 hover:text-primary-700 dark:hover:text-primary-300 transition-colors"
           >
             <img src="/assets/logo.webp" alt="Logo" className="h-8 w-8" />
             <span>
@@ -153,11 +154,11 @@ const Sidebar: React.FC<SidebarProps> = ({ className }) => {
         </div>
 
         {/* Admin Badge */}
-        <div className="px-4 py-3 bg-primary-50 border-b border-gray-200">
-          <div className="text-xs font-medium text-primary-600 uppercase tracking-wide">
+        <div className="px-4 py-3 bg-primary-50 dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700">
+          <div className="text-xs font-medium text-primary-600 dark:text-primary-400 uppercase tracking-wide">
             Admin Panel
           </div>
-          <div className="text-sm text-gray-600 mt-1">RT Administrator</div>
+          <div className="text-sm text-gray-600 dark:text-gray-300 mt-1">RT Administrator</div>
         </div>
 
         {/* Navigation Menu */}
@@ -178,8 +179,8 @@ const Sidebar: React.FC<SidebarProps> = ({ className }) => {
                     className={cn(
                       "flex w-full items-center justify-between rounded-md px-3 py-2.5 text-sm font-medium transition-all duration-200",
                       isParentItemActive
-                        ? "bg-primary-100 text-primary-700"
-                        : "text-gray-600 hover:bg-gray-100 hover:text-gray-900"
+                        ? "bg-primary-50 text-primary-700 dark:bg-gray-700 dark:text-gray-100"
+                        : "text-gray-600 dark:text-gray-300 hover:bg-primary-50 hover:text-primary-700 dark:hover:bg-gray-700 dark:hover:text-gray-100"
                     )}
                   >
                     <div className="flex items-center space-x-3">
@@ -199,8 +200,8 @@ const Sidebar: React.FC<SidebarProps> = ({ className }) => {
                     className={cn(
                       "flex items-center space-x-3 rounded-md px-3 py-2.5 text-sm font-medium transition-all duration-200",
                       isActive
-                        ? "bg-primary-100 text-primary-700"
-                        : "text-gray-600 hover:bg-gray-100 hover:text-gray-900"
+                        ? "bg-primary-50 text-primary-700 dark:bg-gray-700 dark:text-gray-100"
+                        : "text-gray-600 dark:text-gray-300 hover:bg-primary-50 hover:text-primary-700 dark:hover:bg-gray-700 dark:hover:text-gray-100"
                     )}
                   >
                     <Icon className="h-5 w-5 flex-shrink-0" />
@@ -223,8 +224,8 @@ const Sidebar: React.FC<SidebarProps> = ({ className }) => {
                           className={cn(
                             "flex items-center space-x-3 rounded-md px-3 py-2 text-sm transition-all duration-200",
                             isSubActive
-                              ? "bg-primary-50 text-primary-700 font-medium"
-                              : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"
+                              ? "bg-primary-50 text-primary-700 dark:bg-gray-700 dark:text-gray-100 font-medium"
+                              : "text-gray-600 dark:text-gray-300 hover:bg-primary-50 hover:text-primary-700 dark:hover:bg-gray-700 dark:hover:text-gray-100"
                           )}
                         >
                           {SubIcon && (
@@ -242,29 +243,32 @@ const Sidebar: React.FC<SidebarProps> = ({ className }) => {
         </nav>
 
         {/* Divider */}
-        <div className="border-t border-gray-200" />
+        <div className="border-t border-gray-200 dark:border-gray-700" />
 
         {/* Bottom Section - User & Actions */}
         <div className="p-3 space-y-2">
-          {/* Profile Link */}
-          <Link
-            to="/admin/profile"
-            onClick={() => setIsMobileMenuOpen(false)}
-            className={cn(
-              "flex items-center space-x-3 rounded-md px-3 py-2.5 text-sm font-medium transition-colors",
-              isActivePath("/admin/profile")
-                ? "bg-primary-100 text-primary-700"
-                : "text-gray-600 hover:bg-gray-100 hover:text-gray-900"
-            )}
-          >
-            <UserCircle className="h-5 w-5 flex-shrink-0" />
-            <span>Profil Saya</span>
-          </Link>
+          {/* Profile and Theme Toggle Row */}
+          <div className="flex items-center gap-2">
+            <Link
+              to="/admin/profile"
+              onClick={() => setIsMobileMenuOpen(false)}
+              className={cn(
+                "flex-1 flex items-center space-x-3 rounded-md px-3 py-2.5 text-sm font-medium transition-colors",
+                isActivePath("/admin/profile")
+                  ? "bg-primary-50 text-primary-700 dark:bg-gray-700 dark:text-gray-100"
+                  : "text-gray-600 dark:text-gray-300 hover:bg-primary-50 hover:text-primary-700 dark:hover:bg-gray-700 dark:hover:text-gray-100"
+              )}
+            >
+              <UserCircle className="h-5 w-5 flex-shrink-0" />
+              <span>Profil Saya</span>
+            </Link>
+            <ThemeToggle />
+          </div>
 
           {/* User Info */}
           {user && (
-            <div className="flex items-center space-x-3 px-3 py-2 bg-gray-50 rounded-md">
-              <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary-100 text-sm font-medium text-primary-600 overflow-hidden flex-shrink-0">
+            <div className="flex items-center space-x-3 px-3 py-2 bg-gray-50 dark:bg-gray-900 rounded-md">
+              <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary-100 dark:bg-primary-900/30 text-sm font-medium text-primary-600 dark:text-primary-400 overflow-hidden flex-shrink-0">
                 {user?.profile ? (
                   <img
                     src={user?.profile}
@@ -276,10 +280,10 @@ const Sidebar: React.FC<SidebarProps> = ({ className }) => {
                 )}
               </div>
               <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium text-gray-900 truncate">
+                <p className="text-sm font-medium text-gray-900 dark:text-gray-100 truncate">
                   {user?.name}
                 </p>
-                <p className="text-xs text-gray-500 truncate">{user?.email}</p>
+                <p className="text-xs text-gray-500 dark:text-gray-400 truncate">{user?.email}</p>
               </div>
             </div>
           )}
@@ -288,7 +292,7 @@ const Sidebar: React.FC<SidebarProps> = ({ className }) => {
           <button
             onClick={handleLogout}
             disabled={isLoggingOut}
-            className="flex w-full items-center space-x-3 rounded-md px-3 py-2.5 text-sm font-medium text-red-600 hover:bg-red-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            className="flex w-full items-center space-x-3 rounded-md px-3 py-2.5 text-sm font-medium text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           >
             <LogOut
               className={cn(

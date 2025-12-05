@@ -43,7 +43,7 @@ const FaqItems = () => {
           <CardTitle className="text-2xl lg:text-3xl font-bold leading-tight mb-3">
             Pertanyaan yang Sering Diajukan
           </CardTitle>
-          <p className="text-gray-600 leading-relaxed">
+          <p className="text-gray-600 dark:text-gray-300 leading-relaxed">
             Temukan jawaban atas pertanyaan paling umum tentang SiLaporRT.
           </p>
         </div>

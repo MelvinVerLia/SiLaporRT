@@ -19,12 +19,13 @@ import {
 } from "lucide-react";
 import Button from "../ui/Button";
 import Badge from "../ui/Badge";
+import ThemeToggle from "../ui/ThemeToggle";
 import { Role } from "../../types/auth.types";
 import { cn } from "../../utils/cn";
 import { useAuthContext } from "../../contexts/AuthContext";
 import { formatDistanceToNow } from "date-fns";
 import { id } from "date-fns/locale";
-import { motion } from "framer-motion";
+import { AnimatePresence, motion } from "framer-motion";
 import NotificationSidebar from "./NotificationSidebar";
 import { Notification } from "../../types/notification.types";
 
@@ -132,8 +133,8 @@ const Header: React.FC = () => {
   };
 
   useEffect(() => {
-    fetchNotifications();
-  }, [user]);
+    if (isAuthenticated) fetchNotifications();
+  }, [isAuthenticated]);
 
   const renderCategoryIcon = (category: string) => {
     switch (category) {
@@ -212,7 +213,7 @@ const Header: React.FC = () => {
   ];
 
   return (
-    <header className="sticky top-0 z-50 w-full bg-white shadow-sm">
+    <header className="sticky top-0 z-50 w-full bg-white dark:bg-gray-800 shadow-sm">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="flex h-16 items-center justify-between">
           <div className="flex items-center space-x-4">
@@ -240,8 +241,8 @@ const Header: React.FC = () => {
                     className={cn(
                       "flex items-center space-x-2 rounded-md px-3 py-2 text-sm font-medium transition-all duration-200",
                       isActive
-                        ? "bg-primary-100 text-primary-700"
-                        : "text-gray-600 hover:bg-gray-100 hover:text-gray-900"
+                        ? "bg-primary-50 text-primary-700 dark:bg-gray-700 dark:text-gray-100"
+                        : "text-gray-600 dark:text-gray-300 hover:bg-primary-50 hover:text-primary-700 dark:hover:bg-gray-700 dark:hover:text-gray-100"
                     )}
                   >
                     <Icon className="h-4 w-4" />
@@ -258,13 +259,16 @@ const Header: React.FC = () => {
           </nav>
 
           <div className="flex items-center space-x-4">
+            {/* Theme Toggle */}
+            <ThemeToggle />
+            
             {isAuthenticated && (
               <div
                 className="relative"
                 onClick={toggleNotification}
                 ref={notifRef}
               >
-                <button className="relative p-2 text-gray-400 hover:text-gray-600 transition-colors hover:cursor-pointer">
+                <button className="relative p-2 text-gray-400 dark:text-gray-300 hover:text-gray-600 dark:hover:text-gray-100 transition-colors hover:cursor-pointer">
                   <Bell className="h-5 w-5" />
                   {unreadNotificationsCount > 0 &&
                     unreadNotificationsCount < 100 && (
@@ -278,73 +282,74 @@ const Header: React.FC = () => {
                     </span>
                   )}
                 </button>
-                {isNotifOpen && (
-                  <motion.div
-                    initial={{ opacity: 0, y: -10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -10 }}
-                    transition={{ duration: 0.15 }}
-                    className="absolute left-0 mt-3 w-96 bg-white border border-gray-300 rounded-xl shadow-xs  z-50"
-                  >
-                    <div className="p-3 border-b border-gray-100 font-semibold text-gray-700 flex items-center justify-between">
-                      <div>
-                        <span className="mr-2">Notifications</span>
-                      </div>
-                      {unreadNotificationsCount > 0 && (
-                        <div
-                          className="flex gap-1 hover:cursor-pointer text-primary-600 hover:text-primary-700"
-                          onClick={markAllAsRead}
-                        >
-                          <EyeIcon className=" w-5 h-5" />
-                          <div className="text-[13px]">Mark all as read</div>
-                        </div>
-                      )}
-                    </div>
-
-                    <div className="max-h-64 overflow-y-auto divide-y divide-gray-100">
-                      {recentNotifications.length > 0 ? (
-                        recentNotifications.map((n) => (
-                          <div
-                            key={n.id}
-                            className="p-3 hover:bg-gray-50 cursor-pointer transition-colors flex items-center"
-                            onClick={() => handleNotificationClick(n)}
-                          >
-                            <div className="mr-2">
-                              {renderCategoryIcon(n.category)}
-                            </div>
-                            <div>
-                              <p className="text-sm text-gray-800 font-medium">
-                                {n.title}
-                              </p>
-                              <p className="text-xs text-gray-500">
-                                {formatDistanceToNow(new Date(n.createdAt), {
-                                  addSuffix: true,
-                                  locale: id,
-                                })}
-                              </p>
-                            </div>
-                          </div>
-                        ))
-                      ) : (
-                        <div className="p-4 text-center text-sm text-gray-500">
-                          No recent notifications
-                        </div>
-                      )}
-                    </div>
-
-                    <button
-                      className="flex items-center justify-center gap-1 text-xs text-primary-600 hover:text-primary-700 py-2 w-full border-t border-gray-200 transition-colors hover:cursor-pointer"
-                      onClick={() => setNotificationSidebar(true)}
+                <AnimatePresence>
+                  {isNotifOpen && (
+                    <motion.div
+                      initial={{ opacity: 0, y: -10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -10 }}
+                      transition={{ duration: 0.15 }}
+                      className="absolute left-0 mt-3 w-96 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-xl shadow-xs  z-50"
                     >
-                      <ChevronDown className="w-4 h-4" />
-                      Lihat Semua
-                    </button>
-                  </motion.div>
-                )}
+                      <div className="p-3 border-b border-gray-100 dark:border-gray-700 font-semibold text-gray-700 dark:text-gray-200 flex items-center justify-between">
+                        <div>
+                          <span className="mr-2">Notifications</span>
+                        </div>
+                        {unreadNotificationsCount > 0 && (
+                          <div
+                            className="flex gap-1 hover:cursor-pointer text-primary-600 hover:text-primary-700"
+                            onClick={markAllAsRead}
+                          >
+                            <EyeIcon className=" w-5 h-5" />
+                            <div className="text-[13px]">Mark all as read</div>
+                          </div>
+                        )}
+                      </div>
+
+                      <div className="max-h-64 overflow-y-auto divide-y divide-gray-100 dark:divide-gray-700">
+                        {recentNotifications.length > 0 ? (
+                          recentNotifications.map((n) => (
+                            <div
+                              key={n.id}
+                              className="p-3 hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer transition-colors flex items-center"
+                              onClick={() => handleNotificationClick(n)}
+                            >
+                              <div className="mr-2">
+                                {renderCategoryIcon(n.category)}
+                              </div>
+                              <div>
+                                <p className="text-sm text-gray-800 dark:text-gray-200 font-medium">
+                                  {n.title}
+                                </p>
+                                <p className="text-xs text-gray-500 dark:text-gray-400">
+                                  {formatDistanceToNow(new Date(n.createdAt), {
+                                    addSuffix: true,
+                                    locale: id,
+                                  })}
+                                </p>
+                              </div>
+                            </div>
+                          ))
+                        ) : (
+                          <div className="p-4 text-center text-sm text-gray-500 dark:text-gray-400">
+                            No recent notifications
+                          </div>
+                        )}
+                      </div>
+
+                      <button
+                        className="flex items-center justify-center gap-1 text-xs text-primary-600 dark:text-primary-400 hover:text-primary-700 dark:hover:text-primary-300 py-2 w-full border-t border-gray-200 dark:border-gray-700 transition-colors hover:cursor-pointer"
+                        onClick={() => setNotificationSidebar(true)}
+                      >
+                        <ChevronDown className="w-4 h-4" />
+                        Lihat Semua
+                      </button>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
               </div>
             )}
 
-            {/* User Info & Actions */}
             {isLoading ? (
               <div className="hidden lg:flex items-center space-x-3 rounded-md px-3 py-2">
                 <div className="h-8 w-8 rounded-full bg-gray-200 animate-pulse"></div>
@@ -355,11 +360,10 @@ const Header: React.FC = () => {
               </div>
             ) : isAuthenticated ? (
               <div className="hidden lg:block relative" ref={dropdownRef}>
-                {/* User Dropdown Trigger */}
                 <button
                   onClick={toggleUserDropdown}
                   disabled={isLoggingOut}
-                  className="flex items-center space-x-3 rounded-md px-3 py-2 text-sm hover:bg-gray-50 transition-colors hover:cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="flex items-center space-x-3 rounded-md px-3 py-2 text-sm hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors hover:cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary-100 text-sm font-medium text-primary-600 overflow-hidden">
                     {user?.profile ? (
@@ -373,10 +377,10 @@ const Header: React.FC = () => {
                     )}
                   </div>
                   <div className="text-left">
-                    <div className="font-medium text-gray-900 truncate max-w-[120px]">
+                    <div className="font-medium text-gray-900 dark:text-gray-100 truncate max-w-[120px]">
                       {user?.name}
                     </div>
-                    <div className="text-xs text-gray-500">
+                    <div className="text-xs text-gray-500 dark:text-gray-400">
                       {user?.role === Role.RT_ADMIN ? "Admin RT" : "Warga"}
                     </div>
                   </div>
@@ -388,12 +392,11 @@ const Header: React.FC = () => {
                   />
                 </button>
 
-                {/* Dropdown Menu */}
                 {isUserDropdownOpen && (
-                  <div className="absolute right-0 mt-2 w-64 rounded-md bg-white shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none">
+                  <div className="absolute right-0 mt-2 w-64 rounded-md bg-white dark:bg-gray-800 shadow-lg ring-1 ring-black dark:ring-gray-700 ring-opacity-5 focus:outline-none">
                     <div className="py-1">
                       {/* User Info Header */}
-                      <div className="px-4 py-3 border-b border-gray-100">
+                      <div className="px-4 py-3 border-b border-gray-100 dark:border-gray-700">
                         <div className="flex items-center space-x-3">
                           <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary-100 text-sm font-medium text-primary-600 overflow-hidden">
                             {user?.profile ? (
@@ -407,10 +410,10 @@ const Header: React.FC = () => {
                             )}
                           </div>
                           <div className="flex-1 min-w-0">
-                            <p className="text-sm font-medium text-gray-900 truncate">
+                            <p className="text-sm font-medium text-gray-900 dark:text-gray-100 truncate">
                               {user?.name}
                             </p>
-                            <p className="text-sm text-gray-500 truncate">
+                            <p className="text-sm text-gray-500 dark:text-gray-400 truncate">
                               {user?.email}
                             </p>
                             <Badge
@@ -430,7 +433,6 @@ const Header: React.FC = () => {
                         </div>
                       </div>
 
-                      {/* Menu Items */}
                       {userDropdownItems.map((item) => {
                         const Icon = item.icon;
                         return (
@@ -438,7 +440,7 @@ const Header: React.FC = () => {
                             key={item.path}
                             to={item.path}
                             onClick={closeUserDropdown}
-                            className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
+                            className="flex items-center px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
                           >
                             <Icon className="h-4 w-4 mr-3" />
                             {item.label}
@@ -446,14 +448,12 @@ const Header: React.FC = () => {
                         );
                       })}
 
-                      {/* Divider */}
-                      <div className="border-t border-gray-100 my-1" />
+                      <div className="border-t border-gray-100 dark:border-gray-700 my-1" />
 
-                      {/* Logout */}
                       <button
                         onClick={handleLogout}
                         disabled={isLoggingOut}
-                        className="flex w-full items-center px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                        className="flex w-full items-center px-4 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                       >
                         <LogOut
                           className={cn(
@@ -483,10 +483,9 @@ const Header: React.FC = () => {
               </div>
             )}
 
-            {/* Mobile Menu Button */}
             <button
               onClick={toggleMobileMenu}
-              className="lg:hidden p-2 text-gray-400 hover:text-gray-600 transition-colors"
+              className="lg:hidden p-2 text-gray-400 dark:text-gray-300 hover:text-gray-600 dark:hover:text-gray-100 transition-colors"
             >
               {isMobileMenuOpen ? (
                 <X className="h-6 w-6" />
@@ -498,11 +497,9 @@ const Header: React.FC = () => {
         </div>
       </div>
 
-      {/* Mobile Menu */}
       {isMobileMenuOpen && (
-        <div className="lg:hidden border-t border-gray-200 bg-white animate-in slide-in-from-top-2 duration-200">
+        <div className="lg:hidden border-t border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 animate-in slide-in-from-top-2 duration-200">
           <div className="px-4 py-2 space-y-1">
-            {/* Navigation Items */}
             {!isLoading &&
               navigationItems.map((item) => {
                 const Icon = item.icon;
@@ -516,8 +513,8 @@ const Header: React.FC = () => {
                     className={cn(
                       "flex items-center space-x-3 rounded-md px-3 py-2 text-base font-medium transition-colors",
                       isActive
-                        ? "bg-primary-100 text-primary-700"
-                        : "text-gray-600 hover:bg-gray-100 hover:text-gray-900"
+                        ? "bg-primary-50 text-primary-700 dark:bg-gray-700 dark:text-gray-100"
+                        : "text-gray-600 dark:text-gray-300 hover:bg-primary-50 hover:text-primary-700 dark:hover:bg-gray-700 dark:hover:text-gray-100"
                     )}
                   >
                     <Icon className="h-5 w-5" />
@@ -526,7 +523,6 @@ const Header: React.FC = () => {
                 );
               })}
 
-            {/* Loading state for navigation */}
             {isLoading && (
               <div className="space-y-2">
                 {[1, 2, 3].map((i) => (
@@ -541,14 +537,11 @@ const Header: React.FC = () => {
               </div>
             )}
 
-            {/* Divider */}
-            <div className="border-t border-gray-200 my-2" />
+            <div className="border-t border-gray-200 dark:border-gray-700 my-2" />
 
-            {/* User Actions */}
             {!isLoading && isAuthenticated ? (
               <div className="space-y-2">
-                {/* User Info */}
-                <div className="flex items-center space-x-3 px-3 py-3 bg-gray-50 rounded-md">
+                <div className="flex items-center space-x-3 px-3 py-3 bg-gray-50 dark:bg-gray-700 rounded-md">
                   <div className="flex h-12 w-12 items-center justify-center rounded-full bg-primary-100 text-base font-medium text-primary-600 overflow-hidden">
                     {user?.profile ? (
                       <img
@@ -561,10 +554,10 @@ const Header: React.FC = () => {
                     )}
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium text-gray-900 truncate">
+                    <p className="text-sm font-medium text-gray-900 dark:text-gray-100 truncate">
                       {user?.name}
                     </p>
-                    <p className="text-xs text-gray-500 truncate">
+                    <p className="text-xs text-gray-500 dark:text-gray-400 truncate">
                       {user?.email}
                     </p>
                     <Badge
@@ -579,7 +572,6 @@ const Header: React.FC = () => {
                   </div>
                 </div>
 
-                {/* User Menu Items */}
                 {userDropdownItems.map((item) => {
                   const Icon = item.icon;
                   return (
@@ -587,7 +579,7 @@ const Header: React.FC = () => {
                       key={item.path}
                       to={item.path}
                       onClick={closeMobileMenu}
-                      className="flex items-center space-x-3 rounded-md px-3 py-2 text-base font-medium text-gray-600 hover:bg-gray-100 hover:text-gray-900 transition-colors"
+                      className="flex items-center space-x-3 rounded-md px-3 py-2 text-base font-medium text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 hover:text-gray-900 dark:hover:text-gray-100 transition-colors"
                     >
                       <Icon className="h-5 w-5" />
                       <span>{item.label}</span>
@@ -595,11 +587,10 @@ const Header: React.FC = () => {
                   );
                 })}
 
-                {/* Logout Button */}
                 <button
                   onClick={handleLogout}
                   disabled={isLoggingOut}
-                  className="flex w-full items-center space-x-3 rounded-md px-3 py-2 text-base font-medium text-red-600 hover:bg-red-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="flex w-full items-center space-x-3 rounded-md px-3 py-2 text-base font-medium text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   <LogOut
                     className={cn("h-5 w-5", isLoggingOut && "animate-spin")}
@@ -612,7 +603,7 @@ const Header: React.FC = () => {
                 <Link
                   to="/login"
                   onClick={closeMobileMenu}
-                  className="flex items-center space-x-3 rounded-md px-3 py-2 text-base font-medium text-gray-600 hover:bg-gray-100 hover:text-gray-900 transition-colors"
+                  className="flex items-center space-x-3 rounded-md px-3 py-2 text-base font-medium text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 hover:text-gray-900 dark:hover:text-gray-100 transition-colors"
                 >
                   <LogIn className="h-5 w-5" />
                   <span>Masuk</span>
@@ -620,7 +611,7 @@ const Header: React.FC = () => {
                 <Link
                   to="/register"
                   onClick={closeMobileMenu}
-                  className="flex items-center space-x-3 rounded-md px-3 py-2 text-base font-medium text-primary-600 hover:bg-primary-50 transition-colors"
+                  className="flex items-center space-x-3 rounded-md px-3 py-2 text-base font-medium text-primary-600 dark:text-primary-400 hover:bg-primary-50 dark:hover:bg-primary-900/20 transition-colors"
                 >
                   <User className="h-5 w-5" />
                   <span>Daftar</span>

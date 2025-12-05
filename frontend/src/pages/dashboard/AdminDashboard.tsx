@@ -388,7 +388,7 @@ const AdminDashboard: React.FC = () => {
           <h1 className="text-3xl font-bold text-primary-600">
             Dashboard Admin RT
           </h1>
-          <p className="text-gray-600 mt-1">
+          <p className="text-gray-600 dark:text-gray-200 mt-1">
             Selamat datang, {user?.name}. Overview sistem RT Anda.
           </p>
         </div>
@@ -414,7 +414,7 @@ const AdminDashboard: React.FC = () => {
       {error && (
         <Card>
           <CardContent className="p-6">
-            <div className="text-center text-red-600">
+            <div className="text-center text-red-600 dark:text-red-400">
               <AlertTriangle className="h-8 w-8 mx-auto mb-2" />
               <p>Terjadi kesalahan saat memuat data: {error}</p>
               <Button className="mt-4" onClick={() => window.location.reload()}>
@@ -438,10 +438,10 @@ const AdminDashboard: React.FC = () => {
                     <CardContent className="p-6">
                       <div className="flex items-center justify-between">
                         <div>
-                          <p className="text-sm font-medium text-gray-600 mb-1">
+                          <p className="text-sm font-medium text-gray-600 dark:text-gray-300 mb-1">
                             {stat.title}
                           </p>
-                          <p className="text-3xl font-bold text-gray-900 mb-1">
+                          <p className="text-3xl font-bold text-gray-900 dark:text-gray-100 mb-1">
                             {stat.value}
                           </p>
                         </div>
@@ -503,15 +503,15 @@ const AdminDashboard: React.FC = () => {
                         className="flex items-start space-x-3"
                       >
                         <div className="flex-shrink-0">
-                          <div className="w-8 h-8 bg-gray-100 rounded-full flex items-center justify-center">
-                            <Icon className="h-4 w-4 text-gray-600" />
+                          <div className="w-8 h-8 bg-gray-100 dark:bg-gray-700 rounded-full flex items-center justify-center">
+                            <Icon className="h-4 w-4 text-gray-600 dark:text-gray-200" />
                           </div>
                         </div>
                         <div className="flex-1 min-w-0">
-                          <p className="text-sm text-gray-900 mb-1">
+                          <p className="text-sm text-gray-900 dark:text-gray-100 mb-1">
                             {activity.message}
                           </p>
-                          <div className="flex items-center text-xs text-gray-500">
+                          <div className="flex items-center text-xs text-gray-500 dark:text-gray-200">
                             <span>{activity.user}</span>
                             <span className="mx-1">•</span>
                             <span>{activity.time}</span>

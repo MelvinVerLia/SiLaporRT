@@ -41,6 +41,7 @@ export default function ManageAnnouncementsPage() {
   const [dateRange, setDateRange] = useState<{ from?: string; to?: string }>(
     {}
   );
+  const [sortBy, setSortBy] = useState("");
 
   const { data, isLoading, isError } = useQuery({
     queryKey: [
@@ -52,6 +53,7 @@ export default function ManageAnnouncementsPage() {
         selectedType,
         selectedPriority,
         dateRange,
+        sortBy,
       },
     ],
     queryFn: () =>
@@ -64,6 +66,7 @@ export default function ManageAnnouncementsPage() {
         priority: selectedPriority,
         dateFrom: dateRange.from,
         dateTo: dateRange.to,
+        sortBy,
       }),
     staleTime: 0,
   });
@@ -275,6 +278,7 @@ export default function ManageAnnouncementsPage() {
     setSelectedPriority("");
     setShowInactiveOnly(false);
     setDateRange({});
+    setSortBy("");
     setPage(1);
   };
 
@@ -285,8 +289,9 @@ export default function ManageAnnouncementsPage() {
     if (selectedPriority) count++;
     if (showInactiveOnly) count++;
     if (dateRange.from || dateRange.to) count++;
+    if (sortBy) count++;
     return count;
-  }, [selectedType, selectedPriority, showInactiveOnly, dateRange]);
+  }, [selectedType, selectedPriority, showInactiveOnly, dateRange, sortBy]);
 
   // Define filter fields for AdvancedFilter
   const filterFields: FilterField[] = [
@@ -340,6 +345,20 @@ export default function ManageAnnouncementsPage() {
       ],
     },
     {
+      name: "sortBy",
+      label: "Urutkan Berdasarkan",
+      type: "select",
+      value: sortBy,
+      onChange: (value) => {
+        setSortBy(value as string);
+        setPage(1);
+      },
+      options: [
+        { value: "", label: "Terbaru" },
+        { value: "oldest", label: "Terlama" },
+      ],
+    },
+    {
       name: "dateRange",
       label: "Rentang Tanggal Tayang",
       type: "daterange",
@@ -356,7 +375,7 @@ export default function ManageAnnouncementsPage() {
       {/* Page Header */}
       <div>
         <h1 className="text-3xl font-bold text-primary-600">Kelola Pengumuman</h1>
-        <p className="text-gray-600 mt-1">
+        <p className="text-gray-600 dark:text-gray-200 mt-1">
           Buat dan atur pengumuman untuk warga RT
         </p>
       </div>
@@ -393,11 +412,11 @@ export default function ManageAnnouncementsPage() {
             </div>
           ) : items.length === 0 ? (
             <div className="text-center py-12">
-              <Megaphone className="mx-auto h-12 w-12 text-gray-400 mb-4" />
-              <h3 className="text-lg font-semibold text-gray-900 mb-2">
+              <Megaphone className="mx-auto h-12 w-12 text-gray-400 dark:text-gray-500 mb-4" />
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-2">
                 Belum ada pengumuman
               </h3>
-              <p className="text-gray-600">
+              <p className="text-gray-600 dark:text-gray-300">
                 Buat pengumuman pertama untuk warga RT
               </p>
             </div>
@@ -415,23 +434,23 @@ export default function ManageAnnouncementsPage() {
                     <col className="w-15/100" /> {/* Aksi - 15% */}
                   </colgroup>
                   <thead>
-                    <tr className="border-b border-gray-200">
-                      <th className="text-left py-4 pr-6 text-sm font-medium text-gray-600">
+                    <tr className="border-b border-gray-200 dark:border-gray-700">
+                      <th className="text-left py-4 pr-6 text-sm font-medium text-gray-600 dark:text-gray-300">
                         Pengumuman
                       </th>
-                      <th className="text-left py-4 pr-4 text-sm font-medium text-gray-600">
+                      <th className="text-left py-4 pr-4 text-sm font-medium text-gray-600 dark:text-gray-300">
                         Jenis
                       </th>
-                      <th className="text-left py-4 pr-4 text-sm font-medium text-gray-600">
+                      <th className="text-left py-4 pr-4 text-sm font-medium text-gray-600 dark:text-gray-300">
                         Prioritas
                       </th>
-                      <th className="text-left py-4 pr-4 text-sm font-medium text-gray-600">
+                      <th className="text-left py-4 pr-4 text-sm font-medium text-gray-600 dark:text-gray-300">
                         Status
                       </th>
-                      <th className="text-left py-4 pr-4 text-sm font-medium text-gray-600">
+                      <th className="text-left py-4 pr-4 text-sm font-medium text-gray-600 dark:text-gray-300">
                         Tanggal
                       </th>
-                      <th className="text-left py-4 text-sm font-medium text-gray-600">
+                      <th className="text-left py-4 text-sm font-medium text-gray-600 dark:text-gray-300">
                         Aksi
                       </th>
                     </tr>
@@ -446,7 +465,7 @@ export default function ManageAnnouncementsPage() {
                       return (
                         <tr
                           key={announcement.id}
-                          className="border-b border-gray-100 hover:bg-gray-50 transition-colors cursor-pointer"
+                          className="border-b border-gray-100 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors cursor-pointer"
                           onClick={() => handleViewClick(announcement)}
                         >
                           <td className="py-5 pr-6">
@@ -456,7 +475,7 @@ export default function ManageAnnouncementsPage() {
                               )}
                               <div className="min-w-0 flex-1">
                                 <p
-                                  className="text-sm font-medium text-gray-900 line-clamp-1 leading-5"
+                                  className="text-sm font-medium text-gray-900 dark:text-white line-clamp-1 leading-5"
                                   title={announcement.title}
                                 >
                                   {announcement.title.length > 50
@@ -465,7 +484,7 @@ export default function ManageAnnouncementsPage() {
                                     : announcement.title}
                                 </p>
                                 <p
-                                  className="text-sm text-gray-500 line-clamp-2 leading-5 mt-1"
+                                  className="text-sm text-gray-500 dark:text-gray-300 line-clamp-2 leading-5 mt-1"
                                   title={announcement.content}
                                 >
                                   {announcement.content.length > 50
@@ -503,17 +522,17 @@ export default function ManageAnnouncementsPage() {
                             </Badge>
                           </td>
                           <td className="py-5 pr-4">
-                            <div className="text-xs text-gray-600 space-y-1">
+                            <div className="text-xs text-gray-600 dark:text-gray-300 space-y-1">
                               <p className="font-medium">
                                 {formatDate(announcement.createdAt)}
                               </p>
                               {announcement.publishAt && (
-                                <p className="text-gray-500 truncate">
+                                <p className="text-gray-500 dark:text-gray-300 truncate">
                                   Tayang: {formatDate(announcement.publishAt)}
                                 </p>
                               )}
                               {announcement.expireAt && (
-                                <p className="text-gray-500 truncate">
+                                <p className="text-gray-500 dark:text-gray-300 truncate">
                                   Berakhir: {formatDate(announcement.expireAt)}
                                 </p>
                               )}
@@ -607,11 +626,11 @@ export default function ManageAnnouncementsPage() {
                                 {announcement.isPinned && (
                                   <Pin className="h-4 w-4 text-yellow-500 flex-shrink-0" />
                                 )}
-                                <h3 className="text-sm font-medium text-gray-900 line-clamp-1 whitespace-pre-wrap break-words">
+                                <h3 className="text-sm font-medium text-gray-900 dark:text-white line-clamp-1 whitespace-pre-wrap break-words">
                                   {announcement.title}
                                 </h3>
                               </div>
-                              <p className="text-sm text-gray-500 line-clamp-2 whitespace-pre-wrap break-words">
+                              <p className="text-sm text-gray-500 dark:text-gray-300 line-clamp-2 whitespace-pre-wrap break-words">
                                 {announcement.content}
                               </p>
                             </div>
@@ -638,7 +657,7 @@ export default function ManageAnnouncementsPage() {
                           </div>
 
                           {/* Date */}
-                          <div className="text-xs text-gray-500">
+                          <div className="text-xs text-gray-500 dark:text-gray-300">
                             <p>Dibuat: {formatDate(announcement.createdAt)}</p>
                             {announcement.publishAt && (
                               <p>

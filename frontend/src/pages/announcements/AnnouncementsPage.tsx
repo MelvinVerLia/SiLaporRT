@@ -42,7 +42,7 @@ export default function AnnouncementsPage() {
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
           <h1 className="text-3xl font-bold text-primary-600">Pengumuman</h1>
-          <p className="text-gray-600 mt-1">
+          <p className="text-gray-600 dark:text-gray-300 mt-1">
             Informasi resmi dari Admin RT • {total} pengumuman
           </p>
         </div>
@@ -63,10 +63,10 @@ export default function AnnouncementsPage() {
           <Card>
             <CardContent className="p-12 text-center">
               <AlertCircle className="mx-auto h-12 w-12 text-red-500 mb-4" />
-              <h3 className="text-lg font-semibold text-gray-900 mb-2">
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-2">
                 Gagal Memuat Pengumuman
               </h3>
-              <p className="text-gray-600 mb-6">
+              <p className="text-gray-600 dark:text-gray-300 mb-6">
                 Terjadi kesalahan saat memuat data pengumuman. Silakan coba
                 lagi.
               </p>
@@ -94,11 +94,11 @@ export default function AnnouncementsPage() {
       {!isLoading && !isError && items.length === 0 && (
         <Card>
           <CardContent className="p-12 text-center">
-            <FileText className="mx-auto h-12 w-12 text-gray-400 mb-4" />
-            <h3 className="text-lg font-semibold text-gray-900 mb-2">
+            <FileText className="mx-auto h-12 w-12 text-gray-400 dark:text-gray-300 mb-4" />
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-2">
               Belum Ada Pengumuman
             </h3>
-            <p className="text-gray-600">
+            <p className="text-gray-600 dark:text-gray-300">
               Pengumuman dari Admin RT akan muncul di sini.
             </p>
           </CardContent>

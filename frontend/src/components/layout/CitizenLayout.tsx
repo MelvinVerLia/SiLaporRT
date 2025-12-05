@@ -12,7 +12,7 @@ const CitizenLayout: React.FC = () => {
   }, [pathname]);
 
   return (
-    <div className="min-h-screen flex flex-col bg-amber-50">
+    <div className="min-h-screen flex flex-col bg-gray-50 dark:bg-gray-900">
       <Header />
       <main className="flex-1 w-full mx-auto max-w-6xl px-4 sm:px-6 lg:px-8 py-12">
         <Outlet />

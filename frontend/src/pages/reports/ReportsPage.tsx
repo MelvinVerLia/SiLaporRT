@@ -21,20 +21,27 @@ const ReportsPage: React.FC = () => {
   const [pageSize, setPageSize] = useState(5);
   const [selectedCategory, setSelectedCategory] = useState("");
   const [selectedStatus, setSelectedStatus] = useState("");
+  const [sortBy, setSortBy] = useState("");
+  const [selectedPeriod, setSelectedPeriod] = useState("");
 
   const { data, isLoading, isError, refetch, isFetching } = useQuery({
     queryKey: [
       "reports",
-      { page, pageSize, q, selectedCategory, selectedStatus },
+      { page, pageSize, q, selectedCategory, selectedStatus, sortBy, selectedPeriod },
     ],
-    queryFn: () =>
-      getReportList({
+    queryFn: () => {
+      const dateRange = selectedPeriod ? getDateRangeFromPeriod(selectedPeriod) : {};
+      return getReportList({
         page,
         pageSize,
         q,
         category: selectedCategory,
         status: selectedStatus,
-      }),
+        sortBy,
+        upvoteDateFrom: dateRange.from,
+        upvoteDateTo: dateRange.to,
+      });
+    },
   });
 
   const items = data?.items ?? [];
@@ -68,18 +75,83 @@ const ReportsPage: React.FC = () => {
     { value: "REJECTED", label: "Ditolak" },
   ];
 
+  const sortByOptions = [
+    { value: "", label: "Terbaru" },
+    { value: "oldest", label: "Terlama" },
+    { value: "most_liked", label: "Paling Banyak Disukai" },
+  ];
+
+  const periodOptions = [
+    { value: "", label: "Semua Waktu" },
+    { value: "hari-ini", label: "Hari Ini" },
+    { value: "kemarin", label: "Kemarin" },
+    { value: "minggu-ini", label: "Minggu Ini" },
+    { value: "bulan-ini", label: "Bulan Ini" },
+    { value: "tahun-ini", label: "Tahun Ini" },
+  ];
+
+  // Helper to calculate date range from period
+  const getDateRangeFromPeriod = (period: string) => {
+    const from = new Date();
+    const to = new Date();
+
+    switch (period) {
+      case "hari-ini":
+        from.setHours(0, 0, 0, 0);
+        to.setHours(23, 59, 59, 999);
+        break;
+      case "kemarin":
+        from.setDate(from.getDate() - 1);
+        from.setHours(0, 0, 0, 0);
+        to.setDate(to.getDate() - 1);
+        to.setHours(23, 59, 59, 999);
+        break;
+      case "minggu-ini": {
+        const dayOfWeek = from.getDay();
+        const diff = dayOfWeek === 0 ? 6 : dayOfWeek - 1; // Monday is start of week
+        from.setDate(from.getDate() - diff);
+        from.setHours(0, 0, 0, 0);
+        to.setHours(23, 59, 59, 999);
+        break;
+      }
+      case "bulan-ini":
+        from.setDate(1);
+        from.setHours(0, 0, 0, 0);
+        to.setMonth(to.getMonth() + 1, 0); // Last day of current month
+        to.setHours(23, 59, 59, 999);
+        break;
+      case "tahun-ini":
+        from.setMonth(0, 1);
+        from.setHours(0, 0, 0, 0);
+        to.setMonth(11, 31);
+        to.setHours(23, 59, 59, 999);
+        break;
+      default:
+        return {};
+    }
+
+    return {
+      from: from.toISOString().split("T")[0],
+      to: to.toISOString().split("T")[0],
+    };
+  };
+
   // Calculate active filter count
   const activeFilterCount = useMemo(() => {
     let count = 0;
     if (selectedCategory) count++;
     if (selectedStatus) count++;
+    if (sortBy) count++;
+    if (sortBy === "most_liked" && selectedPeriod) count++;
     return count;
-  }, [selectedCategory, selectedStatus]);
+  }, [selectedCategory, selectedStatus, sortBy, selectedPeriod]);
 
   // Reset all filters
   const handleResetFilters = () => {
     setSelectedCategory("");
     setSelectedStatus("");
+    setSortBy("");
+    setSelectedPeriod("");
     setPage(1);
   };
 
@@ -107,6 +179,36 @@ const ReportsPage: React.FC = () => {
       },
       options: statusOptions,
     },
+    {
+      name: "sortBy",
+      label: "Urutkan Berdasarkan",
+      type: "select",
+      value: sortBy,
+      onChange: (value) => {
+        setSortBy(value as string);
+        // Clear period if switching away from most_liked
+        if (value !== "most_liked") {
+          setSelectedPeriod("");
+        }
+        setPage(1);
+      },
+      options: sortByOptions,
+    },
+    ...(sortBy === "most_liked"
+      ? [
+          {
+            name: "period",
+            label: "Periode Waktu",
+            type: "select" as const,
+            value: selectedPeriod,
+            onChange: (value: string | { from?: string; to?: string }) => {
+              setSelectedPeriod(value as string);
+              setPage(1);
+            },
+            options: periodOptions,
+          },
+        ]
+      : []),
   ];
 
   return (
@@ -114,7 +216,7 @@ const ReportsPage: React.FC = () => {
       {/* Page Header */}
       <div>
         <h1 className="text-3xl font-bold text-primary-600">Laporan Warga</h1>
-        <p className="text-gray-600 mt-1">
+        <p className="text-gray-600 dark:text-gray-300 mt-1">
           Lihat dan pantau laporan dari warga RT • {total} laporan
         </p>
       </div>
@@ -124,7 +226,7 @@ const ReportsPage: React.FC = () => {
         <CardContent className="p-6">
           <div className="flex items-center gap-4">
             <div className="relative flex-1">
-              <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400 z-10" />
+              <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400 dark:text-gray-300 z-10" />
               <Input
                 placeholder="Cari laporan..."
                 value={q}
@@ -156,10 +258,10 @@ const ReportsPage: React.FC = () => {
           <Card>
             <CardContent className="p-12 text-center">
               <AlertCircle className="mx-auto h-12 w-12 text-red-500 mb-4" />
-              <h3 className="text-lg font-semibold text-gray-900 mb-2">
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-2">
                 Gagal Memuat Laporan
               </h3>
-              <p className="text-gray-600 mb-6">
+              <p className="text-gray-600 dark:text-gray-300 mb-6">
                 Terjadi kesalahan saat memuat data laporan. Silakan coba lagi.
               </p>
               <Button
@@ -184,11 +286,11 @@ const ReportsPage: React.FC = () => {
       {!isLoading && !isError && items.length === 0 && (
         <Card>
           <CardContent className="p-12 text-center">
-            <FileText className="mx-auto h-12 w-12 text-gray-400 mb-4" />
-            <h3 className="text-lg font-semibold text-gray-900 mb-2">
+            <FileText className="mx-auto h-12 w-12 text-gray-400 dark:text-gray-300 mb-4" />
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-2">
               Belum Ada Laporan
             </h3>
-            <p className="text-gray-600">
+            <p className="text-gray-600 dark:text-gray-300">
               Laporan akan muncul ketika tersedia.
             </p>
           </CardContent>

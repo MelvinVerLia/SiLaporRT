@@ -44,7 +44,7 @@ const ReportListItem = ({ r }: { r: Report }) => {
           <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-4">
             <div className="flex-1 space-y-2 min-w-0">
               <div className="space-y-2">
-                <h3 className="text-lg font-semibold text-gray-900 whitespace-pre-wrap break-words line-clamp-1">
+                <h3 className="text-lg font-semibold text-gray-700 dark:text-gray-300 whitespace-pre-wrap break-words line-clamp-1">
                   {r.title}
                 </h3>
                 <div className="flex flex-wrap gap-2">

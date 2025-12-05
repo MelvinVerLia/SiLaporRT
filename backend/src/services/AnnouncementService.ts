@@ -58,6 +58,7 @@ export class AnnouncementService {
     showInactiveOnly?: any;
     dateFrom?: string;
     dateTo?: string;
+    sortBy?: string;
   }) {
     const page = Math.max(1, parseInt(params.page ?? "1", 10) || 1);
     const pageSize = Math.min(
@@ -79,6 +80,7 @@ export class AnnouncementService {
       showInactiveOnly,
       dateFrom: params.dateFrom,
       dateTo: params.dateTo,
+      sortBy: params.sortBy,
     });
     return { page, pageSize, total, items };
   }

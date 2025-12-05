@@ -114,6 +114,9 @@ export async function getReportList(params: {
   q: string;
   category: string;
   status: string;
+  sortBy?: string;
+  upvoteDateFrom?: string;
+  upvoteDateTo?: string;
 }) {
   const res = await request("/reports", { method: "GET", params });
   return res.data;
@@ -156,6 +159,9 @@ export async function getUserReports(params: {
   q?: string;
   category?: string;
   status?: string;
+  sortBy?: string;
+  upvoteDateFrom?: string;
+  upvoteDateTo?: string;
 }) {
   const res = await request("/reports/my-reports", {
     method: "GET",
@@ -187,6 +193,23 @@ export async function getUserReportStatistics() {
 export async function getAllReportsStatistic() {
   const res = await request("/reports/all-reports/stats", { method: "GET" });
   return res.data;
+}
+
+export async function updateReportStat(
+  reportId: string,
+  attachments?: string[],
+  message?: string
+) {
+  try {
+    const res = await request(`/reports/${reportId}/update-status`, {
+      method: "PUT",
+      data: {  attachments, message },
+    });
+    return res;
+  } catch (error) {
+    console.error("❌ Error calculating dashboard stats:", error);
+    throw error;
+  }
 }
 
 // Dashboard Statistics Interface and Functions
