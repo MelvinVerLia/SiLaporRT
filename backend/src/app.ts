@@ -33,6 +33,7 @@ app.use("/api/uploads", uploadRouter);
 app.use("/api/notification", notificationRouter);
 
 app.get("/", (req, res) => {
+  console.log("DEBUG NODE_ENV:", process.env.NODE_ENV);
   res.send("Hello World!");
 });
 
