@@ -52,13 +52,13 @@ export class AuthController {
     res.clearCookie("refresh_token", {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
-      sameSite: process.env.FRONTEND_URL_PROD ? "none" : "lax",
+      sameSite: process.env.NODE_ENV ? "none" : "lax",
       path: "/",
     });
     res.clearCookie("access_token", {
       httpOnly: true,
-      sameSite: process.env.FRONTEND_URL_PROD ? "none" : "lax",
       secure: process.env.NODE_ENV === "production",
+      sameSite: process.env.NODE_ENV ? "none" : "lax",
       path: "/",
     });
 
@@ -81,7 +81,7 @@ export class AuthController {
       res.cookie("access_token", result.accessToken, {
         httpOnly: true,
         secure: process.env.NODE_ENV === "production",
-        sameSite: process.env.FRONTEND_URL_PROD ? "none" : "lax",
+        sameSite: process.env.NODE_ENV ? "none" : "lax",
         path: "/",
         maxAge: 5 * 60 * 1000,
       });
@@ -89,7 +89,7 @@ export class AuthController {
       res.cookie("refresh_token", result.refreshToken, {
         httpOnly: true,
         secure: process.env.NODE_ENV === "production",
-        sameSite: process.env.FRONTEND_URL_PROD ? "none" : "lax",
+        sameSite: process.env.NODE_ENV ? "none" : "lax",
         path: "/",
         maxAge: 24 * 60 * 60 * 1000,
       });
@@ -378,8 +378,8 @@ export class AuthController {
       // set new cookies
       res.cookie("access_token", newAccessToken, {
         httpOnly: true,
-        sameSite: process.env.FRONTEND_URL_PROD ? "none" : "lax",
         secure: process.env.NODE_ENV === "production",
+        sameSite: process.env.NODE_ENV ? "none" : "lax",
         path: "/",
         maxAge: 60 * 1000,
       });
