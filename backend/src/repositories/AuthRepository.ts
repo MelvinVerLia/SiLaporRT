@@ -74,4 +74,21 @@ export class AuthRepository {
   static async getAllUsers() {
     return prisma.user.count({ where: { isDeleted: false, role: "CITIZEN" } });
   }
+
+  static async getRtAdminByUserId(userId: string) {
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+      select: { rtId: true },
+    });
+
+    if (!user?.rtId) return null;
+
+    return prisma.user.findMany({
+      where: {
+        rtId: user.rtId,
+        role: "RT_ADMIN",
+        isDeleted: false,
+      },
+    });
+  }
 }

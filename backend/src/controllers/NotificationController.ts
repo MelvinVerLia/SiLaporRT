@@ -93,4 +93,33 @@ export class NotificationController {
       res.status(500).json({ error: "Failed to get notifications" });
     }
   }
+
+  static async toggleSubscribe(req: Request, res: Response) {
+    const user = req.user as { id: string };
+    const status = req.body.enabled;
+    if (!user) return res.status(400).json({ error: "User not found" });
+
+    const userId = user.id;
+    try {
+      await NotificationService.toggleSubscribe(userId, status);
+      return res.json("success");
+    } catch (error) {
+      console.log("error", error);
+      res.status(500).json({ error: "Failed to get notifications" });
+    }
+  }
+
+  static async subscriptionStatus(req: Request, res: Response) {
+    const user = req.user as { id: string };
+    if (!user) return res.status(400).json({ error: "User not found" });
+
+    const userId = user.id;
+    try {
+      const response = await NotificationService.subscriptionStatus(userId);
+      return res.json(response);
+    } catch (error) {
+      console.log("error", error);
+      res.status(500).json({ error: "Failed to get notifications" });
+    }
+  }
 }

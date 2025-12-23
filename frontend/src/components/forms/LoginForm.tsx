@@ -5,7 +5,11 @@ import { Card, CardContent, CardTitle } from "../ui/Card";
 import Button from "../ui/Button";
 import Input from "../ui/Input";
 import { useAuthContext } from "../../contexts/AuthContext";
-import { subscribeUserToPush } from "../../utils/PushSubscription";
+import {
+  requestNotificationPermission,
+  subscribeUserToPush,
+} from "../../utils/PushSubscription";
+import NotificationPopup from "../ui/NotificationPopup";
 
 const LoginForm: React.FC = () => {
   const [email, setEmail] = useState("");
@@ -25,7 +29,6 @@ const LoginForm: React.FC = () => {
     const user = await login({ email, password, rememberMe });
     if (user.id) {
       navigate(from, { replace: true });
-      subscribeUserToPush(user.id);
     }
   };
 
@@ -40,7 +43,6 @@ const LoginForm: React.FC = () => {
   return (
     <div className="min-h-screen bg-gradient-to-l from-primary-100 to-white dark:from-gray-800 dark:to-gray-900 flex flex-col justify-center py-12 px-4 sm:px-6 lg:px-8">
       <Card className="max-w-4xl w-full mx-auto shadow-xl border-0 bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-xl">
-        {/* Logo positioned absolutely at the top of the card - visible on all screen sizes */}
         <div className="absolute top-4 left-8">
           <Link
             to="/"
@@ -157,7 +159,9 @@ const LoginForm: React.FC = () => {
 
               {error && !error.field && (
                 <div className="text-sm text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-800 p-3 rounded-lg flex items-start space-x-2">
-                  <span className="text-red-500 dark:text-red-400 mt-0.5">⚠</span>
+                  <span className="text-red-500 dark:text-red-400 mt-0.5">
+                    ⚠
+                  </span>
                   <span>{error.message}</span>
                 </div>
               )}
@@ -214,7 +218,10 @@ const LoginForm: React.FC = () => {
       <div className="mt-8 text-center px-4">
         <p className="text-xs text-gray-500 dark:text-gray-400">
           Dengan masuk, Anda menyetujui{" "}
-          <Link to="/terms" className="text-primary-600 dark:text-primary-400 hover:text-primary-700 dark:hover:text-primary-300">
+          <Link
+            to="/terms"
+            className="text-primary-600 dark:text-primary-400 hover:text-primary-700 dark:hover:text-primary-300"
+          >
             Syarat & Ketentuan
           </Link>{" "}
           dan{" "}

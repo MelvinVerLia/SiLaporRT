@@ -1,8 +1,6 @@
 import { Router } from "express";
 import ReportController from "../controllers/ReportController";
 import { authenticateJWT } from "../middleware/AuthMiddleware";
-// import { validateCreateReport } from '../validators/report.validator';
-// import { authMiddleware } from '../middlewares/auth.middleware';
 
 const router = Router();
 
@@ -22,7 +20,7 @@ router.get(
 );
 router.get("/:reportId", ReportController.getReportById);
 
-router.post("/add", authenticateJWT, ReportController.createReport);
+router.post("/add", ReportController.createReport);
 
 // === USER REPORT MANAGEMENT ===
 router.delete("/:reportId", authenticateJWT, ReportController.deleteReport);

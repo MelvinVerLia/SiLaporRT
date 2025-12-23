@@ -23,6 +23,8 @@ model User {
   googleId    String?  @unique
   profile     String? 
   isDeleted   Boolean  @default(false)
+  rtId        String
+  rt          RT      @relation(fields: [rtId], references: [id])
 
   role        Role     @default(CITIZEN)
   isActive    Boolean  @default(true)
@@ -38,6 +40,19 @@ model User {
   notifications   notification[]
   
   @@map("users")
+}
+
+model RT {
+  id                 String  @id @default(cuid())
+  kecamatan          String
+  kelurahan          String
+  rw                 String
+  rt                 String
+
+  users      User[]    
+
+  @@unique([rt, rw, kelurahan, kecamatan])
+  @@map("rt")
 }
 
 enum Role {

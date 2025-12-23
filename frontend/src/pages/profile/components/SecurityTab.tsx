@@ -1,12 +1,16 @@
 import React from "react";
 import PasswordChangeForm from "./PasswordChangeForm";
 import DangerZone from "./DangerZone";
+import NotificationToggle from "./NotificationToggle";
+import { User } from "../../../types/auth.types";
 
 interface SecurityTabProps {
   onChangePassword: (newPassword: string) => Promise<void>;
   isChangingPassword: boolean;
   onDeleteAccount: () => void;
   isDeletingAccount: boolean;
+  user: User;
+  onClose: () => void;
 }
 
 const SecurityTab: React.FC<SecurityTabProps> = ({
@@ -14,16 +18,18 @@ const SecurityTab: React.FC<SecurityTabProps> = ({
   isChangingPassword,
   onDeleteAccount,
   isDeletingAccount,
+  user,
+  // onClose,
 }) => {
   return (
     <div className="space-y-6">
-      {/* Password Change Section */}
       <PasswordChangeForm
         onChangePassword={onChangePassword}
         isChanging={isChangingPassword}
       />
 
-      {/* Danger Zone Section */}
+      <NotificationToggle userId={user.id!}  />
+
       <DangerZone
         onDeleteAccount={onDeleteAccount}
         isDeleting={isDeletingAccount}

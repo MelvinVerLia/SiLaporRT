@@ -26,9 +26,10 @@ import FaqItems from "./components/FaqItems";
 import ReportListItemSkeleton from "../reports/components/ReportListItemSkeleton";
 import { useAuthContext } from "../../contexts/AuthContext";
 import CountUp from "react-countup";
+import NotificationPopup from "../../components/ui/NotificationPopup";
 
 const HomePage: React.FC = () => {
-  const { isAuthenticated, getAllUsersCount } = useAuthContext();
+  const { isAuthenticated, getAllUsersCount, user } = useAuthContext();
   const { data, isLoading, isError, refetch, isFetching } = useQuery({
     queryKey: ["recent-reports"],
     queryFn: getRecentReports,
@@ -37,6 +38,7 @@ const HomePage: React.FC = () => {
   const [reportTotal, setReportTotal] = useState<number>(0);
   const [inProgressTotal, setInProgressTotal] = useState<number>(0);
   const [resolvedTotal, setResolvedTotal] = useState<number>(0);
+  const [notificationRequest, setNotificationRequest] = useState(false);
 
   // const toast = useToast();
   // useEffect(() => {
@@ -65,6 +67,21 @@ const HomePage: React.FC = () => {
       fetchAllUserCount();
       fetchAllReportCount();
     }
+  }, [isAuthenticated]);
+
+  useEffect(() => {
+    if (!isAuthenticated) return;
+
+    if (!("Notification" in window)) return;
+
+    if (Notification.permission !== "default") return;
+
+    const hasAsked = sessionStorage.getItem("notification_prompt_shown");
+
+    if (hasAsked) return;
+
+    setNotificationRequest(true);
+    sessionStorage.setItem("notification_prompt_shown", "true");
   }, [isAuthenticated]);
 
   const stats = [
@@ -126,227 +143,239 @@ const HomePage: React.FC = () => {
   ];
 
   return (
-    <div className="space-y-24">
-      <section>
-        <div className="grid lg:grid-cols-2 gap-12 lg:gap-16 items-center">
-          <div className="text-center lg:text-left">
-            <h1 className="text-4xl lg:text-5xl xl:text-6xl font-bold text-primary-500 dark:text-primary-400 mb-6 leading-tight">
-              Laporkan Masalah
-              <span className="block text-primary-600 dark:text-primary-400">Lingkungan Anda</span>
-            </h1>
-            <p className="text-lg lg:text-xl text-gray-600 dark:text-gray-300 mb-8 leading-relaxed">
-              Platform digital untuk warga RT melaporkan masalah infrastruktur,
-              kebersihan, dan keamanan lingkungan secara cepat, transparan, dan
-              terorganisir.
-            </p>
+    <>
+      {notificationRequest && user?.id && (
+        <NotificationPopup
+          userId={user.id}
+          onClose={() => setNotificationRequest(false)}
+        />
+      )}
+      <div className="space-y-24">
+        <section>
+          <div className="grid lg:grid-cols-2 gap-12 lg:gap-16 items-center">
+            <div className="text-center lg:text-left">
+              <h1 className="text-4xl lg:text-5xl xl:text-6xl font-bold text-primary-500 dark:text-primary-400 mb-6 leading-tight">
+                Laporkan Masalah
+                <span className="block text-primary-600 dark:text-primary-400">
+                  Lingkungan Anda
+                </span>
+              </h1>
+              <p className="text-lg lg:text-xl text-gray-600 dark:text-gray-300 mb-8 leading-relaxed">
+                Platform digital untuk warga RT melaporkan masalah
+                infrastruktur, kebersihan, dan keamanan lingkungan secara cepat,
+                transparan, dan terorganisir.
+              </p>
 
-            <div className="flex flex-wrap justify-center lg:justify-start gap-6 lg:gap-8 mb-8">
-              {stats.map((stat, index) => (
-                <div
-                  key={index}
-                  className="text-5xl font-extrabold text-center text-black dark:text-white lg:text-left"
-                >
-                  <div className={`text-2xl lg:text-3xl font-bold ${stat.color} mb-1`}>
-                    <CountUp
-                      start={0}
-                      end={stat.value}
-                      duration={1}
-                      useEasing={false}
-                      delay={0.5}
-                    />
-                  </div>
-                  <div className="text-xs lg:text-sm text-gray-600 dark:text-gray-200 font-medium">
-                    {stat.title}
-                  </div>
-                </div>
-              ))}
-            </div>
-
-            {isAuthenticated ? (
-              <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
-                <Link to="/create-report">
-                  <Button size="lg" className="w-full sm:w-auto">
-                    <FileText className="mr-2 h-5 w-5" />
-                    Buat Laporan Baru
-                  </Button>
-                </Link>
-                <Link to="/reports">
-                  <Button
-                    variant="outline"
-                    size="lg"
-                    className="w-full sm:w-auto"
+              <div className="flex flex-wrap justify-center lg:justify-start gap-6 lg:gap-8 mb-8">
+                {stats.map((stat, index) => (
+                  <div
+                    key={index}
+                    className="text-5xl font-extrabold text-center text-black dark:text-white lg:text-left"
                   >
-                    Lihat Semua Laporan
-                  </Button>
-                </Link>
+                    <div
+                      className={`text-2xl lg:text-3xl font-bold ${stat.color} mb-1`}
+                    >
+                      <CountUp
+                        start={0}
+                        end={stat.value}
+                        duration={1}
+                        useEasing={false}
+                        delay={0.5}
+                      />
+                    </div>
+                    <div className="text-xs lg:text-sm text-gray-600 dark:text-gray-200 font-medium">
+                      {stat.title}
+                    </div>
+                  </div>
+                ))}
               </div>
-            ) : (
-              <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
-                <Link to="/reports">
-                  <Button size="lg" className="w-full sm:w-auto">
-                    Lihat Laporan Publik
-                  </Button>
-                </Link>
-                <Link to="/login">
-                  <Button
-                    variant="outline"
-                    size="lg"
-                    className="w-full sm:w-auto"
-                  >
-                    Masuk untuk Melaporkan
-                  </Button>
-                </Link>
-              </div>
-            )}
-          </div>
 
-          <div className="flex justify-center lg:justify-end">
-            <div className="relative">
-              <img
-                src="/assets/hero.webp"
-                alt="Platform Pelaporan RT"
-                className="w-full max-w-lg h-auto object-contain"
-              />
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <section>
-        <div className="text-center mb-12">
-          <h2 className="text-2xl lg:text-3xl font-bold leading-tight mb-3 text-gray-800 dark:text-gray-100">
-            Fitur-fitur SiLaporRT
-          </h2>
-          <p className="text-gray-600 dark:text-gray-300 leading-relaxed max-w-2xl mx-auto">
-            Fitur-fitur inovatif untuk memudahkan warga melaporkan masalah,
-            berkolaborasi, dan meningkatkan kualitas lingkungan secara
-            bersama-sama.
-          </p>
-        </div>
-
-        {/* Row pertama (2 features) - Aligned Left */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 mb-10 lg:pr-32">
-          {features.slice(0, 2).map((feature, index) => (
-            <div
-              key={index}
-              className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden shadow-sm"
-            >
-              <img
-                src={feature.imageUrl}
-                alt={feature.title}
-                className="w-full h-40 object-contain"
-              />
-              <div className="p-4 pt-0 text-center">
-                <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-1.5">
-                  {feature.title}
-                </h3>
-                <p className="text-sm text-gray-600 dark:text-gray-300 leading-relaxed">
-                  {feature.description}
-                </p>
-              </div>
-            </div>
-          ))}
-        </div>
-
-        {/* Row kedua (2 features) - Aligned Right */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 lg:pl-32">
-          {features.slice(2, 4).map((feature, index) => (
-            <div
-              key={index + 2}
-              className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden shadow-sm"
-            >
-              <img
-                src={feature.imageUrl}
-                alt={feature.title}
-                className="w-full h-40 object-contain"
-              />
-              <div className="p-4 pt-0 text-center">
-                <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-1.5">
-                  {feature.title}
-                </h3>
-                <p className="text-sm text-gray-600 dark:text-gray-300 leading-relaxed">
-                  {feature.description}
-                </p>
-              </div>
-            </div>
-          ))}
-        </div>
-      </section>
-
-      <section>
-        <Card>
-          <CardHeader>
-            <div className="flex justify-between items-center">
-              <div>
-                <CardTitle>Laporan Terbaru</CardTitle>
-                <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
-                  Aktivitas terkini dari warga RT
-                </p>
-              </div>
-              <Link to="/reports">
-                <Button variant="outline" size="sm">
-                  Lihat Semua
-                </Button>
-              </Link>
-            </div>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              {isLoading && (
-                <>
-                  {Array.from({ length: 3 }).map((_, index) => (
-                    <ReportListItemSkeleton key={`skeleton-${index}`} />
-                  ))}
-                </>
-              )}
-              {isError && (
-                <Card>
-                  <CardContent className="p-12 text-center">
-                    <AlertCircle className="mx-auto h-12 w-12 text-red-500 mb-4" />
-                    <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-2">
-                      Gagal Memuat Laporan Terbaru
-                    </h3>
-                    <p className="text-gray-600 dark:text-gray-300 mb-6">
-                      Terjadi kesalahan saat memuat data laporan terbaru.
-                      Silakan coba lagi.
-                    </p>
+              {isAuthenticated ? (
+                <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
+                  <Link to="/create-report">
+                    <Button size="lg" className="w-full sm:w-auto">
+                      <FileText className="mr-2 h-5 w-5" />
+                      Buat Laporan Baru
+                    </Button>
+                  </Link>
+                  <Link to="/reports">
                     <Button
                       variant="outline"
-                      onClick={() => refetch()}
-                      loading={isFetching}
+                      size="lg"
                       className="w-full sm:w-auto"
                     >
-                      <RefreshCw className="mr-2 h-4 w-4" />
-                      Coba Lagi
+                      Lihat Semua Laporan
                     </Button>
-                  </CardContent>
-                </Card>
-              )}
-
-              {!isLoading && items.length > 0 ? (
-                items.map((r: Report) => <ReportListItem key={r.id} r={r} />)
+                  </Link>
+                </div>
               ) : (
-                <Card>
-                  <CardContent className="p-12 text-center">
-                    <FileText className="mx-auto h-12 w-12 text-gray-400 dark:text-gray-300 mb-4" />
-                    <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-2">
-                      Belum Ada Laporan
-                    </h3>
-                    <p className="text-gray-600 dark:text-gray-300">
-                      Laporan akan muncul ketika tersedia.
-                    </p>
-                  </CardContent>
-                </Card>
+                <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
+                  <Link to="/reports">
+                    <Button size="lg" className="w-full sm:w-auto">
+                      Lihat Laporan Publik
+                    </Button>
+                  </Link>
+                  <Link to="/login">
+                    <Button
+                      variant="outline"
+                      size="lg"
+                      className="w-full sm:w-auto"
+                    >
+                      Masuk untuk Melaporkan
+                    </Button>
+                  </Link>
+                </div>
               )}
             </div>
-          </CardContent>
-        </Card>
-      </section>
 
-      <section>
-        <FaqItems />
-      </section>
-    </div>
+            <div className="flex justify-center lg:justify-end">
+              <div className="relative">
+                <img
+                  src="/assets/hero.webp"
+                  alt="Platform Pelaporan RT"
+                  className="w-full max-w-lg h-auto object-contain"
+                />
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section>
+          <div className="text-center mb-12">
+            <h2 className="text-2xl lg:text-3xl font-bold leading-tight mb-3 text-gray-800 dark:text-gray-100">
+              Fitur-fitur SiLaporRT
+            </h2>
+            <p className="text-gray-600 dark:text-gray-300 leading-relaxed max-w-2xl mx-auto">
+              Fitur-fitur inovatif untuk memudahkan warga melaporkan masalah,
+              berkolaborasi, dan meningkatkan kualitas lingkungan secara
+              bersama-sama.
+            </p>
+          </div>
+
+          {/* Row pertama (2 features) - Aligned Left */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 mb-10 lg:pr-32">
+            {features.slice(0, 2).map((feature, index) => (
+              <div
+                key={index}
+                className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden shadow-sm"
+              >
+                <img
+                  src={feature.imageUrl}
+                  alt={feature.title}
+                  className="w-full h-40 object-contain"
+                />
+                <div className="p-4 pt-0 text-center">
+                  <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-1.5">
+                    {feature.title}
+                  </h3>
+                  <p className="text-sm text-gray-600 dark:text-gray-300 leading-relaxed">
+                    {feature.description}
+                  </p>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* Row kedua (2 features) - Aligned Right */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 lg:pl-32">
+            {features.slice(2, 4).map((feature, index) => (
+              <div
+                key={index + 2}
+                className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden shadow-sm"
+              >
+                <img
+                  src={feature.imageUrl}
+                  alt={feature.title}
+                  className="w-full h-40 object-contain"
+                />
+                <div className="p-4 pt-0 text-center">
+                  <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-1.5">
+                    {feature.title}
+                  </h3>
+                  <p className="text-sm text-gray-600 dark:text-gray-300 leading-relaxed">
+                    {feature.description}
+                  </p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </section>
+
+        <section>
+          <Card>
+            <CardHeader>
+              <div className="flex justify-between items-center">
+                <div>
+                  <CardTitle>Laporan Terbaru</CardTitle>
+                  <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+                    Aktivitas terkini dari warga RT
+                  </p>
+                </div>
+                <Link to="/reports">
+                  <Button variant="outline" size="sm">
+                    Lihat Semua
+                  </Button>
+                </Link>
+              </div>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                {isLoading && (
+                  <>
+                    {Array.from({ length: 3 }).map((_, index) => (
+                      <ReportListItemSkeleton key={`skeleton-${index}`} />
+                    ))}
+                  </>
+                )}
+                {isError && (
+                  <Card>
+                    <CardContent className="p-12 text-center">
+                      <AlertCircle className="mx-auto h-12 w-12 text-red-500 mb-4" />
+                      <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-2">
+                        Gagal Memuat Laporan Terbaru
+                      </h3>
+                      <p className="text-gray-600 dark:text-gray-300 mb-6">
+                        Terjadi kesalahan saat memuat data laporan terbaru.
+                        Silakan coba lagi.
+                      </p>
+                      <Button
+                        variant="outline"
+                        onClick={() => refetch()}
+                        loading={isFetching}
+                        className="w-full sm:w-auto"
+                      >
+                        <RefreshCw className="mr-2 h-4 w-4" />
+                        Coba Lagi
+                      </Button>
+                    </CardContent>
+                  </Card>
+                )}
+
+                {!isLoading && items.length > 0 ? (
+                  items.map((r: Report) => <ReportListItem key={r.id} r={r} />)
+                ) : (
+                  <Card>
+                    <CardContent className="p-12 text-center">
+                      <FileText className="mx-auto h-12 w-12 text-gray-400 dark:text-gray-300 mb-4" />
+                      <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-2">
+                        Belum Ada Laporan
+                      </h3>
+                      <p className="text-gray-600 dark:text-gray-300">
+                        Laporan akan muncul ketika tersedia.
+                      </p>
+                    </CardContent>
+                  </Card>
+                )}
+              </div>
+            </CardContent>
+          </Card>
+        </section>
+
+        <section>
+          <FaqItems />
+        </section>
+      </div>
+    </>
   );
 };
 

@@ -1,12 +1,11 @@
 import { NotificationRepository } from "../repositories/NotificationRepository";
 import webpush from "../utils/webpush";
 import { AuthRepository } from "../repositories/AuthRepository";
-import { error } from "console";
 import { NotificationCategory } from "@prisma/client";
 
 export class NotificationService {
   static async sendNotificationByUserId(
-    userId: string,
+    userIds: string[],
     title: string,
     body: string,
     clickUrl: string,
@@ -14,11 +13,8 @@ export class NotificationService {
     category: NotificationCategory
   ) {
     const subs = await NotificationRepository.getAllSubscriptionsByUserId(
-      userId
+      userIds
     );
-
-    if (!subs.length) throw error({ message: "No subscriptions" });
-
     const payload = JSON.stringify({
       title,
       body,
@@ -28,27 +24,39 @@ export class NotificationService {
       image: icon,
     });
 
-    for (const s of subs) {
-      try {
-        await webpush.sendNotification(
-          {
-            endpoint: s.endpoint,
-            keys: { p256dh: s.p256dh, auth: s.auth },
-          } as any,
-          payload
-        );
-      } catch (err: any) {
-        console.error("Push failed:", err.message);
+    if (subs.length) {
+      for (const s of subs) {
+        try {
+          await Promise.allSettled(
+            subs.map((s) =>
+              webpush.sendNotification(
+                {
+                  endpoint: s.endpoint,
+                  keys: {
+                    p256dh: s.p256dh,
+                    auth: s.auth,
+                  },
+                } as any,
+                payload
+              )
+            )
+          );
+        } catch (err: any) {
+          console.error("Push failed:", err.message);
+        }
       }
+
+      console.log("Notification sent successfully");
     }
 
-    console.log("Notification sent successfully");
-    await NotificationRepository.createNotificationToCitizen(
-      title,
-      body,
-      clickUrl,
-      userId,
-      category
+    await NotificationRepository.createNotificationsToCitizens(
+      userIds.map((u) => ({
+        title,
+        body,
+        clickUrl,
+        userId: u,
+        category,
+      }))
     );
 
     return { success: true };
@@ -168,5 +176,18 @@ export class NotificationService {
 
   static deleteAllReadNotification(userId: string) {
     return NotificationRepository.deleteAllReadNotification(userId);
+  }
+
+  static async toggleSubscribe(userId: string, status: boolean) {
+    const response = await NotificationRepository.toggleSubscribe(
+      userId,
+      status
+    );
+    return response;
+  }
+
+  static async subscriptionStatus(userId: string) {
+    const response = await NotificationRepository.subscriptionStatus(userId);
+    return response;
   }
 }

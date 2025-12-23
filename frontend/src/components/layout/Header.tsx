@@ -78,6 +78,7 @@ const Header: React.FC = () => {
     closeUserDropdown();
     closeMobileMenu();
     logout();
+    sessionStorage.removeItem("notification_prompt_shown");
     navigate("/login");
   };
 
@@ -261,7 +262,7 @@ const Header: React.FC = () => {
           <div className="flex items-center space-x-4">
             {/* Theme Toggle */}
             <ThemeToggle />
-            
+
             {isAuthenticated && (
               <div
                 className="relative"
