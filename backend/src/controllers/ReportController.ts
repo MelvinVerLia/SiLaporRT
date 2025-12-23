@@ -1,14 +1,5 @@
 import { Request, Response } from "express";
 import ReportService from "../services/ReportService";
-import { ReportStatus } from "@prisma/client";
-
-// interface AuthenticatedRequest extends Request {
-//   user?: {
-//     id: string;
-//     role: string;
-//     name: string;
-//   };
-// }
 
 class ReportController {
   static async createReport(req: Request, res: Response) {

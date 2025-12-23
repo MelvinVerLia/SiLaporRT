@@ -3,6 +3,7 @@ import { ReportStatus, ReportCategory, Role } from "@prisma/client";
 import { CreateReportData } from "../types/reportTypes";
 import { generateCategory } from "../utils/llm";
 import { NotificationService } from "./NotificationService";
+import { AuthRepository } from "../repositories/AuthRepository";
 
 interface UserContext {
   id: string;
@@ -12,11 +13,15 @@ interface UserContext {
 class ReportService {
   static async createReport(data: CreateReportData) {
     try {
-      const category = await generateCategory(data.title, data.description);
+      // bruh gemini ada limit sekarang
+      // const category = await generateCategory(data.title, data.description);
+      // console.log(category);
 
-      if (!category) {
-        throw new Error("Category could not be determined.");
-      }
+      // if (!category) {
+      //   throw new Error("Category could not be determined.");
+      // }
+
+      const category = "INFRASTRUCTURE";
 
       const categoryFilter = category.replace(/\n/g, "").trim().toUpperCase();
 
@@ -29,7 +34,16 @@ class ReportService {
       const baseUrl = process.env.FRONTEND_URL_PROD ?? process.env.FRONTEND_URL;
       const url = `${baseUrl}/reports/${report.id}`;
 
-      await NotificationService.sendNotificationToAdmin(
+      const RT = await AuthRepository.getRtAdminByUserId(report.userId!);
+
+      if (!RT) {
+        throw new Error("RT Admin not found for this user");
+      }
+
+      const rtAdminIds = RT.map((admin) => admin.id);
+
+      await NotificationService.sendNotificationByUserId(
+        rtAdminIds,
         `Laporan "${report.title}" Telah Dibuat!`,
         `laporan baru telah diajukan. Silakan diproses lebih lanjut.`,
         url,
@@ -130,9 +144,8 @@ class ReportService {
 
       const baseUrl = process.env.FRONTEND_URL_PROD || process.env.FRONTEND_URL;
       const url = `${baseUrl}/reports/${updatedReport.id}`;
-
       await NotificationService.sendNotificationByUserId(
-        updatedReport.userId!,
+        [updatedReport.userId!],
         `Laporan "${updatedReport.title}" Telah Diperbarui!`,
         `Status laporan kamu kini berubah menjadi ${updatedReport.status}`,
         url,
@@ -164,7 +177,7 @@ class ReportService {
       const url = `${baseUrl}/reports/${reportId}`;
 
       await NotificationService.sendNotificationByUserId(
-        response?.report.userId!,
+        [response?.report.userId!],
         `Laporan "${response?.report.title}" Telah Diperbarui!`,
         `Laporan anda telah diresponse oleh ${response?.responder.name}, silahkan cek laporan anda`,
         url,

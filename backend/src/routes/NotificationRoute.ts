@@ -15,7 +15,25 @@ router.get(
   NotificationController.getNotifications
 );
 
-router.put("/read-all", authenticateJWT, NotificationController.readAllNotifications);
-router.put("/read/:id", authenticateJWT, NotificationController.readNotification);
+router.put(
+  "/read-all",
+  authenticateJWT,
+  NotificationController.readAllNotifications
+);
+router.put(
+  "/read/:id",
+  authenticateJWT,
+  NotificationController.readNotification
+);
+router.put(
+  "/toggle/subscribe",
+  authenticateJWT,
+  NotificationController.toggleSubscribe
+);
+router.get(
+  "/subscribe/status",
+  authenticateJWT,
+  NotificationController.subscriptionStatus
+);
 
 export default router;

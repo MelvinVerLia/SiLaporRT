@@ -1,4 +1,4 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { Card, CardContent, CardHeader } from "../../components/ui/Card";
 import { useToast } from "../../hooks/useToast";
 import { ProfilePictureUploadRef } from "../../components/upload/ProfilePictureUpload";
@@ -13,6 +13,7 @@ import {
 import SecurityTab from "./components/SecurityTab";
 import ProfileInformationTab from "./components/ProfileInformationTab";
 import ProfileHeader from "./components/ProfileHeader";
+import NotificationPopup from "../../components/ui/NotificationPopup";
 
 const ProfilePage: React.FC = () => {
   const {
@@ -30,6 +31,20 @@ const ProfilePage: React.FC = () => {
 
   const uploadRef = useRef<ProfilePictureUploadRef>(null);
   const [isSavingProfile, setIsSavingProfile] = useState(false);
+  const [notificationRequest, setNotificationRequest] = useState(false);
+
+  useEffect(() => {
+    if (!("Notification" in window)) return;
+
+    if (Notification.permission !== "default") return;
+
+    const hasAsked = sessionStorage.getItem("notification_prompt_shown");
+
+    if (hasAsked) return;
+
+    setNotificationRequest(true);
+    sessionStorage.setItem("notification_prompt_shown", "true");
+  }, []);
 
   // Safety fallback (harusnya tidak kejadian karena ProtectedRoute sudah filter)
   if (!user) return null;
@@ -115,49 +130,55 @@ const ProfilePage: React.FC = () => {
   };
 
   return (
-    <div className="space-y-6">
-      {/* Profile Header */}
-      <ProfileHeader
-        user={user}
-        uploadRef={uploadRef}
-        onProfilePictureChange={handleProfilePictureChange}
-        isUploadingPicture={isUploadingPicture}
-      />
+    <>
+      {notificationRequest && user?.id && (
+        <NotificationPopup
+          userId={user.id}
+          onClose={() => setNotificationRequest(false)}
+        />
+      )}
+      <div className="space-y-6">
+        <ProfileHeader
+          user={user}
+          uploadRef={uploadRef}
+          onProfilePictureChange={handleProfilePictureChange}
+          isUploadingPicture={isUploadingPicture}
+        />
 
-      {/* Tabs Section */}
-      <Card>
-        <Tabs defaultValue="profile">
-          <CardHeader className="pb-0">
-            <TabsList>
-              <TabsTrigger value="profile">Informasi Profil</TabsTrigger>
-              <TabsTrigger value="security">Keamanan</TabsTrigger>
-            </TabsList>
-          </CardHeader>
+        <Card>
+          <Tabs defaultValue="profile">
+            <CardHeader className="pb-0">
+              <TabsList>
+                <TabsTrigger value="profile">Informasi Profil</TabsTrigger>
+                <TabsTrigger value="security">Keamanan</TabsTrigger>
+              </TabsList>
+            </CardHeader>
 
-          <CardContent className="pt-6">
-            {/* Profile Tab */}
-            <TabsContent value="profile">
-              <ProfileInformationTab
-                user={user}
-                uploadRef={uploadRef}
-                onSaveProfile={handleSaveProfile}
-                isSaving={isSavingProfile}
-              />
-            </TabsContent>
+            <CardContent className="pt-6">
+              <TabsContent value="profile">
+                <ProfileInformationTab
+                  user={user}
+                  uploadRef={uploadRef}
+                  onSaveProfile={handleSaveProfile}
+                  isSaving={isSavingProfile}
+                />
+              </TabsContent>
 
-            {/* Security Tab */}
-            <TabsContent value="security">
-              <SecurityTab
-                onChangePassword={handleSavePassword}
-                isChangingPassword={isChangingPassword}
-                onDeleteAccount={handleDeleteAccount}
-                isDeletingAccount={isLoading}
-              />
-            </TabsContent>
-          </CardContent>
-        </Tabs>
-      </Card>
-    </div>
+              <TabsContent value="security">
+                <SecurityTab
+                  onChangePassword={handleSavePassword}
+                  isChangingPassword={isChangingPassword}
+                  onDeleteAccount={handleDeleteAccount}
+                  isDeletingAccount={isLoading}
+                  user={user}
+                  onClose={() => setNotificationRequest(false)}
+                />
+              </TabsContent>
+            </CardContent>
+          </Tabs>
+        </Card>
+      </div>
+    </>
   );
 };
 

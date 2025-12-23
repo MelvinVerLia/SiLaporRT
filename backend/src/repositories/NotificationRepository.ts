@@ -32,30 +32,27 @@ export class NotificationRepository {
     });
   }
 
-  static async getAllSubscriptionsByUserId(userId: string) {
+  static async getAllSubscriptionsByUserId(userId: string[]) {
     return await prisma.pushSubscription.findMany({
-      where: { userId, isActive: true },
+      where: { userId: { in: userId }, isActive: true },
     });
   }
 
-  static async createNotificationToCitizen(
-    title: string,
-    body: string,
-    clickUrl: string,
-    userId: string,
-    category: NotificationCategory
+  static async createNotificationsToCitizens(
+    data: {
+      title: string;
+      body: string;
+      clickUrl: string;
+      userId: string;
+      category: NotificationCategory;
+    }[]
   ) {
-    const user = await prisma.user.findUnique({
-      where: { id: userId },
-      select: { role: true },
-    });
+    if (!data.length) return;
 
-    if (user && user.role === "CITIZEN") {
-      return await prisma.notification.create({
-        data: { title, body, clickUrl, userId, category },
-      });
-    }
-    return null;
+    return prisma.notification.createMany({
+      data,
+      skipDuplicates: true,
+    });
   }
 
   static async getSubscriptionsByUserIds(userIds: string[]) {
@@ -164,5 +161,25 @@ export class NotificationRepository {
     } catch (error) {
       throw error;
     }
+  }
+
+  static async toggleSubscribe(userId: string, status: boolean) {
+    return await prisma.pushSubscription.updateMany({
+      where: { userId },
+      data: { isActive: status },
+    });
+  }
+
+  static async subscriptionStatus(userId: string) {
+    const subscription = await prisma.pushSubscription.findFirst({
+      where: { userId },
+      select: { isActive: true },
+    });
+
+    const data = {
+      hasSubscription: !!subscription,
+      status: subscription?.isActive ?? false,
+    };
+    return data;
   }
 }
