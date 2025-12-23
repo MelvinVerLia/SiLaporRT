@@ -5,11 +5,6 @@ import { Card, CardContent, CardTitle } from "../ui/Card";
 import Button from "../ui/Button";
 import Input from "../ui/Input";
 import { useAuthContext } from "../../contexts/AuthContext";
-import {
-  requestNotificationPermission,
-  subscribeUserToPush,
-} from "../../utils/PushSubscription";
-import NotificationPopup from "../ui/NotificationPopup";
 
 const LoginForm: React.FC = () => {
   const [email, setEmail] = useState("");
