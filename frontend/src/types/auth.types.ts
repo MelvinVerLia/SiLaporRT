@@ -9,6 +9,7 @@ export interface User {
   phone: string;
   email?: string;
   role?: Role;
+  rtId?: string;
   isActive?: boolean;
   createdAt?: string;
   updatedAt?: string;
