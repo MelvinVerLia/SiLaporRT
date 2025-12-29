@@ -32,7 +32,7 @@ class ReportService {
       const report = await ReportRepository.createReport(dataWithCategory);
 
       const baseUrl = process.env.FRONTEND_URL_PROD ?? process.env.FRONTEND_URL;
-      const url = `${baseUrl}/reports/${report.id}`;
+      const url = `${baseUrl}/admin/reports/${report.id}`;
 
       const RT = await AuthRepository.getRtAdminByUserId(report.userId!);
 

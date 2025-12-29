@@ -238,7 +238,7 @@ export const useAuth = () => {
       return response;
     } catch (error) {
       console.log(error);
-      setError({ message: "Gagal mengambil notifikasi" });
+      setError({ message: "Gagal membaca semua notifikasi" });
     }
   }, []);
 
@@ -248,7 +248,7 @@ export const useAuth = () => {
       return response;
     } catch (error) {
       console.log(error);
-      setError({ message: "Gagal mengambil notifikasi" });
+      setError({ message: "Gagal membaca" });
     }
   }, []);
 

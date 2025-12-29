@@ -1,5 +1,5 @@
 import { motion, AnimatePresence } from "framer-motion";
-import { ChevronRight, FileText, Paperclip } from "lucide-react";
+import { ChevronLeft, ChevronRight, FileText, Paperclip } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import { id } from "date-fns/locale";
 import { useEffect, useState } from "react";
@@ -17,6 +17,7 @@ interface Props {
   unreadNotificationCount: number;
   readNotificationCount: number;
   onNotificationClick: (notification: Notification) => void;
+  sidebarLocation: "left" | "right";
 }
 
 export default function NotificationSidebar({
@@ -29,6 +30,7 @@ export default function NotificationSidebar({
   unreadNotificationCount,
   readNotificationCount,
   onNotificationClick,
+  sidebarLocation,
 }: Props) {
   const [tabvalue, setTabValue] = useState("unread");
 
@@ -94,10 +96,13 @@ export default function NotificationSidebar({
           />
 
           <motion.div
-            className="fixed top-0 right-0 h-full sm:w-[600px] w-full bg-white shadow-2xl z-50 flex flex-col"
-            initial={{ x: "100%" }}
+            className={cn(
+              sidebarLocation === "left" ? "left-0" : "right-0",
+              "fixed top-0 h-full sm:w-[600px] w-full bg-white shadow-2xl z-50 flex flex-col"
+            )}
+            initial={{ x: sidebarLocation === "left" ? "-100%" : "100%" }}
             animate={{ x: 0 }}
-            exit={{ x: "100%" }}
+            exit={{ x: sidebarLocation === "left" ? "-100%" : "100%" }}
             transition={{ type: "tween", duration: 0.3 }}
           >
             <div className="p-4 border-gray-200 flex justify-between items-center bg-gray-50">
@@ -112,7 +117,11 @@ export default function NotificationSidebar({
                 className="p-1 hover:bg-gray-100 rounded-full hover:cursor-pointer"
                 onClick={onClose}
               >
-                <ChevronRight className="w-5 h-5 text-gray-600" />
+                {sidebarLocation === "left" ? (
+                  <ChevronLeft className="w-5 h-5 text-gray-600" />
+                ) : (
+                  <ChevronRight className="w-5 h-5 text-gray-600" />
+                )}
               </button>
             </div>
 

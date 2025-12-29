@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useRef, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import {
   LayoutDashboard,
@@ -11,10 +11,16 @@ import {
   ChevronDown,
   ChevronRight,
   FilePlus,
+  Bell,
 } from "lucide-react";
 import { cn } from "../../utils/cn";
 import { useAuthContext } from "../../contexts/AuthContext";
 import ThemeToggle from "../ui/ThemeToggle";
+import { AnimatePresence } from "framer-motion";
+import { Notification } from "../../types/notification.types";
+import { useQuery } from "@tanstack/react-query";
+import { getNotifications } from "../../services/authService";
+import NotificationSidebar from "./NotificationSidebar";
 
 interface SidebarProps {
   className?: string;
@@ -35,10 +41,50 @@ interface MenuItem {
 
 const Sidebar: React.FC<SidebarProps> = ({ className }) => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [notificationSidebar, setNotificationSidebar] = useState(false);
+  const notifRef = useRef<HTMLDivElement>(null);
+  const { readNotification, isAuthenticated } = useAuthContext();
+
   const [openMenus, setOpenMenus] = useState<string[]>([]);
   const location = useLocation();
   const navigate = useNavigate();
   const { user, isLoggingOut, logout } = useAuthContext();
+
+  const toggleNotification = () => {
+    if (window.innerWidth < 640) setNotificationSidebar(true);
+    else {
+      setNotificationSidebar(!notificationSidebar);
+    }
+  };
+  const closeNotification = () => {
+    setNotificationSidebar(false);
+  };
+
+  const handleNotificationClick = async (notification: Notification) => {
+    if (notification.isRead) {
+      window.location.href = `${notification.clickUrl}`;
+      closeNotification();
+    } else {
+      window.location.href = `${notification.clickUrl}`;
+      closeNotification();
+      await readNotification(notification.id);
+    }
+  };
+
+  const { data: notification } = useQuery({
+    queryKey: ["notification"],
+    queryFn: getNotifications,
+    enabled: isAuthenticated,
+    refetchInterval: 60000,
+  });
+
+  const unreadNotifications = notification?.notification.unread ?? [];
+  const readNotifications = notification?.notification.read ?? [];
+  const allNotifications = notification?.notification.all ?? [];
+
+  const unreadNotificationsCount = notification?.count.unread ?? 0;
+  const readNotificationsCount = notification?.count.read ?? 0;
+  const allNotificationsCount = notification?.count.total ?? 0;
 
   const menuItems: MenuItem[] = [
     {
@@ -155,10 +201,37 @@ const Sidebar: React.FC<SidebarProps> = ({ className }) => {
 
         {/* Admin Badge */}
         <div className="px-4 py-3 bg-primary-50 dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700">
-          <div className="text-xs font-medium text-primary-600 dark:text-primary-400 uppercase tracking-wide">
-            Admin Panel
+          <div className="flex items-center justify-between">
+            <div>
+              <div className="text-xs font-medium text-primary-600 dark:text-primary-400 uppercase tracking-wide">
+                Admin Panel
+              </div>
+              <div className="text-sm text-gray-600 dark:text-gray-300 mt-1">
+                RT Administrator
+              </div>
+            </div>
+            <div
+              className="relative"
+              onClick={toggleNotification}
+              ref={notifRef}
+            >
+              <button className="relative p-2 text-gray-400 dark:text-gray-300 hover:text-gray-600 dark:hover:text-gray-100 transition-colors hover:cursor-pointer">
+                <Bell className="h-5 w-5" />
+                {unreadNotificationsCount > 0 &&
+                  unreadNotificationsCount < 100 && (
+                    <span className="absolute -top-1 -right-1 h-4 w-4 rounded-full bg-red-500 text-[11px] font-semibold text-white flex items-center justify-center">
+                      {unreadNotificationsCount}
+                    </span>
+                  )}
+                {unreadNotificationsCount >= 100 && (
+                  <span className="absolute -top-1 -right-1 h-4 w-4 rounded-full bg-red-500 text-[11px] font-semibold text-white flex items-center justify-center">
+                    99+
+                  </span>
+                )}
+              </button>
+              <AnimatePresence></AnimatePresence>
+            </div>
           </div>
-          <div className="text-sm text-gray-600 dark:text-gray-300 mt-1">RT Administrator</div>
         </div>
 
         {/* Navigation Menu */}
@@ -283,7 +356,9 @@ const Sidebar: React.FC<SidebarProps> = ({ className }) => {
                 <p className="text-sm font-medium text-gray-900 dark:text-gray-100 truncate">
                   {user?.name}
                 </p>
-                <p className="text-xs text-gray-500 dark:text-gray-400 truncate">{user?.email}</p>
+                <p className="text-xs text-gray-500 dark:text-gray-400 truncate">
+                  {user?.email}
+                </p>
               </div>
             </div>
           )}
@@ -304,6 +379,18 @@ const Sidebar: React.FC<SidebarProps> = ({ className }) => {
           </button>
         </div>
       </aside>
+      <NotificationSidebar
+        isOpen={notificationSidebar}
+        onClose={() => setNotificationSidebar(false)}
+        notifications={allNotifications}
+        unreadNotifications={unreadNotifications}
+        readNotifications={readNotifications}
+        notificationCount={allNotificationsCount}
+        unreadNotificationCount={unreadNotificationsCount}
+        readNotificationCount={readNotificationsCount}
+        onNotificationClick={(n: Notification) => handleNotificationClick(n)}
+        sidebarLocation="left"
+      />
     </>
   );
 };

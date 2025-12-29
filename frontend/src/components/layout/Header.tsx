@@ -28,6 +28,7 @@ import { id } from "date-fns/locale";
 import { AnimatePresence, motion } from "framer-motion";
 import NotificationSidebar from "./NotificationSidebar";
 import { Notification } from "../../types/notification.types";
+import { useQuery } from "@tanstack/react-query";
 
 const Header: React.FC = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -35,20 +36,6 @@ const Header: React.FC = () => {
 
   const [isNotifOpen, setIsNotifOpen] = useState(false);
   const notifRef = useRef<HTMLDivElement>(null);
-  const [allNotifications, setAllNotifications] = useState<Notification[]>([]);
-  const [recentNotifications, setRecentNotifications] = useState<
-    Notification[]
-  >([]);
-  const [readNotifications, setReadNotifications] = useState<Notification[]>(
-    []
-  );
-  const [unreadNotifications, setUnreadNotifications] = useState<
-    Notification[]
-  >([]);
-
-  const [allNotificationsCount, setAllNotificationsCount] = useState(0);
-  const [unreadNotificationsCount, setUnreadNotificationsCount] = useState(0);
-  const [readNotificationsCount, setReadNotificationsCount] = useState(0);
 
   const [notificationSidebar, setNotificationSidebar] = useState(false);
 
@@ -117,25 +104,23 @@ const Header: React.FC = () => {
 
   const markAllAsRead = async () => {
     await markAsReadAll();
-    await fetchNotifications();
   };
 
-  const fetchNotifications = async () => {
-    const response = await getNotifications();
+  const { data: notification } = useQuery({
+    queryKey: ["notification"],
+    queryFn: getNotifications,
+    enabled: isAuthenticated,
+    refetchInterval: 60000,
+  });
 
-    setUnreadNotifications(response.notification.unread);
-    setReadNotifications(response.notification.read);
-    setRecentNotifications(response.notification.recent);
-    setAllNotifications(response.notification.all);
+  const unreadNotifications = notification?.notification.unread ?? [];
+  const readNotifications = notification?.notification.read ?? [];
+  const recentNotifications = notification?.notification.recent ?? [];
+  const allNotifications = notification?.notification.all ?? [];
 
-    setAllNotificationsCount(response.count.total);
-    setUnreadNotificationsCount(response.count.unread);
-    setReadNotificationsCount(response.count.read);
-  };
-
-  useEffect(() => {
-    if (isAuthenticated) fetchNotifications();
-  }, [isAuthenticated]);
+  const unreadNotificationsCount = notification?.count.unread ?? 0;
+  const readNotificationsCount = notification?.count.read ?? 0;
+  const allNotificationsCount = notification?.count.total ?? 0;
 
   const renderCategoryIcon = (category: string) => {
     switch (category) {
@@ -260,7 +245,6 @@ const Header: React.FC = () => {
           </nav>
 
           <div className="flex items-center space-x-4">
-            {/* Theme Toggle */}
             <ThemeToggle />
 
             {isAuthenticated && (
@@ -309,7 +293,7 @@ const Header: React.FC = () => {
 
                       <div className="max-h-64 overflow-y-auto divide-y divide-gray-100 dark:divide-gray-700">
                         {recentNotifications.length > 0 ? (
-                          recentNotifications.map((n) => (
+                          recentNotifications.map((n: Notification) => (
                             <div
                               key={n.id}
                               className="p-3 hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer transition-colors flex items-center"
@@ -396,7 +380,6 @@ const Header: React.FC = () => {
                 {isUserDropdownOpen && (
                   <div className="absolute right-0 mt-2 w-64 rounded-md bg-white dark:bg-gray-800 shadow-lg ring-1 ring-black dark:ring-gray-700 ring-opacity-5 focus:outline-none">
                     <div className="py-1">
-                      {/* User Info Header */}
                       <div className="px-4 py-3 border-b border-gray-100 dark:border-gray-700">
                         <div className="flex items-center space-x-3">
                           <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary-100 text-sm font-medium text-primary-600 overflow-hidden">
@@ -644,6 +627,7 @@ const Header: React.FC = () => {
         unreadNotificationCount={unreadNotificationsCount}
         readNotificationCount={readNotificationsCount}
         onNotificationClick={(n: Notification) => handleNotificationClick(n)}
+        sidebarLocation="right"
       />
     </header>
   );

@@ -34,40 +34,36 @@ const HomePage: React.FC = () => {
     queryKey: ["recent-reports"],
     queryFn: getRecentReports,
   });
+
+  const { data: reportStatistic, isLoading: isLoadingReportStatistic } =
+    useQuery({
+      queryKey: ["home-report-statistic"],
+      queryFn: getAllReportsStatistic,
+      enabled: isAuthenticated,
+    });
+
+  const { data: userStatistic, isLoading: isLoadingUserStatistic } = useQuery({
+    queryKey: ["home-user-statistic"],
+    queryFn: getAllUsersCount,
+    enabled: isAuthenticated,
+  });
+
   const [userTotal, setUserTotal] = useState<number>(0);
   const [reportTotal, setReportTotal] = useState<number>(0);
   const [inProgressTotal, setInProgressTotal] = useState<number>(0);
   const [resolvedTotal, setResolvedTotal] = useState<number>(0);
   const [notificationRequest, setNotificationRequest] = useState(false);
 
-  // const toast = useToast();
-  // useEffect(() => {
-  //   toast.success(
-  //     "Selamat datang di Aplikasi Pengaduan Masyarakat",
-  //     "Selamat Datang"
-  //   );
-  // }, []);
-
   const items = data?.items ?? [];
 
-  const fetchAllUserCount = async () => {
-    const count = await getAllUsersCount();
-    setUserTotal(count.data);
-  };
-
-  const fetchAllReportCount = async () => {
-    const count = await getAllReportsStatistic();
-    setReportTotal(count.total);
-    setInProgressTotal(count.progress);
-    setResolvedTotal(count.finished);
-  };
-
   useEffect(() => {
-    if (isAuthenticated) {
-      fetchAllUserCount();
-      fetchAllReportCount();
+    if (reportStatistic && userStatistic) {
+      setReportTotal(reportStatistic.total);
+      setInProgressTotal(reportStatistic.progress);
+      setResolvedTotal(reportStatistic.finished);
+      setUserTotal(userStatistic.data);
     }
-  }, [isAuthenticated]);
+  }, [reportStatistic, userStatistic]);
 
   useEffect(() => {
     if (!isAuthenticated) return;
@@ -176,7 +172,11 @@ const HomePage: React.FC = () => {
                       className={`text-2xl lg:text-3xl font-bold ${stat.color} mb-1`}
                     >
                       <CountUp
-                        start={0}
+                        start={
+                          isLoadingReportStatistic && isLoadingUserStatistic
+                            ? 0
+                            : stat.value
+                        }
                         end={stat.value}
                         duration={1}
                         useEasing={false}
