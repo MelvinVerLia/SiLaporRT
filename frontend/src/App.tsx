@@ -27,6 +27,7 @@ import ManageAnnouncementsPage from "./pages/announcements/ManageAnnouncementsPa
 import CreateAnnouncementPage from "./pages/announcements/CreateAnnouncementPage";
 import EditAnnouncementPage from "./pages/announcements/EditAnnouncementPage";
 import ManageReportsPage from "./pages/reports/ManageReportsPage";
+import ChatPage from "./pages/chat/ChatPage";
 import NotFoundPage from "./pages/NotFoundPage";
 
 // Wrapper
@@ -138,6 +139,14 @@ function App() {
                       </ProtectedRoute>
                     }
                   />
+                  <Route
+                    path="chat"
+                    element={
+                      <ProtectedRoute>
+                        <ChatPage />
+                      </ProtectedRoute>
+                    }
+                  />
                 </Route>
 
                 {/* Admin routes with AdminLayout */}
@@ -170,6 +179,7 @@ function App() {
                     path="announcements/edit/:id"
                     element={<EditAnnouncementPage />}
                   />
+                  <Route path="chat" element={<ChatPage />} />
                 </Route>
 
                 <Route path="*" element={<NotFoundPage />} />

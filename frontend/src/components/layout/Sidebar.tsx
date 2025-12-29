@@ -12,6 +12,7 @@ import {
   ChevronRight,
   FilePlus,
   Bell,
+  MessageCircle,
 } from "lucide-react";
 import { cn } from "../../utils/cn";
 import { useAuthContext } from "../../contexts/AuthContext";
@@ -125,6 +126,11 @@ const Sidebar: React.FC<SidebarProps> = ({ className }) => {
           icon: FilePlus,
         },
       ],
+    },
+    {
+      path: "/admin/chat",
+      label: "Chat Laporan",
+      icon: MessageCircle,
     },
   ];
 
