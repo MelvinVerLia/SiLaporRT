@@ -627,6 +627,7 @@ const Header: React.FC = () => {
         unreadNotificationCount={unreadNotificationsCount}
         readNotificationCount={readNotificationsCount}
         onNotificationClick={(n: Notification) => handleNotificationClick(n)}
+        sidebarLocation="right"
       />
     </header>
   );
