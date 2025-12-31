@@ -22,6 +22,8 @@ import {
   markNotificationAsReadAll as apiMarkAll,
   markNotificationRead as apiMarkRead,
   getAllUsers as apiGetAllUsers,
+  getRtDropdown as apiRtDropdown,
+  getRtLocation as apiRtLocation,
 } from "../services/authService";
 
 export const useAuth = () => {
@@ -35,6 +37,7 @@ export const useAuth = () => {
     setIsLoading(true);
     try {
       const freshUser = await getProfile().catch(() => null);
+      console.log(freshUser);
       setUser(freshUser);
     } finally {
       setIsLoading(false);
@@ -262,6 +265,26 @@ export const useAuth = () => {
     }
   }, []);
 
+  const getRtDropdown = useCallback(async (search: string) => {
+    try {
+      const response = await apiRtDropdown(search);
+      return response;
+    } catch (error) {
+      console.log(error);
+      setError({ message: "Gagal mengambil rt dropdown" });
+    }
+  }, []);
+
+  const getRtLocation = useCallback(async (id: string) => {
+    try {
+      const response = await apiRtLocation(id);
+      return response;
+    } catch (error) {
+      console.log(error);
+      setError({ message: "Gagal mengambil rt location" });
+    }
+  }, []);
+
   return {
     user,
     isLoading,
@@ -285,5 +308,7 @@ export const useAuth = () => {
     readNotification,
     markAsReadAll,
     getAllUsersCount,
+    getRtDropdown,
+    getRtLocation,
   };
 };

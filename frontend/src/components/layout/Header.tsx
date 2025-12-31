@@ -28,7 +28,7 @@ import { id } from "date-fns/locale";
 import { AnimatePresence, motion } from "framer-motion";
 import NotificationSidebar from "./NotificationSidebar";
 import { Notification } from "../../types/notification.types";
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 const Header: React.FC = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -52,6 +52,7 @@ const Header: React.FC = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const queryClient = useQueryClient();
 
   const toggleMobileMenu = () => {
     setIsMobileMenuOpen(!isMobileMenuOpen);
@@ -102,15 +103,18 @@ const Header: React.FC = () => {
     }
   };
 
-  const markAllAsRead = async () => {
-    await markAsReadAll();
-  };
-
   const { data: notification } = useQuery({
     queryKey: ["notification"],
     queryFn: getNotifications,
     enabled: isAuthenticated,
     refetchInterval: 60000,
+  });
+
+  const markAllAsRead = useMutation({
+    mutationFn: markAsReadAll,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["notification"] });
+    },
   });
 
   const unreadNotifications = notification?.notification.unread ?? [];
@@ -283,7 +287,7 @@ const Header: React.FC = () => {
                         {unreadNotificationsCount > 0 && (
                           <div
                             className="flex gap-1 hover:cursor-pointer text-primary-600 hover:text-primary-700"
-                            onClick={markAllAsRead}
+                            onClick={() => markAllAsRead.mutate()}
                           >
                             <EyeIcon className=" w-5 h-5" />
                             <div className="text-[13px]">Mark all as read</div>

@@ -23,8 +23,9 @@ model User {
   googleId    String?  @unique
   profile     String? 
   isDeleted   Boolean  @default(false)
-  rtId        String
-  rt          RT      @relation(fields: [rtId], references: [id])
+  rtId        String?
+  address     String?
+  rt          rt?      @relation(fields: [rtId], references: [id])
 
   role        Role     @default(CITIZEN)
   isActive    Boolean  @default(true)
@@ -42,7 +43,7 @@ model User {
   @@map("users")
 }
 
-model RT {
+model rt {
   id                 String  @id @default(cuid())
   kecamatan          String
   kelurahan          String

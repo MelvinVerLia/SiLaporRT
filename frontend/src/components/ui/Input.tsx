@@ -5,7 +5,7 @@ interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {
   label?: string;
   error?: string | null;
   helperText?: string;
-  limit?: number; // max characters
+  limit?: number;
   showCounter?: boolean;
 }
 
@@ -73,7 +73,9 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
         </div>
         {error && <p className="text-sm text-red-600">{error}</p>}
         {helperText && !error && (
-          <p className="text-sm text-gray-500 dark:text-gray-400">{helperText}</p>
+          <p className="text-sm text-gray-500 dark:text-gray-400">
+            {helperText}
+          </p>
         )}
       </div>
     );

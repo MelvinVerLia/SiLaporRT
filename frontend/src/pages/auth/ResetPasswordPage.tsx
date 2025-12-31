@@ -43,7 +43,6 @@ const ResetPasswordPage: React.FC = () => {
     validateToken();
   }, []);
 
-  // Validate password criteria
   useEffect(() => {
     setPasswordCriteria({
       minLength: password.length >= 6,
@@ -89,7 +88,6 @@ const ResetPasswordPage: React.FC = () => {
     }
   };
 
-  // Loading state while validating token
   if (isTokenValid === null) {
     return (
       <div className="min-h-screen bg-gradient-to-l from-primary-100 to-white flex items-center justify-center">
@@ -101,7 +99,6 @@ const ResetPasswordPage: React.FC = () => {
     );
   }
 
-  // Invalid token state
   if (isTokenValid === false) {
     return (
       <div className="min-h-screen bg-gradient-to-l from-primary-100 to-white dark:from-gray-800 dark:to-gray-900 flex flex-col justify-center py-12 px-4 sm:px-6 lg:px-8">
@@ -136,7 +133,6 @@ const ResetPasswordPage: React.FC = () => {
     );
   }
 
-  // Success state
   if (isResetSuccessful) {
     return (
       <div className="min-h-screen bg-gradient-to-l from-primary-100 to-white dark:from-gray-800 dark:to-gray-900 flex flex-col justify-center py-12 px-4 sm:px-6 lg:px-8">
@@ -160,7 +156,6 @@ const ResetPasswordPage: React.FC = () => {
     );
   }
 
-  // Main reset password form
   return (
     <div className="min-h-screen bg-gradient-to-l from-primary-100 to-white dark:from-gray-800 dark:to-gray-900 flex flex-col justify-center py-12 px-4 sm:px-6 lg:px-8">
       <Card className="max-w-4xl w-full mx-auto shadow-xl border-0 bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-xl">
@@ -182,7 +177,6 @@ const ResetPasswordPage: React.FC = () => {
         </div>
 
         <CardContent className="flex flex-col md:flex-row gap-8 p-8 pt-16 md:pt-8">
-          {/* Ilustrasi - Kolom kiri */}
           <div className="hidden md:flex md:w-1/2 items-center justify-center rounded-lg p-4 mt-12">
             <div className="text-center">
               <div className="w-32 h-32 mx-auto mb-6 bg-primary-100 dark:bg-primary-900/30 rounded-full flex items-center justify-center">
@@ -197,7 +191,6 @@ const ResetPasswordPage: React.FC = () => {
             </div>
           </div>
 
-          {/* Form - Kolom kanan */}
           <div className="md:w-1/2 flex flex-col justify-center md:mt-12">
             <div className="mb-6">
               <CardTitle className="text-3xl font-bold text-gray-900 mb-2">
@@ -210,7 +203,6 @@ const ResetPasswordPage: React.FC = () => {
             </div>
 
             <form onSubmit={handleSubmit} className="space-y-4">
-              {/* Password Input */}
               <div className="relative">
                 <Input
                   label="Password Baru"
@@ -236,7 +228,6 @@ const ResetPasswordPage: React.FC = () => {
                 </button>
               </div>
 
-              {/* Password Criteria */}
               {password && (
                 <div className="bg-gray-50 dark:bg-gray-700/50 rounded-lg p-2">
                   <p className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-2">

@@ -28,7 +28,9 @@ export class AuthService {
     email: string,
     password: string,
     name: string,
-    phone: string
+    phone: string,
+    address: string,
+    rtId: string
   ) {
     const exists = await AuthRepository.getUserByEmail(email);
     if (exists) {
@@ -40,7 +42,15 @@ export class AuthService {
     const hashedPassword = await bcrypt.hash(password, 10);
     await redis.set(
       `reg:${regId}`,
-      JSON.stringify({ email, hashedPassword, name, phone, status: "pending" }),
+      JSON.stringify({
+        email,
+        hashedPassword,
+        name,
+        phone,
+        address,
+        rtId,
+        status: "pending",
+      }),
       "EX",
       600
     );
@@ -90,7 +100,8 @@ export class AuthService {
       throw new Error("Invalid token");
     }
 
-    const { email, hashedPassword, name, phone } = JSON.parse(userPayload);
+    const { email, hashedPassword, name, phone, address, rtId } =
+      JSON.parse(userPayload);
     const { hashedOtp } = JSON.parse(otpPayload);
 
     const inputOtp = crypto.createHash("sha256").update(otp).digest("hex");
@@ -101,6 +112,8 @@ export class AuthService {
         password: hashedPassword,
         name,
         phone,
+        address,
+        rtId,
       });
 
       const { password: _pw, googleId: _gi, ...safeUser } = user;
@@ -331,5 +344,44 @@ export class AuthService {
   static async getAllUsers() {
     const users = await AuthRepository.getAllUsers();
     return users;
+  }
+
+  static async getAllRTAdmins(search: string) {
+    const users = await AuthRepository.getAllRTAdmins(search);
+    return users;
+  }
+
+  static async getAllAvailableKecamatan() {
+    const kecamatan = await AuthRepository.getAllAvailableKecamatan();
+    return kecamatan;
+  }
+
+  static async getAllAvailableKelurahan(kecamatan: string) {
+    const kelurahan = await AuthRepository.getAllAvailableKelurahan(kecamatan);
+    return kelurahan;
+  }
+
+  static async getAllAvailableRW(kecamatan: string, kelurahan: string) {
+    const rw = await AuthRepository.getAllAvailableRW(kecamatan, kelurahan);
+    return rw;
+  }
+
+  static async getAllAvailableRT(
+    kecamatan: string,
+    kelurahan: string,
+    rw: string
+  ) {
+    const rt = await AuthRepository.getAllAvailableRT(kecamatan, kelurahan, rw);
+    return rt;
+  }
+
+  static async getAllAvailableRTLocation() {
+    const rt = await AuthRepository.getAllAvailableRTLocation();
+    return rt;
+  }
+
+  static async getRtLocationBasedOnRtId(rtId: string) {
+    const location = await AuthRepository.getRtLocationBasedOnRtId(rtId);
+    return location;
   }
 }

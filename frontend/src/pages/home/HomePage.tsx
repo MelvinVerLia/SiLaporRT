@@ -35,17 +35,18 @@ const HomePage: React.FC = () => {
     queryFn: getRecentReports,
   });
 
-  const { data: reportStatistic, isLoading: isLoadingReportStatistic } =
-    useQuery({
-      queryKey: ["home-report-statistic"],
-      queryFn: getAllReportsStatistic,
-      enabled: isAuthenticated,
-    });
+  const { data: reportStatistic } = useQuery({
+    queryKey: ["home-report-statistic"],
+    queryFn: getAllReportsStatistic,
+    enabled: isAuthenticated,
+    refetchInterval: 60000,
+  });
 
-  const { data: userStatistic, isLoading: isLoadingUserStatistic } = useQuery({
+  const { data: userStatistic } = useQuery({
     queryKey: ["home-user-statistic"],
     queryFn: getAllUsersCount,
     enabled: isAuthenticated,
+    refetchInterval: 60000,
   });
 
   const [userTotal, setUserTotal] = useState<number>(0);
@@ -172,11 +173,7 @@ const HomePage: React.FC = () => {
                       className={`text-2xl lg:text-3xl font-bold ${stat.color} mb-1`}
                     >
                       <CountUp
-                        start={
-                          isLoadingReportStatistic && isLoadingUserStatistic
-                            ? 0
-                            : stat.value
-                        }
+                        start={0}
                         end={stat.value}
                         duration={1}
                         useEasing={false}
