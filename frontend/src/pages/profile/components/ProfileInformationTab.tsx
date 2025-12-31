@@ -15,6 +15,8 @@ interface ProfileInformationTabProps {
     name: string;
     phone: string;
     profile: string;
+    address: string;
+    rtId: string;
   }) => Promise<void>;
   isSaving: boolean;
 }
