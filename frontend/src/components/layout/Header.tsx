@@ -16,6 +16,7 @@ import {
   UserCircle,
   Paperclip,
   EyeIcon,
+  MessageCircle,
 } from "lucide-react";
 import Button from "../ui/Button";
 import Badge from "../ui/Badge";
@@ -252,25 +253,36 @@ const Header: React.FC = () => {
             <ThemeToggle />
 
             {isAuthenticated && (
-              <div
-                className="relative"
-                onClick={toggleNotification}
-                ref={notifRef}
-              >
-                <button className="relative p-2 text-gray-400 dark:text-gray-300 hover:text-gray-600 dark:hover:text-gray-100 transition-colors hover:cursor-pointer">
-                  <Bell className="h-5 w-5" />
-                  {unreadNotificationsCount > 0 &&
-                    unreadNotificationsCount < 100 && (
+              <>
+                {/* Chat Button */}
+                <button
+                  onClick={() => navigate("/chat")}
+                  className="relative p-2 text-gray-400 dark:text-gray-300 hover:text-gray-600 dark:hover:text-gray-100 transition-colors hover:cursor-pointer"
+                  title="Chat"
+                >
+                  <MessageCircle className="h-5 w-5" />
+                </button>
+
+                {/* Notification Button */}
+                <div
+                  className="relative"
+                  onClick={toggleNotification}
+                  ref={notifRef}
+                >
+                  <button className="relative p-2 text-gray-400 dark:text-gray-300 hover:text-gray-600 dark:hover:text-gray-100 transition-colors hover:cursor-pointer">
+                    <Bell className="h-5 w-5" />
+                    {unreadNotificationsCount > 0 &&
+                      unreadNotificationsCount < 100 && (
+                        <span className="absolute -top-1 -right-1 h-4 w-4 rounded-full bg-red-500 text-[11px] font-semibold text-white flex items-center justify-center">
+                          {unreadNotificationsCount}
+                        </span>
+                      )}
+                    {unreadNotificationsCount >= 100 && (
                       <span className="absolute -top-1 -right-1 h-4 w-4 rounded-full bg-red-500 text-[11px] font-semibold text-white flex items-center justify-center">
-                        {unreadNotificationsCount}
+                        99+
                       </span>
                     )}
-                  {unreadNotificationsCount >= 100 && (
-                    <span className="absolute -top-1 -right-1 h-4 w-4 rounded-full bg-red-500 text-[11px] font-semibold text-white flex items-center justify-center">
-                      99+
-                    </span>
-                  )}
-                </button>
+                  </button>
                 <AnimatePresence>
                   {isNotifOpen && (
                     <motion.div
@@ -337,6 +349,7 @@ const Header: React.FC = () => {
                   )}
                 </AnimatePresence>
               </div>
+              </>
             )}
 
             {isLoading ? (

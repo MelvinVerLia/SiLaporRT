@@ -120,6 +120,7 @@ export class AuthController {
             rtId: user.rtId,
             profile: user.profile,
             role: user.role,
+            rtId: user.rtId,
             isActive: user.isActive,
             createdAt: user.createdAt,
             updatedAt: user.updatedAt,

@@ -154,7 +154,18 @@ class ReportRepository {
           include: {
             location: true,
             user: {
-              select: { id: true, name: true, email: true, isDeleted: true },
+              select: { 
+                id: true, 
+                name: true, 
+                email: true, 
+                role: true, 
+                rtId: true, 
+                isDeleted: true,
+                isActive: true,
+                createdAt: true,
+                updatedAt: true,
+                profile: true,
+              } as any,
             },
             attachments: {
               select: { id: true, filename: true, url: true, fileType: true },
@@ -168,9 +179,9 @@ class ReportRepository {
 
         // Sort by upvote count and paginate
         const sortedReports = reportsWithUpvotes
-          .sort((a, b) => b.reportUpvotes.length - a.reportUpvotes.length)
+          .sort((a: any, b: any) => b.reportUpvotes.length - a.reportUpvotes.length)
           .slice(skip, skip + pageSize)
-          .map((report) => {
+          .map((report: any) => {
             const { reportUpvotes, ...rest } = report;
             return rest;
           });
@@ -187,7 +198,18 @@ class ReportRepository {
           include: {
             location: true,
             user: {
-              select: { id: true, name: true, email: true, isDeleted: true },
+              select: { 
+                id: true, 
+                name: true, 
+                email: true, 
+                role: true, 
+                rtId: true, 
+                isDeleted: true,
+                isActive: true,
+                createdAt: true,
+                updatedAt: true,
+                profile: true,
+              } as any,
             },
             attachments: {
               select: { id: true, filename: true, url: true, fileType: true },
@@ -464,7 +486,20 @@ class ReportRepository {
         where,
         include: {
           location: true,
-          user: { select: { id: true, name: true, email: true } },
+          user: { 
+            select: { 
+              id: true, 
+              name: true, 
+              email: true, 
+              role: true, 
+              rtId: true,
+              isActive: true,
+              isDeleted: true,
+              createdAt: true,
+              updatedAt: true,
+              profile: true,
+            } as any,
+          },
           attachments: {
             select: { id: true, filename: true, url: true, fileType: true },
           },
@@ -511,7 +546,20 @@ class ReportRepository {
         data: { isPublic: !report.isPublic },
         include: {
           location: true,
-          user: { select: { id: true, name: true, email: true } },
+          user: { 
+            select: { 
+              id: true, 
+              name: true, 
+              email: true, 
+              role: true, 
+              rtId: true,
+              isActive: true,
+              isDeleted: true,
+              createdAt: true,
+              updatedAt: true,
+              profile: true,
+            } as any,
+          },
           attachments: {
             select: { id: true, filename: true, url: true, fileType: true },
           },

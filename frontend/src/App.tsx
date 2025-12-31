@@ -27,6 +27,7 @@ import ManageAnnouncementsPage from "./pages/announcements/ManageAnnouncementsPa
 import CreateAnnouncementPage from "./pages/announcements/CreateAnnouncementPage";
 import EditAnnouncementPage from "./pages/announcements/EditAnnouncementPage";
 import ManageReportsPage from "./pages/reports/ManageReportsPage";
+import ChatPage from "./pages/chat/ChatPage";
 import NotFoundPage from "./pages/NotFoundPage";
 
 // Wrapper
@@ -172,6 +173,16 @@ function App() {
                         element={
                           <ProtectedRoute>
                             <ProfilePage />
+                          </ProtectedRoute>
+                        }
+                      />
+                      <Route
+                        path="chat"
+                        element={
+                          <ProtectedRoute>
+                            <RequireCompleteProfile>
+                              <ChatPage />
+                            </RequireCompleteProfile>
                           </ProtectedRoute>
                         }
                       />
