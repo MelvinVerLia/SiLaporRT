@@ -91,4 +91,60 @@ export class AuthRepository {
       },
     });
   }
+
+  static async getAllRTAdmins(search: string) {
+    return prisma.user.findMany({
+      where: {
+        role: "RT_ADMIN",
+        isDeleted: false,
+        name: { contains: search, mode: "insensitive" },
+      },
+      select: { name: true, rtId: true },
+    });
+  }
+
+  static async getAllAvailableKecamatan() {
+    return prisma.rt.findMany({
+      distinct: ["kecamatan"],
+      select: { kecamatan: true },
+    });
+  }
+
+  static async getAllAvailableKelurahan(kecamatan: string) {
+    return prisma.rt.findMany({
+      where: { kecamatan },
+      distinct: ["kelurahan"],
+      select: { kelurahan: true },
+    });
+  }
+
+  static async getAllAvailableRW(kecamatan: string, kelurahan: string) {
+    return prisma.rt.findMany({
+      where: { kecamatan, kelurahan },
+      distinct: ["rw"],
+      select: { rw: true },
+    });
+  }
+
+  static async getAllAvailableRT(
+    kecamatan: string,
+    kelurahan: string,
+    rw: string
+  ) {
+    return prisma.rt.findMany({
+      where: { kecamatan, kelurahan, rw },
+      distinct: ["rt"],
+      select: { rt: true },
+    });
+  }
+
+  static async getAllAvailableRTLocation() {
+    return prisma.rt.findMany();
+  }
+
+  static async getRtLocationBasedOnRtId(rtId: string) {
+    return prisma.rt.findFirst({
+      where: { id: rtId },
+    });
+  }
 }

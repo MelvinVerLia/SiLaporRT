@@ -9,6 +9,8 @@ export interface User {
   phone: string;
   email?: string;
   role?: Role;
+  rtId?: string;
+  address: string;
   isActive?: boolean;
   createdAt?: string;
   updatedAt?: string;
@@ -37,4 +39,9 @@ export interface RegisterData {
 export interface AuthError {
   message: string;
   field?: string;
+}
+
+export interface RT {
+  name: string;
+  rtId: string;
 }

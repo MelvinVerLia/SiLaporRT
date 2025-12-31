@@ -16,6 +16,7 @@ import {
   UserCircle,
   Paperclip,
   EyeIcon,
+  MessageCircle,
 } from "lucide-react";
 import Button from "../ui/Button";
 import Badge from "../ui/Badge";
@@ -28,7 +29,7 @@ import { id } from "date-fns/locale";
 import { AnimatePresence, motion } from "framer-motion";
 import NotificationSidebar from "./NotificationSidebar";
 import { Notification } from "../../types/notification.types";
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 const Header: React.FC = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -52,6 +53,7 @@ const Header: React.FC = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const queryClient = useQueryClient();
 
   const toggleMobileMenu = () => {
     setIsMobileMenuOpen(!isMobileMenuOpen);
@@ -102,15 +104,18 @@ const Header: React.FC = () => {
     }
   };
 
-  const markAllAsRead = async () => {
-    await markAsReadAll();
-  };
-
   const { data: notification } = useQuery({
     queryKey: ["notification"],
     queryFn: getNotifications,
     enabled: isAuthenticated,
     refetchInterval: 60000,
+  });
+
+  const markAllAsRead = useMutation({
+    mutationFn: markAsReadAll,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["notification"] });
+    },
   });
 
   const unreadNotifications = notification?.notification.unread ?? [];
@@ -248,25 +253,36 @@ const Header: React.FC = () => {
             <ThemeToggle />
 
             {isAuthenticated && (
-              <div
-                className="relative"
-                onClick={toggleNotification}
-                ref={notifRef}
-              >
-                <button className="relative p-2 text-gray-400 dark:text-gray-300 hover:text-gray-600 dark:hover:text-gray-100 transition-colors hover:cursor-pointer">
-                  <Bell className="h-5 w-5" />
-                  {unreadNotificationsCount > 0 &&
-                    unreadNotificationsCount < 100 && (
+              <>
+                {/* Chat Button */}
+                <button
+                  onClick={() => navigate("/chat")}
+                  className="relative p-2 text-gray-400 dark:text-gray-300 hover:text-gray-600 dark:hover:text-gray-100 transition-colors hover:cursor-pointer"
+                  title="Chat"
+                >
+                  <MessageCircle className="h-5 w-5" />
+                </button>
+
+                {/* Notification Button */}
+                <div
+                  className="relative"
+                  onClick={toggleNotification}
+                  ref={notifRef}
+                >
+                  <button className="relative p-2 text-gray-400 dark:text-gray-300 hover:text-gray-600 dark:hover:text-gray-100 transition-colors hover:cursor-pointer">
+                    <Bell className="h-5 w-5" />
+                    {unreadNotificationsCount > 0 &&
+                      unreadNotificationsCount < 100 && (
+                        <span className="absolute -top-1 -right-1 h-4 w-4 rounded-full bg-red-500 text-[11px] font-semibold text-white flex items-center justify-center">
+                          {unreadNotificationsCount}
+                        </span>
+                      )}
+                    {unreadNotificationsCount >= 100 && (
                       <span className="absolute -top-1 -right-1 h-4 w-4 rounded-full bg-red-500 text-[11px] font-semibold text-white flex items-center justify-center">
-                        {unreadNotificationsCount}
+                        99+
                       </span>
                     )}
-                  {unreadNotificationsCount >= 100 && (
-                    <span className="absolute -top-1 -right-1 h-4 w-4 rounded-full bg-red-500 text-[11px] font-semibold text-white flex items-center justify-center">
-                      99+
-                    </span>
-                  )}
-                </button>
+                  </button>
                 <AnimatePresence>
                   {isNotifOpen && (
                     <motion.div
@@ -283,7 +299,7 @@ const Header: React.FC = () => {
                         {unreadNotificationsCount > 0 && (
                           <div
                             className="flex gap-1 hover:cursor-pointer text-primary-600 hover:text-primary-700"
-                            onClick={markAllAsRead}
+                            onClick={() => markAllAsRead.mutate()}
                           >
                             <EyeIcon className=" w-5 h-5" />
                             <div className="text-[13px]">Mark all as read</div>
@@ -333,6 +349,7 @@ const Header: React.FC = () => {
                   )}
                 </AnimatePresence>
               </div>
+              </>
             )}
 
             {isLoading ? (

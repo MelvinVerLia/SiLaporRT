@@ -1,26 +1,75 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Eye, EyeOff, UserPlus, Check } from "lucide-react";
 import { Card, CardContent, CardTitle } from "../ui/Card";
 import Button from "../ui/Button";
 import Input from "../ui/Input";
 import { useAuthContext } from "../../contexts/AuthContext";
+import { RT } from "../../types/auth.types";
+import SearchableDropdown from "../ui/SearchableDropdown";
 
 const RegisterForm: React.FC = () => {
   const [formData, setFormData] = useState({
     name: "",
     email: "",
     phone: "",
+    address: "",
+    rtId: "",
     password: "",
     confirmPassword: "",
   });
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [agreedToTerms, setAgreedToTerms] = useState(false);
-  const navigate = useNavigate();
-  const { sendOtp, isLoading, error, clearError } = useAuthContext();
+  const [search, setSearch] = useState("");
+  const [rtData, setRtData] = useState([]);
+  const [rtFormData, setRtFormData] = useState({
+    kecamatan: "",
+    kelurahan: "",
+    rw: "",
+    rt: "",
+  });
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const navigate = useNavigate();
+  const {
+    sendOtp,
+    isLoading,
+    error,
+    clearError,
+    getRtDropdown,
+    getRtLocation,
+  } = useAuthContext();
+
+  useEffect(() => {
+    const fetchRtData = async () => {
+      const data = await getRtDropdown(search);
+      setRtData(data.data);
+    };
+
+    const fetchRtLocation = async () => {
+      const data = await getRtLocation(formData.rtId);
+      setRtFormData({
+        kecamatan: data.data.kecamatan,
+        kelurahan: data.data.kelurahan,
+        rw: data.data.rw,
+        rt: data.data.rt,
+      });
+    };
+
+    fetchRtData();
+    if (formData.rtId) fetchRtLocation();
+  }, [search, formData.rtId]);
+
+  const rtOptions = rtData.map((rt: RT) => ({
+    label: rt.name,
+    value: rt.rtId,
+  }));
+
+  const handleChange = (
+    e:
+      | React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
+      | { target: { name: string; value: string } }
+  ) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
     clearError();
@@ -33,7 +82,6 @@ const RegisterForm: React.FC = () => {
     if (!agreedToTerms) return;
 
     const response = await sendOtp(formData);
-    console.log("responseee", response);
     if (response) {
       navigate(`/verify-otp/${response}`, { replace: true });
     }
@@ -54,7 +102,7 @@ const RegisterForm: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-l from-primary-100 to-white dark:from-gray-800 dark:to-gray-900 flex flex-col justify-center py-12 px-4 sm:px-6 lg:px-8">
-      <Card className="max-w-4xl w-full mx-auto shadow-xl border-0 bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-xl">
+      <Card className="max-w-6xl w-full mx-auto shadow-xl border-0 bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-xl">
         {/* Logo positioned absolutely at the top of the card - visible on all screen sizes */}
         <div className="absolute top-4 left-8">
           <Link
@@ -67,7 +115,8 @@ const RegisterForm: React.FC = () => {
               className="h-8 w-8 md:h-10 md:w-10"
             />
             <span className="text-xl md:text-2xl">
-              SiLapor<span className="text-primary-700 dark:text-primary-400">RT</span>
+              SiLapor
+              <span className="text-primary-700 dark:text-primary-400">RT</span>
             </span>
           </Link>
         </div>
@@ -118,7 +167,6 @@ const RegisterForm: React.FC = () => {
 
               <Input
                 label="Alamat Email"
-                type="email"
                 name="email"
                 value={formData.email}
                 onChange={handleChange}
@@ -141,6 +189,102 @@ const RegisterForm: React.FC = () => {
                 disabled={isLoading}
                 className="transition-all duration-200"
               />
+
+              <Input
+                label="Alamat"
+                name="address"
+                value={formData.address}
+                onChange={handleChange}
+                error={error?.field === "address" ? error.message : undefined}
+                placeholder="Jl Hayam Goreng Tepung"
+                required
+                disabled={isLoading}
+                className="transition-all duration-200"
+              />
+
+              <SearchableDropdown
+                label="Nama RT"
+                name="rtId"
+                error={error?.field === "rtId" ? error.message : undefined}
+                options={isLoading ? [] : rtOptions}
+                required
+                value={formData.rtId}
+                search={search}
+                onSearchChange={setSearch}
+                onChange={handleChange}
+                disabled={isLoading}
+              />
+
+              {formData.rtId && (
+                <div className="mt-3 overflow-hidden rounded-xl border border-gray-200/70 bg-white/60 shadow-sm backdrop-blur dark:border-gray-700/70 dark:bg-gray-800/50">
+                  <div className="flex items-start justify-between gap-3 border-b border-gray-200/70 px-4 py-3 dark:border-gray-700/70">
+                    <div>
+                      <p className="text-sm font-semibold text-gray-900 dark:text-gray-100">
+                        Lokasi RT
+                      </p>
+                    </div>
+
+                    {isLoading ? (
+                      <span className="inline-flex items-center rounded-full bg-gray-100 px-2 py-1 text-xs text-gray-600 dark:bg-gray-700 dark:text-gray-200">
+                        Memuat...
+                      </span>
+                    ) : (
+                      <span className="inline-flex items-center rounded-full bg-primary-50 px-2 py-1 text-xs font-medium text-primary-700 dark:bg-primary-900/30 dark:text-primary-200">
+                        Terisi otomatis
+                      </span>
+                    )}
+                  </div>
+
+                  <div className="px-4 py-4">
+                    {isLoading ? (
+                      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                        <div className="h-12 rounded-lg bg-gray-100 dark:bg-gray-700/60" />
+                        <div className="h-12 rounded-lg bg-gray-100 dark:bg-gray-700/60" />
+                        <div className="h-12 rounded-lg bg-gray-100 dark:bg-gray-700/60" />
+                        <div className="h-12 rounded-lg bg-gray-100 dark:bg-gray-700/60" />
+                      </div>
+                    ) : (
+                      <dl className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                        <div className="rounded-lg border border-gray-200/70 bg-white px-3 py-2 dark:border-gray-700/70 dark:bg-gray-800/60">
+                          <dt className="text-xs text-gray-600 dark:text-gray-400">
+                            Kelurahan
+                          </dt>
+                          <dd className="mt-0.5 text-sm font-medium text-gray-900 dark:text-gray-100">
+                            {rtFormData.kelurahan || "—"}
+                          </dd>
+                        </div>
+
+                        <div className="rounded-lg border border-gray-200/70 bg-white px-3 py-2 dark:border-gray-700/70 dark:bg-gray-800/60">
+                          <dt className="text-xs text-gray-600 dark:text-gray-400">
+                            Kecamatan
+                          </dt>
+                          <dd className="mt-0.5 text-sm font-medium text-gray-900 dark:text-gray-100">
+                            {rtFormData.kecamatan || "—"}
+                          </dd>
+                        </div>
+
+                        <div className="rounded-lg border border-gray-200/70 bg-white px-3 py-2 dark:border-gray-700/70 dark:bg-gray-800/60">
+                          <dt className="text-xs text-gray-600 dark:text-gray-400">
+                            RW
+                          </dt>
+                          <dd className="mt-0.5 text-sm font-medium text-gray-900 dark:text-gray-100">
+                            {rtFormData.rw || "—"}
+                          </dd>
+                        </div>
+
+                        <div className="rounded-lg border border-gray-200/70 bg-white px-3 py-2 dark:border-gray-700/70 dark:bg-gray-800/60">
+                          <dt className="text-xs text-gray-600 dark:text-gray-400">
+                            RT
+                          </dt>
+                          <dd className="mt-0.5 text-sm font-medium text-gray-900 dark:text-gray-100">
+                            {rtFormData.rt || "—"}
+                          </dd>
+                        </div>
+                      </dl>
+                    )}
+                  </div>
+                </div>
+              )}
 
               <div className="relative">
                 <Input
@@ -227,7 +371,6 @@ const RegisterForm: React.FC = () => {
                 )}
               </div>
 
-              {/* Terms & Conditions */}
               <div className="space-y-4">
                 <label className="flex items-start space-x-3 cursor-pointer group">
                   <input
@@ -260,7 +403,9 @@ const RegisterForm: React.FC = () => {
 
               {error && !error.field && (
                 <div className="text-sm text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-800 p-3 rounded-lg flex items-start space-x-2">
-                  <span className="text-red-500 dark:text-red-400 mt-0.5">⚠</span>
+                  <span className="text-red-500 dark:text-red-400 mt-0.5">
+                    ⚠
+                  </span>
                   <span>{error.message}</span>
                 </div>
               )}
@@ -276,7 +421,8 @@ const RegisterForm: React.FC = () => {
                   !formData.password ||
                   !formData.confirmPassword ||
                   !agreedToTerms ||
-                  !passwordsMatch
+                  !passwordsMatch ||
+                  !formData.rtId
                 }
               >
                 <UserPlus className="mr-2 h-4 w-4" />
@@ -325,7 +471,10 @@ const RegisterForm: React.FC = () => {
       <div className="mt-8 text-center px-4">
         <p className="text-xs text-gray-500 dark:text-gray-300">
           Dengan mendaftar, Anda menyetujui{" "}
-          <Link to="/terms" className="text-primary-600 dark:text-primary-400 hover:text-primary-700 dark:hover:text-primary-300">
+          <Link
+            to="/terms"
+            className="text-primary-600 dark:text-primary-400 hover:text-primary-700 dark:hover:text-primary-300"
+          >
             Syarat & Ketentuan
           </Link>{" "}
           dan{" "}

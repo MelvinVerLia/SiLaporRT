@@ -1,13 +1,14 @@
 import { createContext, useContext } from "react";
-import { useAuth } from "../hooks/useAuth"; 
+import { useAuth } from "../hooks/useAuth";
 
 const AuthContext = createContext<ReturnType<typeof useAuth> | null>(null);
 
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
-  const auth = useAuth(); 
+  const auth = useAuth();
   return <AuthContext.Provider value={auth}>{children}</AuthContext.Provider>;
 };
 
+// eslint-disable-next-line react-refresh/only-export-components
 export const useAuthContext = () => {
   const ctx = useContext(AuthContext);
   if (!ctx) throw new Error("useAuthContext must be used inside AuthProvider");

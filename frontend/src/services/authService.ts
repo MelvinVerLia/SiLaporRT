@@ -34,12 +34,10 @@ export async function sendOTP(
 }
 
 export async function resendOTP(token: string) {
-  console.log("regID", token);
   const res = await publicRequest(`/auth/resend-otp`, {
     method: "POST",
     data: { token },
   });
-  console.log("meowmeow");
   return res;
 }
 
@@ -116,7 +114,19 @@ export async function markNotificationAsReadAll() {
   return res;
 }
 
-export async function getAllUsers(){
+export async function getAllUsers() {
   const res = await request("/auth/all-users", { method: "GET" });
+  return res;
+}
+
+export async function getRtDropdown(search: string) {
+  const res = await request(`/auth/available-rt?search=${search}`, {
+    method: "GET",
+  });
+  return res;
+}
+
+export async function getRtLocation(rtId: string) {
+  const res = await request(`/auth/location/${rtId}`, { method: "GET" });
   return res;
 }

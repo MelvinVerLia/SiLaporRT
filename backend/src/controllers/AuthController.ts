@@ -108,7 +108,6 @@ export class AuthController {
   static async getProfile(req: Request, res: Response) {
     try {
       const user = JSON.parse(JSON.stringify(req.user));
-      // console.log(user);
       res.status(200).json({
         success: true,
         data: {
@@ -117,8 +116,11 @@ export class AuthController {
             name: user.name,
             phone: user.phone,
             email: user.email,
+            address: user.address,
+            rtId: user.rtId,
             profile: user.profile,
             role: user.role,
+            rtId: user.rtId,
             isActive: user.isActive,
             createdAt: user.createdAt,
             updatedAt: user.updatedAt,
@@ -248,9 +250,16 @@ export class AuthController {
   }
 
   static async sendOtp(req: Request, res: Response) {
-    const { email, password, name, phone } = req.body;
+    const { email, password, name, phone, address, rtId } = req.body;
     try {
-      const response = await AuthService.sendOtp(email, password, name, phone);
+      const response = await AuthService.sendOtp(
+        email,
+        password,
+        name,
+        phone,
+        address,
+        rtId
+      );
       res.json({
         success: true,
         message: "OTP sent successfully",
@@ -346,6 +355,8 @@ export class AuthController {
           name: result.name,
           phone: result.phone,
           email: result.email,
+          address: result.address,
+          rtId: result.rtId,
           profile: result.profile,
           role: result.role,
           isActive: result.isActive,
@@ -405,6 +416,148 @@ export class AuthController {
         success: false,
         message:
           error instanceof Error ? error.message : "Failed to fetch all users",
+      });
+    }
+  }
+
+  static async getAllRTAdmins(req: Request, res: Response) {
+    const { search } = req.query;
+    const formattedSearch = String(search);
+    try {
+      const users = await AuthService.getAllRTAdmins(formattedSearch);
+      return res.status(200).json({
+        success: true,
+        message: "All RT admins retrieved successfully",
+        data: users,
+      });
+    } catch (error) {
+      return res.status(500).json({
+        success: false,
+        message:
+          error instanceof Error ? error.message : "Failed to fetch RT admins",
+      });
+    }
+  }
+
+  static async getAllAvailableKecamatan(req: Request, res: Response) {
+    try {
+      const users = await AuthService.getAllAvailableKecamatan();
+      return res.status(200).json({
+        success: true,
+        message: "All available kecamatan retrieved successfully",
+        data: users,
+      });
+    } catch (error) {
+      return res.status(500).json({
+        success: false,
+        message:
+          error instanceof Error
+            ? error.message
+            : "Failed to fetch available kecamatan",
+      });
+    }
+  }
+
+  static async getAllAvailableKelurahan(req: Request, res: Response) {
+    const kecamatan = req.params.kecamatan;
+    try {
+      const users = await AuthService.getAllAvailableKelurahan(kecamatan);
+      return res.status(200).json({
+        success: true,
+        message: "All available kelurahan retrieved successfully",
+        data: users,
+      });
+    } catch (error) {
+      return res.status(500).json({
+        success: false,
+        message:
+          error instanceof Error
+            ? error.message
+            : "Failed to fetch available kelurahan",
+      });
+    }
+  }
+
+  static async getAllAvailableRW(req: Request, res: Response) {
+    const kecamatan = req.params.kecamatan;
+    const kelurahan = req.params.kelurahan;
+    try {
+      const users = await AuthService.getAllAvailableRW(kecamatan, kelurahan);
+      return res.status(200).json({
+        success: true,
+        message: "All available RW retrieved successfully",
+        data: users,
+      });
+    } catch (error) {
+      return res.status(500).json({
+        success: false,
+        message:
+          error instanceof Error
+            ? error.message
+            : "Failed to fetch available RW",
+      });
+    }
+  }
+
+  static async getAllAvailableRT(req: Request, res: Response) {
+    const kecamatan = req.params.kecamatan;
+    const kelurahan = req.params.kelurahan;
+    const rw = req.params.rw;
+    try {
+      const users = await AuthService.getAllAvailableRT(
+        kecamatan,
+        kelurahan,
+        rw
+      );
+      return res.status(200).json({
+        success: true,
+        message: "All available RT retrieved successfully",
+        data: users,
+      });
+    } catch (error) {
+      return res.status(500).json({
+        success: false,
+        message:
+          error instanceof Error
+            ? error.message
+            : "Failed to fetch available RT",
+      });
+    }
+  }
+
+  static async getAllAvailableRTLocation(req: Request, res: Response) {
+    try {
+      const users = await AuthService.getAllAvailableRTLocation();
+      return res.status(200).json({
+        success: true,
+        message: "All available RT retrieved successfully",
+        data: users,
+      });
+    } catch (error) {
+      return res.status(500).json({
+        success: false,
+        message:
+          error instanceof Error
+            ? error.message
+            : "Failed to fetch available RT",
+      });
+    }
+  }
+
+  static async getRtLocationBasedOnRtId(req: Request, res: Response) {
+    const rtId = req.params.rt;
+    try {
+      const users = await AuthService.getRtLocationBasedOnRtId(rtId);
+      return res.status(200).json({
+        success: true,
+        message: "Location Retrieved Succesfully",
+        data: users,
+      });
+    } catch (error) {
+      return res.status(500).json({
+        success: false,
+        message:
+          error instanceof Error ? error.message : "Failed to fetch location",
       });
     }
   }

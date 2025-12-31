@@ -25,9 +25,13 @@ router.post("/send-otp", AuthController.sendOtp);
 router.post("/resend-otp", AuthController.resendOtp);
 router.post("/refresh", AuthController.refresh);
 router.post("/forgot-password", AuthController.forgotPassword);
+
 // forgot password in forgot password page
 router.put("/forgot-password-change", AuthController.changeForgotPassword);
 router.post("/validate-token", AuthController.validateToken);
+router.get("/all-available-rt", AuthController.getAllAvailableRTLocation);
+router.get("/available-rt", AuthController.getAllRTAdmins);
+router.get("/location/:rt", AuthController.getRtLocationBasedOnRtId);
 
 //protected routes
 router.get("/profile", authenticateJWT, AuthController.getProfile);

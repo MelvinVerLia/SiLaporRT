@@ -49,6 +49,7 @@ export interface User {
   phone?: string;
   email?: string;
   role: Role;
+  rtId?: string;
   isDeleted: boolean;
   isActive: boolean;
   createdAt: string;
