@@ -66,6 +66,8 @@ const ProfilePage: React.FC = () => {
     name: string;
     phone: string;
     profile: string;
+    address: string;
+    rtId: string;
   }) => {
     setIsSavingProfile(true);
     try {
@@ -98,6 +100,8 @@ const ProfilePage: React.FC = () => {
             name: user.name || "",
             phone: user.phone || "",
             profile: uploadedUrl,
+            address: user.address || "",
+            rtId: user.rtId || "",
           });
 
           if (success) {
