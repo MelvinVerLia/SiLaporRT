@@ -38,14 +38,14 @@ const HomePage: React.FC = () => {
   const { data: reportStatistic } = useQuery({
     queryKey: ["home-report-statistic"],
     queryFn: getAllReportsStatistic,
-    enabled: isAuthenticated,
+    // enabled: isAuthenticated,
     refetchInterval: 60000,
   });
 
   const { data: userStatistic } = useQuery({
     queryKey: ["home-user-statistic"],
     queryFn: getAllUsersCount,
-    enabled: isAuthenticated,
+    // enabled: isAuthenticated,
     refetchInterval: 60000,
   });
 

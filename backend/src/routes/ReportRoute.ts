@@ -15,7 +15,6 @@ router.get(
 );
 router.get(
   "/all-reports/stats",
-  authenticateJWT,
   ReportController.getAllReportsStatistics
 );
 router.get("/:reportId", ReportController.getReportById);

@@ -19,7 +19,6 @@ function RequireCompleteProfile({ children }: { children: React.ReactNode }) {
     }
   }, [isIncomplete, toast]);
 
-  if (!user) return null;
 
   if (isIncomplete) {
     return <Navigate to="/profile" replace />;
