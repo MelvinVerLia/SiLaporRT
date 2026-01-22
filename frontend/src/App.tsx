@@ -55,7 +55,6 @@ function App() {
               <Router>
                 <div className="bg-gray-50 dark:bg-gray-900 min-h-screen">
                   <Routes>
-                    {/* Public-only routes (redirect ke "/" jika sudah login) */}
                     <Route
                       path="/login"
                       element={
@@ -188,7 +187,6 @@ function App() {
                       />
                     </Route>
 
-                    {/* Admin routes with AdminLayout */}
                     <Route
                       path="/admin"
                       element={
