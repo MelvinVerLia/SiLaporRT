@@ -16,6 +16,7 @@ export class ChatRepository {
     return prisma.message.findMany({
       where: { chatId },
       include: { user: { select: { name: true, role: true, profile: true } } },
+      orderBy: { createdAt: "asc" },
     });
   }
 

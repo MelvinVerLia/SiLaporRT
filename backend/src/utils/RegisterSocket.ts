@@ -24,12 +24,12 @@ export const RegisterSocket = (io: any) => {
         messagePayload.chatId,
       );
 
-      console.log({ messagePayload });
+      const message = { ...messagePayload, id: savedMessage.id };
 
       io.to(savedMessage.chatId).emit(
         "receive_message",
-        savedMessage.id,
-        messagePayload
+        messagePayload.id,
+        message
       );
     });
 

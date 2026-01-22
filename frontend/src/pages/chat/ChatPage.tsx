@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useMemo } from "react";
 import { Send, User, MapPin } from "lucide-react";
 import { useAuthContext } from "../../contexts/AuthContext";
 import { Report } from "../../types/report.types";
@@ -11,6 +11,7 @@ import { adminListReports } from "../../services/reportAdminService";
 import { getMessages, startChat, getChatId } from "../../services/chatService";
 import { useQuery } from "@tanstack/react-query";
 import { socket } from "../../utils/socket";
+import MessageBox from "./components/MessageBox";
 
 type Message = {
   id: string;
@@ -61,7 +62,7 @@ const ChatPage: React.FC = () => {
     };
 
     fetchMessages();
-  }, [ChatId]);
+  }, [ChatId, selectedReport]);
 
   const scrollToBottom = () => {
     const el = messagesContainerRef.current;
@@ -69,12 +70,19 @@ const ChatPage: React.FC = () => {
 
     el.scrollTo({
       top: el.scrollHeight,
-      behavior: "smooth",
+      behavior: "auto",
     });
   };
 
   useEffect(() => {
     scrollToBottom();
+  }, [messages]);
+
+  const sortedMessages = useMemo(() => {
+    return [...messages].sort(
+      (a, b) =>
+        new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime(),
+    );
   }, [messages]);
 
   useEffect(() => {
@@ -147,14 +155,13 @@ const ChatPage: React.FC = () => {
     setMessages([]);
     socket.emit("join_room", ChatId);
 
-    socket.on("receive_message", (id, payload) => {
-      console.log("receive_message", id, payload);
+    socket.on("receive_message", (tempId, payload) => {
       setMessages((prev) => {
-        if (id) {
-          const exists = prev.some((m) => m.id === id);
+        if (tempId) {
+          const exists = prev.some((m) => m.id === tempId);
 
           if (exists) {
-            return prev.map((m) => (m.id === id ? payload.message : m));
+            return prev.map((m) => (m.id === tempId ? { ...payload } : m));
           }
         }
 
@@ -188,7 +195,7 @@ const ChatPage: React.FC = () => {
 
     console.log(optimisticMessage);
 
-    // setMessages((prev) => [...prev, optimisticMessage]);
+    setMessages((prev) => [...prev, optimisticMessage]);
 
     socket.emit("send_message", {
       tempId,
@@ -309,7 +316,7 @@ const ChatPage: React.FC = () => {
                   <div className="flex items-center justify-center h-full">
                     <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600"></div>
                   </div>
-                ) : !messages ? (
+                ) : !ChatId ? (
                   <div className="flex items-center justify-center h-full">
                     <div className="text-gray-500 dark:text-gray-400">
                       <Button
@@ -323,58 +330,15 @@ const ChatPage: React.FC = () => {
                   </div>
                 ) : (
                   <>
-                    {messages.map((msg: Message) => (
-                      <div
-                        key={msg.id}
-                        className={`flex ${
-                          msg.userId === user?.id
-                            ? "justify-end"
-                            : "justify-start"
-                        }`}
-                      >
-                        <div
-                          className={`flex ${
-                            msg.userId === user?.id
-                              ? "flex-row-reverse"
-                              : "flex-row"
-                          } items-start gap-2 max-w-[85%] sm:max-w-[70%]`}
-                        >
-                          <div className="flex-shrink-0">
-                            {msg.user.profile ? (
-                              <img
-                                src={msg.user.profile}
-                                className="h-8 w-8 rounded-full object-cover"
-                              />
-                            ) : (
-                              <User />
-                            )}
-                          </div>
-
-                          <div>
-                            <div
-                              className={`rounded-lg p-3 ${
-                                msg.userId === user?.id
-                                  ? "bg-primary-600 text-white"
-                                  : "bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white"
-                              }`}
-                            >
-                              <p className="text-xs font-medium mb-1 opacity-80">
-                                {msg.user.name}
-                              </p>
-                              <p className="text-sm whitespace-pre-wrap break-all">
-                                {msg.message}
-                              </p>
-                            </div>
-                            <p className="text-xs text-gray-500 dark:text-gray-400 mt-1 px-1">
-                              {formatDistanceToNow(msg.createdAt, {
-                                addSuffix: true,
-                                locale: id,
-                              })}
-                            </p>
-                          </div>
-                        </div>
-                      </div>
+                    {sortedMessages.map((msg: Message, idx: number) => (
+                      <MessageBox
+                        msg={msg}
+                        user={user}
+                        idx={idx}
+                        sortedMessages={sortedMessages}
+                      />
                     ))}
+
                     <div ref={messagesEndRef} />
                   </>
                 )}
