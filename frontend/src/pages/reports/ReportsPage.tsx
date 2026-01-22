@@ -27,10 +27,20 @@ const ReportsPage: React.FC = () => {
   const { data, isLoading, isError, refetch, isFetching } = useQuery({
     queryKey: [
       "reports",
-      { page, pageSize, q, selectedCategory, selectedStatus, sortBy, selectedPeriod },
+      {
+        page,
+        pageSize,
+        q,
+        selectedCategory,
+        selectedStatus,
+        sortBy,
+        selectedPeriod,
+      },
     ],
     queryFn: () => {
-      const dateRange = selectedPeriod ? getDateRangeFromPeriod(selectedPeriod) : {};
+      const dateRange = selectedPeriod
+        ? getDateRangeFromPeriod(selectedPeriod)
+        : {};
       return getReportList({
         page,
         pageSize,
@@ -226,7 +236,7 @@ const ReportsPage: React.FC = () => {
         <CardContent className="p-6">
           <div className="flex items-center gap-4">
             <div className="relative flex-1">
-              <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400 dark:text-gray-300 z-10" />
+              <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400 dark:text-gray-500 z-10" />
               <Input
                 placeholder="Cari laporan..."
                 value={q}
@@ -257,11 +267,11 @@ const ReportsPage: React.FC = () => {
         {isError && (
           <Card>
             <CardContent className="p-12 text-center">
-              <AlertCircle className="mx-auto h-12 w-12 text-red-500 mb-4" />
+              <AlertCircle className="mx-auto h-12 w-12 text-red-500 dark:text-red-400 mb-4" />
               <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-2">
                 Gagal Memuat Laporan
               </h3>
-              <p className="text-gray-600 dark:text-gray-300 mb-6">
+              <p className="text-gray-600 dark:text-gray-400 mb-6">
                 Terjadi kesalahan saat memuat data laporan. Silakan coba lagi.
               </p>
               <Button
@@ -286,11 +296,11 @@ const ReportsPage: React.FC = () => {
       {!isLoading && !isError && items.length === 0 && (
         <Card>
           <CardContent className="p-12 text-center">
-            <FileText className="mx-auto h-12 w-12 text-gray-400 dark:text-gray-300 mb-4" />
+            <FileText className="mx-auto h-12 w-12 text-gray-400 dark:text-gray-500 mb-4" />
             <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-2">
               Belum Ada Laporan
             </h3>
-            <p className="text-gray-600 dark:text-gray-300">
+            <p className="text-gray-600 dark:text-gray-400">
               Laporan akan muncul ketika tersedia.
             </p>
           </CardContent>

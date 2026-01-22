@@ -127,7 +127,7 @@ const ReportDetailPage: React.FC = () => {
   const handleMapClick = () => {
     window.open(
       `https://www.google.com/maps?q=${report.location.latitude},${report.location.longitude}`,
-      "_blank"
+      "_blank",
     );
   };
 
@@ -179,7 +179,7 @@ const ReportDetailPage: React.FC = () => {
       if (context?.previousUpvoteStatus) {
         queryClient.setQueryData(
           ["upvote-status", id],
-          context.previousUpvoteStatus
+          context.previousUpvoteStatus,
         );
       }
     },
@@ -295,11 +295,11 @@ const ReportDetailPage: React.FC = () => {
     return (
       <Card>
         <CardContent className="p-12 text-center">
-          <AlertCircle className="mx-auto h-12 w-12 text-red-500 mb-4" />
-          <h3 className="text-lg font-semibold text-gray-900 mb-2">
+          <AlertCircle className="mx-auto h-12 w-12 text-red-500 dark:text-red-400 mb-4" />
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-2">
             {!report ? "Laporan Tidak Ditemukan" : "Gagal Memuat Laporan"}
           </h3>
-          <p className="text-gray-600 dark:text-gray-300 mb-6">
+          <p className="text-gray-500 dark:text-gray-400 mb-6">
             {!report
               ? "Laporan yang Anda cari tidak ditemukan atau mungkin sudah dihapus."
               : "Terjadi kesalahan saat memuat detail laporan. Silakan coba lagi."}
@@ -332,8 +332,11 @@ const ReportDetailPage: React.FC = () => {
         { label: report.title },
       ]
     : isFromMyReports
-    ? [{ label: "Laporan Saya", href: "/my-reports" }, { label: report.title }]
-    : [{ label: "Laporan", href: "/reports" }, { label: report.title }];
+      ? [
+          { label: "Laporan Saya", href: "/my-reports" },
+          { label: report.title },
+        ]
+      : [{ label: "Laporan", href: "/reports" }, { label: report.title }];
 
   return (
     <div className="space-y-6">
@@ -363,7 +366,7 @@ const ReportDetailPage: React.FC = () => {
                 {report.title}
               </CardTitle>
 
-              <div className="rounded-md overflow-hidden border border-gray-200 h-96 mb-5">
+              <div className="rounded-md overflow-hidden h-96 mb-5">
                 <LoadScript
                   googleMapsApiKey={import.meta.env.VITE_API_GOOGLE_MAP}
                   libraries={libraries}
@@ -386,7 +389,7 @@ const ReportDetailPage: React.FC = () => {
                   </GoogleMap>
                 </LoadScript>
               </div>
-              <div className="flex flex-col sm:flex-row sm:items-center gap-4 text-sm text-gray-600 dark:text-gray-300">
+              <div className="flex flex-col sm:flex-row sm:items-center gap-4 text-sm text-gray-500 dark:text-gray-400">
                 {isAuthenticated && (
                   <div className="flex items-center">
                     <Button
@@ -413,17 +416,17 @@ const ReportDetailPage: React.FC = () => {
                   </div>
                 )}
                 <div className="flex items-center">
-                  <User className="mr-1 h-4 w-4" />
+                  <User className="mr-1 h-4 w-4 text-gray-500 dark:text-gray-400" />
                   <span>
                     {report.isAnonymous
                       ? "Anonim"
                       : report.user?.isDeleted
-                      ? "Pengguna Terhapus"
-                      : report.user?.name}
+                        ? "Pengguna Terhapus"
+                        : report.user?.name}
                   </span>
                 </div>
                 <div className="flex items-center">
-                  <Clock className="mr-1 h-4 w-4" />
+                  <Clock className="mr-1 h-4 w-4 text-gray-500 dark:text-gray-400" />
                   <span>{formatDateTime(report.createdAt)}</span>
                 </div>
               </div>
@@ -448,7 +451,7 @@ const ReportDetailPage: React.FC = () => {
                   .map((paragraph: string, index: number) => (
                     <p
                       key={index}
-                      className="mb-4 text-gray-700 leading-relaxed"
+                      className="mb-4 text-gray-600 dark:text-gray-300 leading-relaxed"
                     >
                       {paragraph}
                     </p>
@@ -475,7 +478,7 @@ const ReportDetailPage: React.FC = () => {
                         .split(".")
                         .pop()
                         ?.toLowerCase(),
-                    })
+                    }),
                   )}
                   title="Lampiran"
                   gridCols={3}
@@ -495,34 +498,39 @@ const ReportDetailPage: React.FC = () => {
                   {report.responses.map((response: Response) => (
                     <div
                       key={response.id}
-                      className="bg-primary-50 border border-primary-100 rounded-lg p-4"
+                      className="bg-primary-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg p-4"
                     >
                       <div className="flex items-start justify-between mb-2">
                         <div className="flex items-center">
-                          <div className="flex-shrink-0 w-8 h-8 rounded-full overflow-hidden flex items-center justify-center text-sm font-medium mr-3">
+                          <div className="flex-shrink-0 w-8 h-8 rounded-full overflow-hidden flex items-center justify-center text-sm font-medium mr-3 bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-300">
                             {response.responder.profile ? (
                               <img
                                 src={response.responder.profile}
                                 alt={response.responder.name
                                   .charAt(0)
                                   .toUpperCase()}
+                                className="w-full h-full object-cover"
                               />
                             ) : (
                               response.responder.name.charAt(0).toUpperCase()
                             )}
                           </div>
                           <div>
-                            <p className="font-medium text-gray-900">
+                            <p className="font-medium text-gray-900 dark:text-gray-100">
                               {response.responder.name}
                             </p>
-                            <p className="text-sm text-gray-600 dark:text-gray-300">Admin RT</p>
+                            <p className="text-sm text-gray-500 dark:text-gray-400">
+                              Admin RT
+                            </p>
                           </div>
                         </div>
-                        <span className="text-sm text-gray-500 dark:text-gray-300">
+                        <span className="text-sm text-gray-500 dark:text-gray-400">
                           {formatDateTime(response.createdAt)}
                         </span>
                       </div>
-                      <p className="text-gray-700 ml-11">{response.message}</p>
+                      <p className="text-gray-600 dark:text-gray-300 ml-11">
+                        {response.message}
+                      </p>
                     </div>
                   ))}
                 </div>
@@ -535,11 +543,13 @@ const ReportDetailPage: React.FC = () => {
             <CardHeader>
               <div className="flex items-center gap-2">
                 <div className="flex items-center gap-2">
-                  <MessageCircle className="mx-1 h-7 w-7" />
+                  <MessageCircle className="mx-1 h-7 w-7 dark:text-white" />
                   <CardTitle>Diskusi & Komentar</CardTitle>
                 </div>
                 <div className="flex items-center text-xl font-bold">
-                  <span>{report.commentCount}</span>
+                  <p className="text-gray-500 dark:text-gray-400">
+                    {report.commentCount}
+                  </p>
                 </div>
               </div>
             </CardHeader>
@@ -549,9 +559,13 @@ const ReportDetailPage: React.FC = () => {
                 <div className="mb-6">
                   <div className="flex items-start space-x-3">
                     <div className="flex-shrink-0">
-                      <div className="w-8 h-8 bg-gray-200 rounded-full flex items-center overflow-hidden justify-center text-sm font-medium text-gray-600">
+                      <div className="w-8 h-8 bg-gray-200 dark:bg-gray-700 rounded-full flex items-center overflow-hidden justify-center text-sm font-medium text-gray-600 dark:text-gray-300">
                         {user!.profile ? (
-                          <img src={user!.profile} alt={user!.name.charAt(0)} />
+                          <img
+                            src={user!.profile}
+                            alt={user!.name.charAt(0)}
+                            className="w-full h-full object-cover"
+                          />
                         ) : (
                           user!.name.charAt(0)
                         )}
@@ -589,8 +603,8 @@ const ReportDetailPage: React.FC = () => {
                   </div>
                 </div>
               ) : (
-                <div className="mb-6 p-4 bg-gray-50 rounded-lg text-center">
-                  <p className="text-gray-600 mb-2">
+                <div className="mb-6 p-4 bg-gray-50 dark:bg-gray-800 rounded-lg text-center">
+                  <p className="text-gray-500 dark:text-gray-400 mb-2">
                     Silakan masuk untuk bergabung dalam diskusi
                   </p>
                   <Link to="/login">
@@ -608,7 +622,7 @@ const ReportDetailPage: React.FC = () => {
                         className={`w-8 h-8 rounded-full overflow-hidden flex items-center justify-center text-sm font-medium ${
                           comment.user.role === "RT_ADMIN"
                             ? "bg-primary-600 text-white"
-                            : "bg-gray-200 text-gray-600"
+                            : "bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-300"
                         }`}
                       >
                         {comment.user.isDeleted ? (
@@ -617,6 +631,7 @@ const ReportDetailPage: React.FC = () => {
                           <img
                             src={comment.user.profile}
                             alt={comment.user.name.charAt(0).toUpperCase()}
+                            className="w-full h-full object-cover"
                           />
                         ) : (
                           comment.user.name.charAt(0).toUpperCase()
@@ -625,7 +640,7 @@ const ReportDetailPage: React.FC = () => {
                     </div>
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center space-x-2 mb-1">
-                        <span className="font-medium text-gray-900">
+                        <span className="font-medium text-gray-900 dark:text-gray-100">
                           {comment.user.isDeleted
                             ? "Pengguna Terhapus"
                             : comment.user.name}
@@ -641,11 +656,11 @@ const ReportDetailPage: React.FC = () => {
                               Penulis
                             </Badge>
                           )}
-                        <span className="text-sm text-gray-500 dark:text-gray-300">
+                        <span className="text-sm text-gray-500 dark:text-gray-400">
                           {formatDateTime(comment.createdAt)}
                         </span>
                       </div>
-                      <p className="text-gray-700 whitespace-pre-wrap break-words">
+                      <p className="text-gray-600 dark:text-gray-300 whitespace-pre-wrap break-words">
                         {comment.content}
                       </p>
                     </div>
@@ -655,8 +670,10 @@ const ReportDetailPage: React.FC = () => {
 
               {report.reportComments.length === 0 && (
                 <div className="text-center py-8">
-                  <MessageCircle className="mx-auto h-8 w-8 text-gray-400 dark:text-gray-300 mb-2" />
-                  <p className="text-gray-500 dark:text-gray-300">Belum ada komentar</p>
+                  <MessageCircle className="mx-auto h-8 w-8 text-gray-400 dark:text-gray-500 mb-2" />
+                  <p className="text-gray-500 dark:text-gray-400">
+                    Belum ada komentar
+                  </p>
                 </div>
               )}
             </CardContent>
@@ -672,7 +689,7 @@ const ReportDetailPage: React.FC = () => {
             </CardHeader>
             <CardContent className="space-y-4">
               <div>
-                <label className="text-sm font-medium text-gray-600 dark:text-gray-200">
+                <label className="text-sm font-medium text-gray-500 dark:text-gray-400">
                   Status
                 </label>
                 <div className="mt-1">
@@ -681,7 +698,7 @@ const ReportDetailPage: React.FC = () => {
               </div>
 
               <div>
-                <label className="text-sm font-medium text-gray-600 dark:text-gray-200">
+                <label className="text-sm font-medium text-gray-500 dark:text-gray-400">
                   Kategori
                 </label>
                 <p className="mt-1 text-sm text-gray-900 dark:text-gray-100">
@@ -690,19 +707,19 @@ const ReportDetailPage: React.FC = () => {
               </div>
 
               <div>
-                <label className="text-sm font-medium text-gray-600 dark:text-gray-200">
+                <label className="text-sm font-medium text-gray-500 dark:text-gray-400">
                   Lokasi
                 </label>
                 <p className="mt-1 text-sm text-gray-900 dark:text-gray-100">
                   {report.location.address}
                 </p>
-                <p className="text-xs text-gray-500 dark:text-gray-300">
+                <p className="text-xs text-gray-500 dark:text-gray-400">
                   RT {report.location.rt} RW {report.location.rw}
                 </p>
               </div>
 
               <div>
-                <label className="text-sm font-medium text-gray-600 dark:text-gray-200">
+                <label className="text-sm font-medium text-gray-500 dark:text-gray-400">
                   Dilaporkan
                 </label>
                 <p className="mt-1 text-sm text-gray-900 dark:text-gray-100">
@@ -711,7 +728,7 @@ const ReportDetailPage: React.FC = () => {
               </div>
 
               <div>
-                <label className="text-sm font-medium text-gray-600 dark:text-gray-200">
+                <label className="text-sm font-medium text-gray-500 dark:text-gray-400">
                   Dukungan
                 </label>
                 <p className="mt-1 text-sm text-gray-900 dark:text-gray-100">
@@ -730,13 +747,13 @@ const ReportDetailPage: React.FC = () => {
               <CardContent className="space-y-4">
                 {/* Status Update */}
                 <div>
-                  <label className="text-sm font-medium text-gray-600 dark:text-gray-200 mb-2 block">
+                  <label className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-2 block">
                     Ubah Status
                   </label>
                   <select
                     value={selectedStatus || report.status}
                     onChange={(e) => handleStatusChange(e.target.value)}
-                    className="w-full text-sm border border-gray-300 rounded px-3 py-2 focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                    className="w-full text-sm border border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100 rounded px-3 py-2 focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
                     disabled={updateStatusMutation.isPending}
                   >
                     <option value="PENDING">Menunggu</option>
@@ -749,7 +766,7 @@ const ReportDetailPage: React.FC = () => {
 
                 {/* Quick Response */}
                 <div>
-                  <label className="text-sm font-medium text-gray-600 dark:text-gray-200 mb-2 block">
+                  <label className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-2 block">
                     Tanggapan Resmi
                   </label>
                   <Textarea
