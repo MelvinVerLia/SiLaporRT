@@ -68,7 +68,7 @@ const RegisterForm: React.FC = () => {
   const handleChange = (
     e:
       | React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
-      | { target: { name: string; value: string } }
+      | { target: { name: string; value: string } },
   ) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
@@ -145,7 +145,7 @@ const RegisterForm: React.FC = () => {
                 Sudah punya akun?{" "}
                 <Link
                   to="/login"
-                  className="font-semibold text-primary-600 hover:text-primary-700 transition-colors duration-200"
+                  className="font-semibold text-primary-600 dark:text-primary-400 hover:text-primary-700 dark:hover:text-primary-300 transition-colors duration-200"
                 >
                   Masuk di sini
                 </Link>
@@ -381,11 +381,11 @@ const RegisterForm: React.FC = () => {
                     disabled={isLoading}
                     required
                   />
-                  <span className="text-sm text-gray-600 select-none leading-relaxed group-hover:text-gray-800 transition-colors">
+                  <span className="text-sm text-gray-600 dark:text-gray-300 select-none leading-relaxed group-hover:text-gray-800 dark:group-hover:text-gray-200 transition-colors">
                     Saya menyetujui{" "}
                     <Link
                       to="/terms"
-                      className="text-primary-600 hover:text-primary-700 font-medium"
+                      className="text-primary-600 dark:text-primary-400 hover:text-primary-700 dark:hover:text-primary-300 font-medium"
                     >
                       Syarat & Ketentuan
                     </Link>{" "}

@@ -18,9 +18,9 @@ import {
 import Button from "../../components/ui/Button";
 import Input from "../../components/ui/Input";
 import Textarea from "../../components/ui/Textarea";
-import LocationPicker from "../../components/features/maps/LocationPicker";
+import LocationPicker from "./components/LocationPicker";
 import CloudinaryUpload from "../../components/upload/CloudinaryUpload";
-import ReportPreview from "../../components/features/reports/ReportPreview";
+import ReportPreview from "./components/ReportPreview";
 import { useCreateReport } from "../../hooks/useCreateReport";
 import { CreateReportFormData, Location } from "../../types/report.types";
 import { CloudinaryFile } from "../../types/announcement.types";
@@ -192,7 +192,7 @@ const CreateReportPage: React.FC = () => {
   // Location form handlers
   const handleLocationFormChange = (
     field: keyof LocationFormData,
-    value: string | number
+    value: string | number,
   ) => {
     setLocationForm((prev) => ({ ...prev, [field]: value }));
 
@@ -258,7 +258,7 @@ const CreateReportPage: React.FC = () => {
     setFormData((prev) => ({
       ...prev,
       attachments: prev.attachments.filter(
-        (file) => file.public_id !== identifier
+        (file) => file.public_id !== identifier,
       ),
     }));
   };
@@ -477,8 +477,10 @@ const CreateReportPage: React.FC = () => {
     <div className="space-y-6">
       {/* Header */}
       <div>
-        <h1 className="text-3xl font-bold text-primary-600">Buat Laporan</h1>
-        <p className="text-gray-600 dark:text-gray-300 mt-1">
+        <h1 className="text-3xl font-bold text-primary-600 dark:text-primary-400">
+          Buat Laporan
+        </h1>
+        <p className="text-gray-600 dark:text-gray-400 mt-1">
           Laporkan masalah di lingkungan RT Anda
         </p>
       </div>
@@ -498,8 +500,8 @@ const CreateReportPage: React.FC = () => {
                     isCompleted
                       ? "bg-green-600 border-green-600 text-white"
                       : isActive
-                      ? "bg-primary-600 border-primary-600 text-white"
-                      : "bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600 text-gray-400 dark:text-gray-500"
+                        ? "bg-primary-600 border-primary-600 text-white"
+                        : "bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600 text-gray-400 dark:text-gray-500"
                   }`}
                 >
                   {isCompleted ? (
@@ -512,10 +514,10 @@ const CreateReportPage: React.FC = () => {
                   <p
                     className={`text-sm font-medium ${
                       isActive
-                        ? "text-primary-600"
+                        ? "text-primary-600 dark:text-primary-400"
                         : isCompleted
-                        ? "text-green-600"
-                        : "text-gray-500 dark:text-gray-400"
+                          ? "text-green-600 dark:text-green-400"
+                          : "text-gray-500 dark:text-gray-400"
                     }`}
                   >
                     {step.title}

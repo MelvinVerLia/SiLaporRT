@@ -27,13 +27,13 @@ export default function Breadcrumb({
       {items.map((item, index) => (
         <React.Fragment key={index}>
           {index > 0 && (
-            <ChevronRight className="h-4 w-4 text-gray-400 flex-shrink-0" />
+            <ChevronRight className="h-4 w-4 text-gray-400 dark:text-gray-500 flex-shrink-0" />
           )}
 
           {item.href && index < items.length - 1 ? (
             <Link
               to={item.href}
-              className="text-gray-600 hover:text-gray-900 transition-colors"
+              className="text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 transition-colors"
               title={item.label} // Show full label on hover
             >
               {truncateText(item.label, maxLabelLength)}
@@ -42,8 +42,8 @@ export default function Breadcrumb({
             <span
               className={
                 index === items.length - 1
-                  ? "text-gray-900 font-medium"
-                  : "text-gray-600"
+                  ? "text-gray-900 dark:text-gray-100 font-medium"
+                  : "text-gray-500 dark:text-gray-400"
               }
               title={item.label} // Show full label on hover
             >

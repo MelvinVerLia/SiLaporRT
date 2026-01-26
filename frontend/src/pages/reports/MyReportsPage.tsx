@@ -129,10 +129,20 @@ const MyReportsPage: React.FC = () => {
     queryKey: [
       "user-reports",
       user?.id,
-      { page, pageSize, q: searchTerm, selectedCategory, selectedStatus, sortBy, selectedPeriod },
+      {
+        page,
+        pageSize,
+        q: searchTerm,
+        selectedCategory,
+        selectedStatus,
+        sortBy,
+        selectedPeriod,
+      },
     ],
     queryFn: () => {
-      const upvoteDateRange = selectedPeriod ? getDateRangeFromPeriod(selectedPeriod) : {};
+      const upvoteDateRange = selectedPeriod
+        ? getDateRangeFromPeriod(selectedPeriod)
+        : {};
       return getUserReports({
         page,
         pageSize,
@@ -189,11 +199,11 @@ const MyReportsPage: React.FC = () => {
           return {
             ...reportData,
             items: reportData.items.filter(
-              (report: Report) => report.id !== reportId
+              (report: Report) => report.id !== reportId,
             ),
             total: reportData.total - 1,
           };
-        }
+        },
       );
 
       return { previousUserReports };
@@ -210,7 +220,7 @@ const MyReportsPage: React.FC = () => {
             selectedStatus,
             selectedCategory,
           ],
-          context.previousUserReports
+          context.previousUserReports,
         );
       }
     },
@@ -258,10 +268,10 @@ const MyReportsPage: React.FC = () => {
             items: reportData.items.map((report: Report) =>
               report.id === reportId
                 ? { ...report, isPublic: !report.isPublic }
-                : report
+                : report,
             ),
           };
-        }
+        },
       );
 
       return { previousUserReports };
@@ -278,7 +288,7 @@ const MyReportsPage: React.FC = () => {
             selectedStatus,
             selectedCategory,
           ],
-          context.previousUserReports
+          context.previousUserReports,
         );
       }
     },
@@ -472,8 +482,10 @@ const MyReportsPage: React.FC = () => {
       {/* Page Header */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-          <h1 className="text-3xl font-bold text-primary-600">Laporan Saya</h1>
-          <p className="text-gray-600 mt-1">
+          <h1 className="text-3xl font-bold text-primary-600 dark:text-primary-400">
+            Laporan Saya
+          </h1>
+          <p className="text-gray-600 dark:text-gray-400 mt-1">
             Kelola dan pantau semua laporan yang telah Anda buat • {total}{" "}
             laporan
           </p>
@@ -510,10 +522,10 @@ const MyReportsPage: React.FC = () => {
               <CardContent className="p-6">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm font-medium text-gray-600 mb-1">
+                    <p className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">
                       Laporan Menunggu
                     </p>
-                    <p className="text-3xl font-bold text-gray-900">
+                    <p className="text-3xl font-bold text-gray-900 dark:text-gray-100">
                       {stats.pending}
                     </p>
                   </div>
@@ -528,10 +540,10 @@ const MyReportsPage: React.FC = () => {
               <CardContent className="p-6">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm font-medium text-gray-600 mb-1">
+                    <p className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">
                       Laporan Dalam Proses
                     </p>
-                    <p className="text-3xl font-bold text-gray-900">
+                    <p className="text-3xl font-bold text-gray-900 dark:text-gray-100">
                       {stats.inProgress}
                     </p>
                   </div>
@@ -546,10 +558,10 @@ const MyReportsPage: React.FC = () => {
               <CardContent className="p-6">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm font-medium text-gray-600 mb-1">
+                    <p className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">
                       Laporan Selesai
                     </p>
-                    <p className="text-3xl font-bold text-gray-900">
+                    <p className="text-3xl font-bold text-gray-900 dark:text-gray-100">
                       {stats.resolved}
                     </p>
                   </div>
@@ -564,10 +576,10 @@ const MyReportsPage: React.FC = () => {
               <CardContent className="p-6">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm font-medium text-gray-600 mb-1">
+                    <p className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">
                       Laporan Ditolak
                     </p>
-                    <p className="text-3xl font-bold text-gray-900">
+                    <p className="text-3xl font-bold text-gray-900 dark:text-gray-100">
                       {stats.rejected}
                     </p>
                   </div>
@@ -586,7 +598,7 @@ const MyReportsPage: React.FC = () => {
         <CardContent className="p-6">
           <div className="flex items-center gap-4">
             <form onSubmit={handleSearch} className="relative flex-1">
-              <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400 z-10" />
+              <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400 dark:text-gray-500 z-10" />
               <Input
                 placeholder="Cari laporan..."
                 value={searchTerm}
@@ -610,16 +622,16 @@ const MyReportsPage: React.FC = () => {
           {[...Array(pageSize)].map((_, i) => (
             <Card key={i} className="animate-pulse">
               <CardContent className="p-6">
-                <div className="h-5 bg-gray-200 rounded w-3/4 mb-2"></div>
+                <div className="h-5 bg-gray-200 dark:bg-gray-700 rounded w-3/4 mb-2"></div>
                 <div className="flex gap-2 mb-2">
-                  <div className="h-5 bg-gray-200 rounded w-20"></div>
-                  <div className="h-5 bg-gray-200 rounded w-16"></div>
+                  <div className="h-5 bg-gray-200 dark:bg-gray-700 rounded w-20"></div>
+                  <div className="h-5 bg-gray-200 dark:bg-gray-700 rounded w-16"></div>
                 </div>
                 <div className="space-y-2">
-                  <div className="h-3 bg-gray-200 rounded"></div>
-                  <div className="h-3 bg-gray-200 rounded w-5/6"></div>
+                  <div className="h-3 bg-gray-200 dark:bg-gray-700 rounded"></div>
+                  <div className="h-3 bg-gray-200 dark:bg-gray-700 rounded w-5/6"></div>
                 </div>
-                <div className="h-3 bg-gray-200 rounded w-1/2"></div>
+                <div className="h-3 bg-gray-200 dark:bg-gray-700 rounded w-1/2"></div>
               </CardContent>
             </Card>
           ))}
@@ -627,11 +639,11 @@ const MyReportsPage: React.FC = () => {
       ) : isError ? (
         <Card>
           <CardContent className="p-12 text-center">
-            <AlertTriangle className="mx-auto h-12 w-12 text-red-400 mb-4" />
-            <h3 className="text-lg font-semibold text-gray-900 mb-2">
+            <AlertTriangle className="mx-auto h-12 w-12 text-red-400 dark:text-red-500 mb-4" />
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-2">
               Gagal Memuat Laporan
             </h3>
-            <p className="text-gray-600 mb-4">
+            <p className="text-gray-600 dark:text-gray-400 mb-4">
               {error?.message || "Terjadi kesalahan saat memuat laporan Anda"}
             </p>
             <Button onClick={() => window.location.reload()}>Coba Lagi</Button>
@@ -640,13 +652,13 @@ const MyReportsPage: React.FC = () => {
       ) : filteredReports.length === 0 ? (
         <Card>
           <CardContent className="p-12 text-center">
-            <TrendingUp className="mx-auto h-12 w-12 text-gray-400 mb-4" />
-            <h3 className="text-lg font-semibold text-gray-900 mb-2">
+            <TrendingUp className="mx-auto h-12 w-12 text-gray-400 dark:text-gray-500 mb-4" />
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-2">
               {searchTerm || selectedStatus || selectedCategory
                 ? "Tidak Ada Laporan yang Sesuai"
                 : "Belum Ada Laporan"}
             </h3>
-            <p className="text-gray-600 mb-6">
+            <p className="text-gray-600 dark:text-gray-400 mb-6">
               {searchTerm || selectedStatus || selectedCategory
                 ? "Coba ubah filter pencarian Anda"
                 : "Mulai berkontribusi dengan membuat laporan pertama Anda"}
@@ -694,7 +706,7 @@ const MyReportsPage: React.FC = () => {
                         onClick={(e) => {
                           e.stopPropagation(); // Prevent card click
                           setOpenDropdown(
-                            openDropdown === report.id ? null : report.id
+                            openDropdown === report.id ? null : report.id,
                           );
                         }}
                       >
@@ -704,12 +716,12 @@ const MyReportsPage: React.FC = () => {
                       {/* Dropdown Menu */}
                       {openDropdown === report.id && (
                         <div
-                          className="absolute right-0 top-8 mt-1 w-48 bg-white rounded-md shadow-lg border border-gray-200 z-10"
+                          className="absolute right-0 top-8 mt-1 w-48 bg-white dark:bg-gray-800 rounded-md shadow-lg border border-gray-200 dark:border-gray-700 z-10"
                           data-dropdown
                         >
                           <div className="py-1">
                             <button
-                              className="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                              className="flex items-center w-full px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
                               onClick={(e) => {
                                 e.stopPropagation();
                                 handleToggleVisibility(report.id);
@@ -729,7 +741,7 @@ const MyReportsPage: React.FC = () => {
                               )}
                             </button>
                             <button
-                              className="flex items-center w-full px-4 py-2 text-sm text-red-600 hover:bg-gray-100"
+                              className="flex items-center w-full px-4 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-gray-100 dark:hover:bg-gray-700"
                               onClick={(e) => {
                                 e.stopPropagation();
                                 handleDeleteReport(report.id);
@@ -748,10 +760,10 @@ const MyReportsPage: React.FC = () => {
                   {/* Main content - grows to fill available space */}
                   <div className="flex-1 flex flex-col">
                     {/* Title and Description */}
-                    <h3 className="text-lg font-semibold text-gray-900 mb-2 line-clamp-1 whitespace-pre-wrap break-words">
+                    <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-2 line-clamp-1 whitespace-pre-wrap break-words">
                       {report.title}
                     </h3>
-                    <p className="text-gray-600 text-sm line-clamp-3 break-words whitespace-pre-wrap mb-4">
+                    <p className="text-gray-600 dark:text-gray-400 text-sm line-clamp-3 break-words whitespace-pre-wrap mb-4">
                       {report.description}
                     </p>
                   </div>
@@ -759,7 +771,7 @@ const MyReportsPage: React.FC = () => {
                   {/* Bottom section - always at bottom */}
                   <div className="mt-auto space-y-3">
                     {/* Location */}
-                    <div className="flex items-center text-sm text-gray-500">
+                    <div className="flex items-center text-sm text-gray-500 dark:text-gray-400">
                       <MapPin className="mr-1 h-4 w-4 flex-shrink-0" />
                       <span className="truncate">
                         {report.location.address}
@@ -767,7 +779,7 @@ const MyReportsPage: React.FC = () => {
                     </div>
 
                     {/* Meta Info */}
-                    <div className="flex items-center justify-between text-sm text-gray-500">
+                    <div className="flex items-center justify-between text-sm text-gray-500 dark:text-gray-400">
                       <div className="flex items-center space-x-3">
                         <span className="flex items-center">
                           <ThumbsUp className="mr-1 h-4 w-4" />
@@ -803,8 +815,8 @@ const MyReportsPage: React.FC = () => {
                     </div>
 
                     {/* Footer */}
-                    <div className="pt-2 border-t border-gray-100">
-                      <div className="flex flex-col gap-1 text-xs text-gray-400">
+                    <div className="pt-2 border-t border-gray-100 dark:border-gray-700">
+                      <div className="flex flex-col gap-1 text-xs text-gray-400 dark:text-gray-500">
                         <div className="flex items-center">
                           <Clock className="mr-1 h-3 w-3" />
                           <span>
@@ -814,7 +826,7 @@ const MyReportsPage: React.FC = () => {
                             })}
                           </span>
                         </div>
-                        <div className="text-xs text-gray-500">
+                        <div className="text-xs text-gray-500 dark:text-gray-400">
                           Dilaporkan oleh: Anda
                         </div>
                       </div>

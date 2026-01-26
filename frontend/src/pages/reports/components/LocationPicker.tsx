@@ -1,7 +1,7 @@
 import React, { useEffect, useRef } from "react";
 import { Navigation } from "lucide-react";
-import Button from "../../ui/Button";
-import Input from "../../ui/Input";
+import Button from "../../../components/ui/Button";
+import Input from "../../../components/ui/Input";
 import { Location } from "../../../types/report.types";
 import {
   GoogleMap,
@@ -66,7 +66,7 @@ const LocationPicker: React.FC<LocationPickerProps> = ({
 }) => {
   const [isSelectingLocation, setIsSelectingLocation] = React.useState(false);
   const [geocoder, setGeocoder] = React.useState<google.maps.Geocoder | null>(
-    null
+    null,
   );
 
   const autocompleteRef = useRef<google.maps.places.Autocomplete | null>(null);
@@ -80,8 +80,8 @@ const LocationPicker: React.FC<LocationPickerProps> = ({
     latitude && longitude
       ? { lat: latitude, lng: longitude }
       : selectedLocation
-      ? { lat: selectedLocation.latitude, lng: selectedLocation.longitude }
-      : center;
+        ? { lat: selectedLocation.latitude, lng: selectedLocation.longitude }
+        : center;
 
   const autocompleteInputRef = useRef<HTMLInputElement | null>(null);
 
@@ -99,7 +99,7 @@ const LocationPicker: React.FC<LocationPickerProps> = ({
     if (needsCoords) {
       onCoordinatesChange(
         selectedLocation.latitude,
-        selectedLocation.longitude
+        selectedLocation.longitude,
       );
     }
     if (needsAddress && selectedLocation.address) {
@@ -123,7 +123,7 @@ const LocationPicker: React.FC<LocationPickerProps> = ({
 
   function getAddressComponent(
     components: google.maps.GeocoderAddressComponent[],
-    type: string
+    type: string,
   ) {
     const comp = components.find((c) => c.types.includes(type));
     return comp ? comp.long_name : "";
@@ -133,11 +133,11 @@ const LocationPicker: React.FC<LocationPickerProps> = ({
     lat: number,
     lng: number,
     addressComponents: google.maps.GeocoderAddressComponent[],
-    formattedAddress: string
+    formattedAddress: string,
   ) => {
     const kecamatan = getAddressComponent(
       addressComponents,
-      "administrative_area_level_3"
+      "administrative_area_level_3",
     );
     const kelurahan =
       getAddressComponent(addressComponents, "administrative_area_level_4") ||
@@ -252,7 +252,7 @@ const LocationPicker: React.FC<LocationPickerProps> = ({
         console.error("Error getting location:", error);
         alert("Gagal mendapatkan lokasi saat ini");
         setIsSelectingLocation(false);
-      }
+      },
     );
   };
 
@@ -268,8 +268,8 @@ const LocationPicker: React.FC<LocationPickerProps> = ({
       </div>
 
       {error && (
-        <div className="p-3 bg-red-50 border border-red-200 rounded-lg">
-          <p className="text-red-600 text-sm">{error}</p>
+        <div className="p-3 bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-800 rounded-lg">
+          <p className="text-red-600 dark:text-red-400 text-sm">{error} hehe</p>
         </div>
       )}
 
@@ -303,8 +303,8 @@ const LocationPicker: React.FC<LocationPickerProps> = ({
       {/* Action Buttons */}
       <div className="space-y-4">
         {!isFromMap && (
-          <div className="p-4 bg-primary-50 border border-primary-100 rounded-lg">
-            <p className="text-sm text-primary-700">
+          <div className="p-4 bg-primary-50 dark:bg-gray-800 border border-primary-100 dark:border-gray-700 rounded-lg">
+            <p className="text-sm text-primary-700 dark:text-gray-300">
               💡 Pilih lokasi dari peta untuk melanjutkan
             </p>
           </div>
@@ -327,7 +327,9 @@ const LocationPicker: React.FC<LocationPickerProps> = ({
         {isFromMap && (
           <div className="space-y-4 p-4 border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800">
             <div className="flex items-center justify-between">
-              <h4 className="font-medium text-gray-900 dark:text-gray-100">Detail Lokasi</h4>
+              <h4 className="font-medium text-gray-900 dark:text-gray-100">
+                Detail Lokasi
+              </h4>
               <span className="text-xs text-green-600 dark:text-green-400 bg-green-50 dark:bg-green-900/30 px-2 py-1 rounded">
                 Dari Google Maps
               </span>
@@ -336,6 +338,7 @@ const LocationPicker: React.FC<LocationPickerProps> = ({
             <Input
               label="Alamat Lengkap"
               value={address}
+              placeholder="Masukkan detail Alamat"
               error={addressError}
               onChange={(e) => onAddressChange(e.target.value)}
               disabled={true}
@@ -345,16 +348,18 @@ const LocationPicker: React.FC<LocationPickerProps> = ({
               <Input
                 label="Kelurahan"
                 value={kelurahan}
+                placeholder="Masukkan nama Kelurahan"
                 error={kelurahanError}
                 onChange={(e) => onKelurahanChange(e.target.value)}
-                disabled={true}
+                // disabled={true}
               />
               <Input
                 label="Kecamatan"
                 value={kecamatan}
+                placeholder="Masukkan nama Kecamatan"
                 error={kecamatanError}
                 onChange={(e) => onKecamatanChange(e.target.value)}
-                disabled={true}
+                // disabled={true}
               />
             </div>
 

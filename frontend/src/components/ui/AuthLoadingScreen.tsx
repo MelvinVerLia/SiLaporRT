@@ -9,7 +9,7 @@ const AuthLoadingScreen: React.FC<AuthLoadingScreenProps> = ({
   message = "Memuat...",
 }) => {
   return (
-    <div className="min-h-screen bg-gradient-to-b from-primary-50 to-gray-50 flex items-center justify-center">
+    <div className="min-h-screen flex items-center justify-center">
       <div className="flex flex-col items-center space-y-4 p-8">
         {/* Logo */}
         <div className="flex items-center space-x-2 text-2xl font-bold text-primary-600 mb-4">
@@ -23,7 +23,7 @@ const AuthLoadingScreen: React.FC<AuthLoadingScreenProps> = ({
         <LoadingSpinner size="lg" />
 
         {/* Message */}
-        <p className="text-gray-600 text-sm animate-pulse">{message}</p>
+        <p className="text-gray-600 dark:text-gray-200 text-sm animate-pulse">{message}</p>
       </div>
     </div>
   );

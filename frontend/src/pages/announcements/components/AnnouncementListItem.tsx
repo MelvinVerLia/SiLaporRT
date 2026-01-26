@@ -18,8 +18,8 @@ export default function AnnouncementListItem({ a }: { a: Announcement }) {
     a.priority === "URGENT"
       ? "danger"
       : a.priority === "HIGH"
-      ? "warning"
-      : "default";
+        ? "warning"
+        : "default";
 
   return (
     <Card className="hover:shadow-md transition-shadow">

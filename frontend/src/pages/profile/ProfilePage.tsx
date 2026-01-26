@@ -141,7 +141,7 @@ const ProfilePage: React.FC = () => {
           onClose={() => setNotificationRequest(false)}
         />
       )}
-      <div className="space-y-6">
+      <div className="space-y-6 bg-transparent dark:bg-transparent">
         <ProfileHeader
           user={user}
           uploadRef={uploadRef}

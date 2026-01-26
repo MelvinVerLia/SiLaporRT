@@ -19,7 +19,7 @@ router.get(
 );
 router.get("/:reportId", ReportController.getReportById);
 
-router.post("/add", ReportController.createReport);
+router.post("/add", authenticateJWT, ReportController.createReport);
 
 // === USER REPORT MANAGEMENT ===
 router.delete("/:reportId", authenticateJWT, ReportController.deleteReport);
