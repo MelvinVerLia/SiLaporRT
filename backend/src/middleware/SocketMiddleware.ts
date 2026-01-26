@@ -1,7 +1,6 @@
 import { verifyJWT } from "../utils/VerifyJWT";
 
 export function socketAuth(socket: any, next: any) {
-  console.log("meow");
   try {
     const cookieHeader = socket.request.headers.cookie;
     if (!cookieHeader) return next(new Error("Unauthorized"));
@@ -10,7 +9,6 @@ export function socketAuth(socket: any, next: any) {
     if (!cookies.refresh_token) return next(new Error("Unauthorized"));
 
     const access_token = cookies.access_token;
-    console.log(access_token);
 
     const user = verifyJWT(access_token);
 

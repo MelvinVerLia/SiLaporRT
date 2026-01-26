@@ -12,6 +12,10 @@ import { getMessages, startChat, getChatId } from "../../services/chatService";
 import { useQuery } from "@tanstack/react-query";
 import { socket } from "../../utils/socket";
 import MessageBox from "./components/MessageBox";
+import MessageBoxSkeleton from "./components/MessageBoxSkeleton";
+import ReportBoxSkeleton from "./components/ReportBoxSkeleton";
+import ReportBox from "./components/ReportBox";
+import TextBoxSkeleton from "./components/TextBoxSkeleton";
 
 type Message = {
   id: string;
@@ -38,7 +42,7 @@ const ChatPage: React.FC = () => {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const messagesContainerRef = useRef<HTMLDivElement>(null);
 
-  const { data: chatData } = useQuery({
+  const { data: chatData, isLoading: isLoadingChat } = useQuery({
     queryKey: ["chat", selectedReport?.id],
     queryFn: () => getChatId(selectedReport?.id || ""),
     enabled: !!selectedReport,
@@ -249,11 +253,9 @@ const ChatPage: React.FC = () => {
                   {reports.length} laporan
                 </p>
               </div>
-              <div className="flex-1 overflow-y-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
+              <div className="flex-1 overflow-y-auto ">
                 {isLoading ? (
-                  <div className="flex items-center justify-center h-full">
-                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600"></div>
-                  </div>
+                  <ReportBoxSkeleton />
                 ) : reports.length === 0 ? (
                   <div className="flex flex-col items-center justify-center h-full text-center p-4">
                     <div className="text-gray-400 dark:text-gray-500 mb-2">
@@ -268,22 +270,11 @@ const ChatPage: React.FC = () => {
                 ) : (
                   <div className="divide-y divide-gray-200 dark:divide-gray-700">
                     {reports.map((report) => (
-                      <div
-                        key={report.id}
-                        onClick={() => setSelectedReport(report)}
-                        className={`p-4 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors ${
-                          selectedReport?.id === report.id
-                            ? "bg-primary-50 dark:bg-gray-700 border-l-4 border-primary-600"
-                            : ""
-                        }`}
-                      >
-                        <h3 className="font-medium text-gray-900 dark:text-white line-clamp-1">
-                          {report.title}
-                        </h3>
-                        <p className="text-sm text-gray-500 dark:text-gray-400 mt-1 line-clamp-2">
-                          {report.description}
-                        </p>
-                      </div>
+                      <ReportBox
+                        report={report}
+                        selectedReport={selectedReport}
+                        setSelectedReport={setSelectedReport}
+                      />
                     ))}
                   </div>
                 )}
@@ -304,7 +295,7 @@ const ChatPage: React.FC = () => {
 
               <div
                 ref={messagesContainerRef}
-                className="flex-1 overflow-y-auto p-4 space-y-4 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]"
+                className="flex-1 overflow-y-auto p-4 space-y-4 "
               >
                 {!selectedReport ? (
                   <div className="flex items-center justify-center h-full">
@@ -313,9 +304,9 @@ const ChatPage: React.FC = () => {
                     </p>
                   </div>
                 ) : isLoadingMessages ? (
-                  <div className="flex items-center justify-center h-full">
-                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600"></div>
-                  </div>
+                  <MessageBoxSkeleton />
+                ) : isLoadingChat ? (
+                  <MessageBoxSkeleton />
                 ) : !ChatId ? (
                   <div className="flex items-center justify-center h-full">
                     <div className="text-gray-500 dark:text-gray-400">
@@ -344,7 +335,9 @@ const ChatPage: React.FC = () => {
                 )}
               </div>
 
-              {ChatId && (
+              {isLoadingChat || isLoadingMessages ? (
+                <TextBoxSkeleton />
+              ) : ChatId ? (
                 <div className="p-4 border-t border-gray-200 dark:border-gray-700">
                   <div className="flex items-center gap-2">
                     <textarea
@@ -364,7 +357,7 @@ const ChatPage: React.FC = () => {
                     </Button>
                   </div>
                 </div>
-              )}
+              ) : null}
             </div>
 
             <div className="lg:col-span-4 bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden flex flex-col">
