@@ -76,10 +76,10 @@ const AttachmentViewer: React.FC<AttachmentViewerProps> = ({
       <div
         key={attachment.id}
         onClick={() => handleAttachmentClick(attachment)}
-        className="group relative bg-white border border-gray-200 rounded-lg overflow-hidden hover:shadow-md transition-all duration-200 cursor-pointer"
+        className="group relative bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden hover:shadow-md transition-all duration-200 cursor-pointer"
       >
         {/* Preview Area */}
-        <div className="aspect-square bg-gray-50 flex items-center justify-center relative overflow-hidden">
+        <div className="aspect-square bg-gray-50 dark:bg-gray-900 flex items-center justify-center relative overflow-hidden">
           {/* Image Preview */}
           {isImage && !hasImageError && (
             <img
@@ -98,7 +98,7 @@ const AttachmentViewer: React.FC<AttachmentViewerProps> = ({
 
           {/* Video Preview */}
           {isVideo && (
-            <div className="flex flex-col items-center justify-center space-y-2 p-4 text-gray-500">
+            <div className="flex flex-col items-center justify-center space-y-2 p-4 text-gray-500 dark:text-gray-400">
               <FileTypeIcon
                 fileType="video"
                 format={attachment.format}
@@ -115,7 +115,7 @@ const AttachmentViewer: React.FC<AttachmentViewerProps> = ({
 
           {/* Fallback for documents or failed images */}
           {(isDocument || (isImage && hasImageError)) && (
-            <div className="flex flex-col items-center justify-center space-y-2 p-4 text-gray-500">
+            <div className="flex flex-col items-center justify-center space-y-2 p-4 text-gray-500 dark:text-gray-400">
               <FileTypeIcon
                 fileType={
                   isImage && hasImageError ? "image" : attachment.fileType
@@ -139,17 +139,19 @@ const AttachmentViewer: React.FC<AttachmentViewerProps> = ({
         <div className="p-3">
           <div className="flex items-start justify-between">
             <div className="flex-1 min-w-0">
-              <h4 className="text-sm font-medium text-gray-900 truncate group-hover:text-primary-600 transition-colors duration-200">
+              <h4 className="text-sm font-medium text-gray-900 dark:text-gray-100 truncate group-hover:text-primary-600 dark:group-hover:text-primary-400 transition-colors duration-200">
                 {attachment.filename}
               </h4>
               <div className="flex items-center space-x-2 mt-1">
-                <span className="text-xs text-gray-500 uppercase">
+                <span className="text-xs text-gray-500 dark:text-gray-400 uppercase">
                   {attachment.fileType}
                 </span>
                 {attachment.bytes && (
                   <>
-                    <span className="text-xs text-gray-300">•</span>
-                    <span className="text-xs text-gray-500">
+                    <span className="text-xs text-gray-300 dark:text-gray-600">
+                      •
+                    </span>
+                    <span className="text-xs text-gray-500 dark:text-gray-400">
                       {formatFileSize(attachment.bytes)}
                     </span>
                   </>
@@ -166,7 +168,7 @@ const AttachmentViewer: React.FC<AttachmentViewerProps> = ({
                 link.download = attachment.filename;
                 link.click();
               }}
-              className="opacity-0 group-hover:opacity-100 transition-opacity duration-200 p-1 text-gray-400 hover:text-gray-600 rounded"
+              className="opacity-0 group-hover:opacity-100 transition-opacity duration-200 p-1 text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 rounded"
               title="Download"
             >
               <Download className="h-4 w-4" />
@@ -176,7 +178,7 @@ const AttachmentViewer: React.FC<AttachmentViewerProps> = ({
 
         {/* File type badge */}
         <div className="absolute top-2 left-2">
-          <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-white bg-opacity-90 text-gray-700 shadow-sm">
+          <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-white dark:bg-gray-800 bg-opacity-90 dark:bg-opacity-90 text-gray-700 dark:text-gray-300 shadow-sm">
             <FileTypeIcon
               fileType={attachment.fileType}
               format={attachment.format}
@@ -195,8 +197,10 @@ const AttachmentViewer: React.FC<AttachmentViewerProps> = ({
     <div className={className}>
       {showTitle && (
         <div className="flex items-center justify-between mb-4">
-          <h3 className="text-lg font-medium text-gray-900">{title}</h3>
-          <span className="text-sm text-gray-500">
+          <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100">
+            {title}
+          </h3>
+          <span className="text-sm text-gray-500 dark:text-gray-400">
             {attachments.length} file{attachments.length !== 1 ? "s" : ""}
           </span>
         </div>
