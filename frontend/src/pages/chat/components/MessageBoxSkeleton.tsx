@@ -27,7 +27,7 @@ export default function MessageBoxSkeleton({
               </div>
 
               <div className="flex-1">
-                <div className="rounded-lg p-3 bg-gray-100">
+                <div className="rounded-lg p-3 bg-gray-100 dark:bg-gray-900">
                   <Skeleton className="h-3 w-20" />
 
                   <div className="mt-2 space-y-2">
