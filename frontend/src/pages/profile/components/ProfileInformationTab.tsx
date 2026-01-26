@@ -7,6 +7,7 @@ import { RT, User } from "../../../types/auth.types";
 import SearchableDropdown from "../../../components/ui/SearchableDropdown";
 import { getRtDropdown, getRtLocation } from "../../../services/authService";
 import { useToast } from "../../../hooks/useToast";
+import Badge from "../../../components/ui/Badge";
 
 interface ProfileInformationTabProps {
   user: User;
@@ -97,7 +98,7 @@ const ProfileInformationTab: React.FC<ProfileInformationTabProps> = ({
   const handleChange = (
     e:
       | React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
-      | { target: { name: string; value: string } }
+      | { target: { name: string; value: string } },
   ) => {
     const { name, value } = e.target;
     setProfileForm((prev) => ({ ...prev, [name]: value }));
@@ -278,23 +279,16 @@ const ProfileInformationTab: React.FC<ProfileInformationTabProps> = ({
         />
 
         {profileForm.rtId && (
-          <div className="mt-3 overflow-hidden rounded-xl border border-gray-200/70 bg-white/60 shadow-sm backdrop-blur dark:border-gray-700/70 dark:bg-gray-800/50">
+          <div className="mt-3 overflow-hidden rounded-xl border border-gray-200/70 bg-white/60 shadow-sm backdrop-blur dark:border-gray-700/50 dark:bg-gray-800/40">
             <div className="flex items-start justify-between gap-3 border-b border-gray-200/70 px-4 py-3 dark:border-gray-700/70">
               <div>
                 <p className="text-sm font-semibold text-gray-900 dark:text-gray-100">
                   Lokasi RT
                 </p>
               </div>
-
-              {isLoading ? (
-                <span className="inline-flex items-center rounded-full bg-gray-100 px-2 py-1 text-xs text-gray-600 dark:bg-gray-700 dark:text-gray-200">
-                  Memuat...
-                </span>
-              ) : (
-                <span className="inline-flex items-center rounded-full bg-primary-50 px-2 py-1 text-xs font-medium text-primary-700 dark:bg-primary-900/30 dark:text-primary-200">
-                  Terisi otomatis
-                </span>
-              )}
+              <Badge variant="info" size="sm">
+                Terisi Otomatis
+              </Badge>
             </div>
 
             <div className="px-4 py-4">

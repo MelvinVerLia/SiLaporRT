@@ -163,7 +163,7 @@ const HomePage: React.FC = () => {
                 transparan, dan terorganisir.
               </p>
 
-              <div className="flex flex-wrap justify-center lg:justify-start gap-6 lg:gap-8 mb-8">
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-6 lg:gap-8 mb-8">
                 {stats.map((stat, index) => (
                   <div
                     key={index}
@@ -225,7 +225,7 @@ const HomePage: React.FC = () => {
               )}
             </div>
 
-            <div className="flex justify-center lg:justify-end">
+            <div className="hidden lg:flex justify-center lg:justify-end">
               <div className="relative">
                 <img
                   src="/assets/hero.webp"
@@ -250,7 +250,7 @@ const HomePage: React.FC = () => {
           </div>
 
           {/* Row pertama (2 features) - Aligned Left */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 mb-10 lg:pr-32">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-10 mb-10 lg:pr-32">
             {features.slice(0, 2).map((feature, index) => (
               <div
                 key={index}
@@ -274,7 +274,7 @@ const HomePage: React.FC = () => {
           </div>
 
           {/* Row kedua (2 features) - Aligned Right */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 lg:pl-32">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-10 lg:pl-32">
             {features.slice(2, 4).map((feature, index) => (
               <div
                 key={index + 2}
