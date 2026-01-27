@@ -16,6 +16,7 @@ import MessageBoxSkeleton from "./components/MessageBoxSkeleton";
 import ReportBoxSkeleton from "./components/ReportBoxSkeleton";
 import ReportBox from "./components/ReportBox";
 import TextBoxSkeleton from "./components/TextBoxSkeleton";
+import LoadingSpinner from "../../components/ui/LoadingSpinner";
 
 type Message = {
   id: string;
@@ -39,10 +40,16 @@ const ChatPage: React.FC = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [messages, setMessages] = useState<Message[]>([]);
   const [isLoadingMessages, setIsLoadingMessages] = useState(false);
+  const [isLoadingStartChat, setIsLoadingStartChat] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const messagesContainerRef = useRef<HTMLDivElement>(null);
 
-  const { data: chatData, isLoading: isLoadingChat } = useQuery({
+  const {
+    data: chatData,
+    isLoading: isLoadingChat,
+    isFetching: isFetchingChat,
+    refetch: refetchChat,
+  } = useQuery({
     queryKey: ["chat", selectedReport?.id],
     queryFn: () => getChatId(selectedReport?.id || ""),
     enabled: !!selectedReport,
@@ -53,10 +60,15 @@ const ChatPage: React.FC = () => {
   useEffect(() => {
     if (!ChatId) return;
     setMessages([]);
+
+    const reportId = selectedReport?.id;
+
+    if (!reportId) return;
+
     const fetchMessages = async () => {
       setIsLoadingMessages(true);
       try {
-        const response = await getMessages(selectedReport!.id);
+        const response = await getMessages(reportId);
         setMessages(response.data);
       } catch (err) {
         console.log(err);
@@ -66,7 +78,7 @@ const ChatPage: React.FC = () => {
     };
 
     fetchMessages();
-  }, [ChatId, selectedReport]);
+  }, [ChatId, selectedReport?.id]);
 
   const scrollToBottom = () => {
     const el = messagesContainerRef.current;
@@ -153,28 +165,32 @@ const ChatPage: React.FC = () => {
     console.log("socket connecting");
     socket.connect();
     console.log("socket connected");
+    return () => {
+      socket.disconnect();
+    };
+  }, []);
 
+  useEffect(() => {
     if (!ChatId) return;
 
     setMessages([]);
     socket.emit("join_room", ChatId);
 
-    socket.on("receive_message", (tempId, payload) => {
+    const handleReceiveMessage = (tempId: string, payload: Message) => {
       setMessages((prev) => {
         if (tempId) {
           const exists = prev.some((m) => m.id === tempId);
-
-          if (exists) {
+          if (exists)
             return prev.map((m) => (m.id === tempId ? { ...payload } : m));
-          }
         }
-
         return [...prev, payload];
       });
-    });
+    };
+
+    socket.on("receive_message", handleReceiveMessage);
 
     return () => {
-      socket.off("receive_message");
+      socket.off("receive_message", handleReceiveMessage);
       socket.emit("leave_room", ChatId);
     };
   }, [ChatId]);
@@ -212,8 +228,15 @@ const ChatPage: React.FC = () => {
   const handleStartChat = async (reportId: string) => {
     if (!selectedReport) return;
 
-    const response = await startChat(reportId || "");
-    console.log(response);
+    try {
+      setIsLoadingStartChat(true);
+      await startChat(reportId || "");
+      await refetchChat();
+    } catch (error) {
+      console.log(error);
+    } finally {
+      setIsLoadingStartChat(false);
+    }
   };
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
@@ -286,11 +309,6 @@ const ChatPage: React.FC = () => {
                 <h2 className="font-semibold text-gray-900 dark:text-white">
                   Chat
                 </h2>
-                {selectedReport && (
-                  <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
-                    {selectedReport.title}
-                  </p>
-                )}
               </div>
 
               <div
@@ -309,15 +327,28 @@ const ChatPage: React.FC = () => {
                   <MessageBoxSkeleton />
                 ) : !ChatId ? (
                   <div className="flex items-center justify-center h-full">
-                    <div className="text-gray-500 dark:text-gray-400">
-                      <Button
-                        onClick={() => handleStartChat(selectedReport.id)}
-                        variant="primary"
-                        size="sm"
-                      >
-                        Start Chat
-                      </Button>
-                    </div>
+                    {isLoadingStartChat ? (
+                      <div>
+                        <LoadingSpinner />
+                      </div>
+                    ) : (
+                      <div className="text-gray-500 dark:text-gray-400">
+                        <Button
+                          onClick={() => handleStartChat(selectedReport.id)}
+                          variant="primary"
+                          size="sm"
+                          disabled={isLoadingStartChat || isFetchingChat}
+                        >
+                          Start Chat
+                        </Button>
+                      </div>
+                    )}
+                  </div>
+                ) : messages.length === 0 ? (
+                  <div className="flex items-center justify-center h-full text-center">
+                    <p className="text-gray-700 dark:text-gray-200 font-medium">
+                      Belum ada pesan
+                    </p>
                   </div>
                 ) : (
                   <>
@@ -343,7 +374,7 @@ const ChatPage: React.FC = () => {
                     <textarea
                       value={newMessage}
                       onChange={(e) => setNewMessage(e.target.value)}
-                      onKeyPress={handleKeyPress}
+                      onKeyDown={handleKeyPress}
                       placeholder="Ketik pesan..."
                       rows={1}
                       className="flex-1 px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 dark:bg-gray-700 dark:text-white resize-none"
