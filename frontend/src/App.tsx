@@ -30,7 +30,6 @@ import ManageReportsPage from "./pages/reports/ManageReportsPage";
 import ChatPage from "./pages/chat/ChatPage";
 import NotFoundPage from "./pages/NotFoundPage";
 
-// Wrapper
 import PublicOnlyRoute from "./routes/PublicOnlyRoute";
 import ProtectedRoute from "./routes/ProtectedRoute";
 import { AuthProvider } from "./contexts/AuthContext";
@@ -222,6 +221,7 @@ function App() {
                         path="announcements/edit/:id"
                         element={<EditAnnouncementPage />}
                       />
+                      <Route path="chat" element={<ChatPage />} />
                     </Route>
 
                     <Route path="*" element={<NotFoundPage />} />

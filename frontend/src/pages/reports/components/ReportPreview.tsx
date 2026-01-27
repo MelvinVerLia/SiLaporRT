@@ -109,7 +109,7 @@ const ReportPreview: React.FC<ReportPreviewProps> = ({
 
       {/* Location */}
       {hasLocation && (
-        <div className="pt-3 border-t border-gray-200">
+        <div className="pt-3 border-t border-gray-200 dark:border-gray-700">
           <div className="flex items-start gap-2">
             <MapPin className="h-4 w-4 text-gray-400 dark:text-gray-500 mt-0.5 flex-shrink-0" />
             <div className="flex-1 min-w-0">
@@ -129,7 +129,7 @@ const ReportPreview: React.FC<ReportPreviewProps> = ({
 
       {/* Attachments */}
       {hasAttachments && (
-        <div className="pt-3 border-t border-gray-200">
+        <div className="pt-3 border-t border-gray-200 dark:border-gray-700">
           <div className="flex items-center gap-2 mb-2">
             <FileText className="h-4 w-4 text-gray-400 dark:text-gray-500" />
             <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
@@ -140,7 +140,7 @@ const ReportPreview: React.FC<ReportPreviewProps> = ({
             {attachments.slice(0, 5).map((file, index) => (
               <div
                 key={index}
-                className="relative aspect-square rounded-lg overflow-hidden bg-gray-100 border border-gray-200"
+                className="relative aspect-square rounded-lg overflow-hidden bg-gray-100 border border-gray-200 dark:border-gray-700"
               >
                 {file.resource_type === "image" ? (
                   <img

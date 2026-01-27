@@ -105,7 +105,7 @@ const ChatPage: React.FC = () => {
 
           const filteredReports = allReports
             .filter((report: Report) => {
-              const hasUser = !!report.user;
+              const hasUser = report.user;
               const isCitizen = report.user?.role === Role.CITIZEN;
               const sameRT = report.user?.rtId === user.rtId;
               const validStatus =

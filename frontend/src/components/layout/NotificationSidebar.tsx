@@ -88,7 +88,7 @@ export default function NotificationSidebar({
       {isOpen && (
         <>
           <motion.div
-            className="fixed inset-0 bg-black/40 z-40"
+            className="fixed inset-0 bg-black/50 z-40 "
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
@@ -98,29 +98,29 @@ export default function NotificationSidebar({
           <motion.div
             className={cn(
               sidebarLocation === "left" ? "left-0" : "right-0",
-              "fixed top-0 h-full sm:w-[600px] w-full bg-white shadow-2xl z-50 flex flex-col"
+              "fixed top-0 h-full sm:w-[600px] w-full bg-white shadow-2xl z-50 flex flex-col dark:bg-gray-800",
             )}
             initial={{ x: sidebarLocation === "left" ? "-100%" : "100%" }}
             animate={{ x: 0 }}
             exit={{ x: sidebarLocation === "left" ? "-100%" : "100%" }}
             transition={{ type: "tween", duration: 0.3 }}
           >
-            <div className="p-4 border-gray-200 flex justify-between items-center bg-gray-50">
+            <div className="p-4 border-gray-200 flex justify-between items-center bg-gray-50 dark:bg-gray-800">
               <h2 className="text-lg font-semibold text-gray-700 dark:text-gray-300">
                 {tabvalue === "unread"
                   ? "Belum Dibaca "
                   : tabvalue === "read"
-                  ? "Dibaca "
-                  : "Semua "}
+                    ? "Dibaca "
+                    : "Semua "}
               </h2>
               <button
-                className="p-1 hover:bg-gray-100 rounded-full hover:cursor-pointer"
+                className="p-1 hover:bg-gray-100 rounded-full hover:cursor-pointer dark:hover:bg-gray-700"
                 onClick={onClose}
               >
                 {sidebarLocation === "left" ? (
-                  <ChevronLeft className="w-5 h-5 text-gray-600" />
+                  <ChevronLeft className="w-5 h-5 text-gray-600 dark:text-gray-300" />
                 ) : (
-                  <ChevronRight className="w-5 h-5 text-gray-600" />
+                  <ChevronRight className="w-5 h-5 text-gray-600 dark:text-gray-300" />
                 )}
               </button>
             </div>
@@ -151,7 +151,7 @@ export default function NotificationSidebar({
                 </TabsTrigger>
               </TabsList>
 
-              <div className="flex-1 overflow-y-auto py-2 bg-gray-50">
+              <div className="flex-1 overflow-y-auto py-2 bg-gray-50 dark:bg-gray-800">
                 <TabsContent value="all">
                   <div className="flex flex-col gap-2 overflow-y-auto max-h-[75vh] sm:max-h-[80vh]">
                     {notifications.length > 0 ? (
@@ -161,16 +161,16 @@ export default function NotificationSidebar({
                           className={cn(
                             `py-4 cursor-pointer transition-colors ${
                               n.isRead === true
-                                ? "bg-gray-300 text-gray-300"
-                                : "bg-white hover:bg-gray-100"
-                            }  flex items-center rounded-xl`
+                                ? "bg-gray-300 text-gray-300 dark:bg-gray-600 opacity-50 dark:opacity-40"
+                                : "bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600"
+                            }  flex items-center rounded-xl`,
                           )}
                           onClick={() => onNotificationClick(n)}
                         >
                           <div className="mx-4">
                             {renderCategoryIcon(n.category)}
                           </div>
-                          <div className="">
+                          <div>
                             <p className="text-sm font-medium text-gray-700 dark:text-gray-300">
                               {n.title}
                             </p>
@@ -202,13 +202,13 @@ export default function NotificationSidebar({
                       unreadNotifications.map((n) => (
                         <div
                           key={n.id}
-                          className="py-4 cursor-pointer transition-colors hover:bg-gray-100 flex items-center rounded-xl"
+                          className="py-4 cursor-pointer transition-colors hover:bg-gray-100 flex items-center rounded-xl dark:bg-gray-700 dark:hover:bg-gray-600"
                           onClick={() => onNotificationClick(n)}
                         >
                           <div className="mx-4">
                             {renderCategoryIcon(n.category)}
                           </div>
-                          <div className="">
+                          <div>
                             <p className="text-sm font-medium text-gray-700 dark:text-gray-300">
                               {n.title}
                             </p>
@@ -239,13 +239,13 @@ export default function NotificationSidebar({
                       readNotifications.map((n) => (
                         <div
                           key={n.id}
-                          className="py-4 cursor-pointer transition-colors hover:bg-gray-100 flex items-center rounded-xl"
+                          className="py-4 cursor-pointer transition-colors hover:bg-gray-100 flex items-center rounded-xl dark:bg-gray-700 dark:hover:bg-gray-600"
                           onClick={() => onNotificationClick(n)}
                         >
                           <div className="mx-4">
                             {renderCategoryIcon(n.category)}
                           </div>
-                          <div className="">
+                          <div>
                             <p className="text-sm font-medium text-gray-700 dark:text-gray-300">
                               {n.title}
                             </p>
@@ -264,7 +264,7 @@ export default function NotificationSidebar({
                         </div>
                       ))
                     ) : (
-                      <div className="p-4 text-center text-gray-500 text-sm">
+                      <div className="p-4 text-center text-gray-500 text-sm dark:text-gray-400">
                         Tidak ada pemberitahuan
                       </div>
                     )}

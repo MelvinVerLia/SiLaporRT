@@ -254,7 +254,6 @@ const Header: React.FC = () => {
 
             {isAuthenticated && (
               <>
-                {/* Chat Button */}
                 <button
                   onClick={() => navigate("/chat")}
                   className="relative p-2 text-gray-400 dark:text-gray-300 hover:text-gray-600 dark:hover:text-gray-100 transition-colors hover:cursor-pointer"
@@ -263,7 +262,6 @@ const Header: React.FC = () => {
                   <MessageCircle className="h-5 w-5" />
                 </button>
 
-                {/* Notification Button */}
                 <div
                   className="relative"
                   onClick={toggleNotification}

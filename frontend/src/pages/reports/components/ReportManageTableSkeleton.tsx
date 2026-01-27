@@ -15,7 +15,7 @@ export function ReportManageTableSkeleton() {
             <col className="w-15/100" /> {/* Status - 15% */}
           </colgroup>
           <thead>
-            <tr className="border-b border-gray-200">
+            <tr className="border-b border-gray-200 dark:border-gray-700">
               <th className="text-left py-4 pr-6 text-sm font-medium text-gray-600">
                 Laporan
               </th>
@@ -81,7 +81,7 @@ export function ReportManageTableSkeleton() {
         {Array.from({ length: 5 }).map((_, index) => (
           <div
             key={`skeleton-card-${index}`}
-            className="border border-gray-200 rounded-lg"
+            className="border border-gray-200 dark:border-gray-700 rounded-lg"
           >
             <div className="p-4">
               <div className="space-y-3">
