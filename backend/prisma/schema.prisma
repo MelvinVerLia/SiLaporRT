@@ -278,6 +278,7 @@ model message {
   chatId String
   chat   chat @relation(fields: [chatId], references: [id])
   message String
+  isRead Boolean @default(false)
   createdAt DateTime @default(now())
 }
 

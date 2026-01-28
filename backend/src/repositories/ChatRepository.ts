@@ -2,7 +2,9 @@ import prisma from "../config/prisma";
 
 export class ChatRepository {
   static async saveMessage(message: string, userId: string, chatId: string) {
-    return prisma.message.create({ data: { message, chatId, userId } });
+    return prisma.message.create({
+      data: { message, chatId, userId },
+    });
   }
 
   static async getChatIdFromReportId(reportId: string) {
@@ -17,6 +19,13 @@ export class ChatRepository {
       where: { chatId },
       include: { user: { select: { name: true, role: true, profile: true } } },
       orderBy: { createdAt: "asc" },
+    });
+  }
+
+  static async markMessageAsRead(messageId: string) {
+    return prisma.message.update({
+      where: { id: messageId },
+      data: { isRead: true },
     });
   }
 

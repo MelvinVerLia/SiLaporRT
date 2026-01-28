@@ -1,11 +1,4 @@
-import {
-  format,
-  formatDistanceToNow,
-  isSameDay,
-  isToday,
-  isYesterday,
-  parseISO,
-} from "date-fns";
+import { format, isSameDay, isToday, isYesterday, parseISO } from "date-fns";
 import { id } from "date-fns/locale";
 import { User as UserIcon } from "lucide-react";
 import type { User as UserProps } from "../../../types/auth.types";
@@ -22,6 +15,7 @@ type Message = {
   };
   createdAt: string;
   optimistic?: boolean;
+  isRead?: boolean;
 };
 
 type MessageBoxProps = {
@@ -41,6 +35,32 @@ const MessageBox = ({ msg, user, idx, sortedMessages }: MessageBoxProps) => {
     if (isToday(d)) return "Hari ini";
     if (isYesterday(d)) return "Kemarin";
     return format(d, "dd MMM yyyy", { locale: id });
+  };
+
+  const getStatusText = () => {
+    if (msg.userId !== user?.id) return null;
+
+    if (msg.optimistic) {
+      return (
+        <span className="text-[10px] text-gray-400 dark:text-gray-500">
+          Mengirim...
+        </span>
+      );
+    }
+
+    if (msg.isRead) {
+      return (
+        <span className="text-[10px] text-gray-500 dark:text-gray-400">
+          Dibaca
+        </span>
+      );
+    }
+
+    return (
+      <span className="text-[10px] text-gray-400 dark:text-gray-500">
+        Belum dibaca
+      </span>
+    );
   };
 
   return (
@@ -90,11 +110,9 @@ const MessageBox = ({ msg, user, idx, sortedMessages }: MessageBoxProps) => {
               </p>
             </div>
 
-            <p className="text-xs text-gray-500 dark:text-gray-400 mt-1 px-1">
-              {formatDistanceToNow(parseISO(msg.createdAt), {
-                addSuffix: true,
-                locale: id,
-              })}
+            <p className="text-xs text-gray-500 dark:text-gray-400 mt-1 px-1 flex items-center gap-1">
+              {format(parseISO(msg.createdAt), "HH:mm")}
+              {getStatusText()}
             </p>
           </div>
         </div>

@@ -11,6 +11,16 @@ export const RegisterSocket = (io: any) => {
       socket.join(chatId);
     });
 
+    socket.on("typing", (data: any) => {
+      const { chatId, userId } = data;
+      socket.to(chatId).emit("user_typing", { userId });
+    });
+
+    socket.on("stop_typing", (data: any) => {
+      const { chatId, userId } = data;
+      socket.to(chatId).emit("user_stopped_typing", { userId });
+    });
+
     socket.on("send_message", async (data: any) => {
       if (!data) return;
 
@@ -24,13 +34,26 @@ export const RegisterSocket = (io: any) => {
         messagePayload.chatId,
       );
 
-      const message = { ...messagePayload, id: savedMessage.id };
+      const message = {
+        ...messagePayload,
+        id: savedMessage.id,
+      };
 
       io.to(savedMessage.chatId).emit(
         "receive_message",
         messagePayload.id,
-        message
+        message,
       );
+    });
+
+    socket.on("message_read", async (data: any) => {
+      const { messageId, chatId } = data;
+
+      // Update database
+      await ChatRepository.markMessageAsRead(messageId);
+
+      // Broadcast to all users in the chat that message was read
+      socket.to(chatId).emit("message_read", { messageId });
     });
 
     socket.on("disconnect", () => {

@@ -29,6 +29,7 @@ type Message = {
   };
   createdAt: string;
   optimistic?: boolean;
+  isRead?: boolean;
 };
 
 const ChatPage: React.FC = () => {
@@ -39,8 +40,10 @@ const ChatPage: React.FC = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [messages, setMessages] = useState<Message[]>([]);
   const [isLoadingMessages, setIsLoadingMessages] = useState(false);
+  const [isTyping, setIsTyping] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const messagesContainerRef = useRef<HTMLDivElement>(null);
+  const typingTimeoutRef = useRef<number | null>(null);
 
   const { data: chatData, isLoading: isLoadingChat } = useQuery({
     queryKey: ["chat", selectedReport?.id],
@@ -58,6 +61,16 @@ const ChatPage: React.FC = () => {
       try {
         const response = await getMessages(selectedReport!.id);
         setMessages(response.data);
+
+        // Mark all received messages as read
+        response.data.forEach((msg: Message) => {
+          if (msg.userId !== user?.id) {
+            socket.emit("message_read", {
+              messageId: msg.id,
+              chatId: ChatId,
+            });
+          }
+        });
       } catch (err) {
         console.log(err);
       } finally {
@@ -66,7 +79,7 @@ const ChatPage: React.FC = () => {
     };
 
     fetchMessages();
-  }, [ChatId, selectedReport]);
+  }, [ChatId, selectedReport, user?.id]);
 
   const scrollToBottom = () => {
     const el = messagesContainerRef.current;
@@ -74,7 +87,7 @@ const ChatPage: React.FC = () => {
 
     el.scrollTo({
       top: el.scrollHeight,
-      behavior: "auto",
+      behavior: "smooth",
     });
   };
 
@@ -150,37 +163,86 @@ const ChatPage: React.FC = () => {
   }, [user]);
 
   useEffect(() => {
-    console.log("socket connecting");
     socket.connect();
-    console.log("socket connected");
 
+    return () => {
+      socket.disconnect();
+    };
+  }, []);
+
+  useEffect(() => {
     if (!ChatId) return;
 
     setMessages([]);
     socket.emit("join_room", ChatId);
 
-    socket.on("receive_message", (tempId, payload) => {
+    const handleReceiveMessage = (tempId: string, payload: Message) => {
       setMessages((prev) => {
         if (tempId) {
           const exists = prev.some((m) => m.id === tempId);
 
           if (exists) {
+            // Update optimistic message with real one
             return prev.map((m) => (m.id === tempId ? { ...payload } : m));
           }
         }
 
+        // New message from other user - mark as read immediately since they're in the chat
+        if (payload.userId !== user?.id) {
+          socket.emit("message_read", {
+            messageId: payload.id,
+            chatId: ChatId,
+          });
+        }
+
         return [...prev, payload];
       });
-    });
+    };
+
+    const handleMessageRead = (data: { messageId: string }) => {
+      setMessages((prev) =>
+        prev.map((m) => (m.id === data.messageId ? { ...m, isRead: true } : m)),
+      );
+    };
+
+    const handleUserTyping = (data: { userId: string }) => {
+      if (data.userId !== user?.id) {
+        setIsTyping(true);
+        setTimeout(() => setIsTyping(false), 3000);
+      }
+    };
+
+    socket.on("receive_message", handleReceiveMessage);
+    socket.on("message_read", handleMessageRead);
+    socket.on("user_typing", handleUserTyping);
 
     return () => {
-      socket.off("receive_message");
+      socket.off("receive_message", handleReceiveMessage);
+      socket.off("message_read", handleMessageRead);
+      socket.off("user_typing", handleUserTyping);
       socket.emit("leave_room", ChatId);
     };
-  }, [ChatId]);
+  }, [ChatId, user?.id]);
+
+  const handleTyping = () => {
+    if (typingTimeoutRef.current) {
+      clearTimeout(typingTimeoutRef.current);
+    }
+
+    socket.emit("typing", { chatId: ChatId, userId: user?.id });
+
+    typingTimeoutRef.current = setTimeout(() => {
+      socket.emit("stop_typing", { chatId: ChatId, userId: user?.id });
+    }, 1000);
+  };
 
   const sendMessage = () => {
     if (!newMessage.trim()) return;
+
+    if (typingTimeoutRef.current) {
+      clearTimeout(typingTimeoutRef.current);
+      socket.emit("stop_typing", { chatId: ChatId, userId: user?.id });
+    }
 
     const tempId = `temp-${crypto.randomUUID()}`;
 
@@ -195,6 +257,8 @@ const ChatPage: React.FC = () => {
         role: user!.role,
       },
       createdAt: new Date().toISOString(),
+      optimistic: true,
+      isRead: false,
     };
 
     console.log(optimisticMessage);
@@ -247,11 +311,11 @@ const ChatPage: React.FC = () => {
                 <h2 className="font-semibold text-gray-900 dark:text-white">
                   {user?.role === Role.RT_ADMIN
                     ? "Laporan yang Ditangani"
-                    : "Laporan Saya"}
+                    : "Laporan Saya"}{" "}
+                  <span className="text-gray-500 dark:text-gray-400">
+                    ({reports.length})
+                  </span>
                 </h2>
-                <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
-                  {reports.length} laporan
-                </p>
               </div>
               <div className="flex-1 overflow-y-auto ">
                 {isLoading ? (
@@ -286,11 +350,6 @@ const ChatPage: React.FC = () => {
                 <h2 className="font-semibold text-gray-900 dark:text-white">
                   Chat
                 </h2>
-                {selectedReport && (
-                  <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
-                    {selectedReport.title}
-                  </p>
-                )}
               </div>
 
               <div
@@ -330,6 +389,32 @@ const ChatPage: React.FC = () => {
                       />
                     ))}
 
+                    {isTyping && (
+                      <div className="flex justify-start">
+                        <div className="flex items-start gap-2 max-w-[85%] sm:max-w-[70%]">
+                          <div className="flex-shrink-0">
+                            <User className="h-8 w-8 text-gray-400" />
+                          </div>
+                          <div className="bg-gray-100 dark:bg-gray-700 rounded-lg p-3">
+                            <div className="flex gap-1">
+                              <span
+                                className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"
+                                style={{ animationDelay: "0ms" }}
+                              ></span>
+                              <span
+                                className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"
+                                style={{ animationDelay: "150ms" }}
+                              ></span>
+                              <span
+                                className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"
+                                style={{ animationDelay: "300ms" }}
+                              ></span>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+
                     <div ref={messagesEndRef} />
                   </>
                 )}
@@ -342,7 +427,10 @@ const ChatPage: React.FC = () => {
                   <div className="flex items-center gap-2">
                     <textarea
                       value={newMessage}
-                      onChange={(e) => setNewMessage(e.target.value)}
+                      onChange={(e) => {
+                        setNewMessage(e.target.value);
+                        handleTyping();
+                      }}
                       onKeyPress={handleKeyPress}
                       placeholder="Ketik pesan..."
                       rows={1}

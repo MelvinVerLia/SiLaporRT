@@ -6,7 +6,7 @@ const ReportBox = ({ report, selectedReport, setSelectedReport }: any) => {
       onClick={() => setSelectedReport(report)}
       className={`p-4 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors ${
         selectedReport?.id === report.id
-          ? "bg-primary-50 dark:bg-gray-700 border-l-4 border-primary-600"
+          ? "bg-primary-50 dark:bg-gray-700 border-l-4 border-l-primary-600"
           : ""
       }`}
     >
