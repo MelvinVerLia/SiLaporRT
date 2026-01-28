@@ -17,6 +17,7 @@ import ReportBoxSkeleton from "./components/ReportBoxSkeleton";
 import ReportBox from "./components/ReportBox";
 import TextBoxSkeleton from "./components/TextBoxSkeleton";
 import LoadingSpinner from "../../components/ui/LoadingSpinner";
+import { useToast } from "../../hooks/useToast";
 
 type Message = {
   id: string;
@@ -43,6 +44,7 @@ const ChatPage: React.FC = () => {
   const [isLoadingStartChat, setIsLoadingStartChat] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const messagesContainerRef = useRef<HTMLDivElement>(null);
+  const toast = useToast();
 
   const {
     data: chatData,
@@ -162,10 +164,12 @@ const ChatPage: React.FC = () => {
   }, [user]);
 
   useEffect(() => {
-    console.log("socket connecting");
+    toast.info("Socket connecting", "Success");
     socket.connect();
+    toast.success("Socket connected", "Success");
     console.log("socket connected");
     return () => {
+      toast.error("Socket dead", "Error");
       socket.disconnect();
     };
   }, []);

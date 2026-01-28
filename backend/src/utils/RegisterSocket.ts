@@ -33,6 +33,11 @@ export const RegisterSocket = (io: any) => {
       );
     });
 
+    socket.on("leave_room", (chatId: any) => {
+      console.log(`socket ${socket.id} left chat ${chatId}`);
+      socket.leave(chatId);
+    });
+
     socket.on("disconnect", () => {
       console.log("user disconnected");
     });
