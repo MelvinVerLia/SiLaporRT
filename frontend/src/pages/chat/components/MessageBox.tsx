@@ -66,52 +66,15 @@ const MessageBox = ({ msg, user, idx, sortedMessages }: MessageBoxProps) => {
           msg.userId === user?.id ? "justify-end" : "justify-start"
         }`}
       >
-        <div
-          className={`flex ${
-            msg.userId === user?.id ? "flex-row-reverse" : "flex-row"
-          } items-start gap-2 max-w-[85%] sm:max-w-[70%]`}
-        >
-          <div className="flex-shrink-0">
-            {msg.user.profile ? (
-              <img
-                src={msg.user.profile}
-                className="h-8 w-8 rounded-full object-cover"
-              />
-            ) : (
-              <UserIcon className="h-8 w-8 text-gray-400" />
-            )}
-          </div>
-
-          <div className="flex flex-col">
-            <p
-              className={`text-xs font-medium mb-1 px-1 ${
-                msg.userId === user?.id
-                  ? "text-right text-gray-700 dark:text-gray-300"
-                  : "text-left text-gray-700 dark:text-gray-300"
-              }`}
-            >
-              {msg.user.name}
-            </p>
-
-            <div
-              className={`rounded-lg p-2 ${
-                msg.userId === user?.id
-                  ? "bg-primary-600 text-white"
-                  : "bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white"
-              }`}
-            >
+        {msg.userId === user?.id ? (
+          <div className="max-w-[85%] sm:max-w-[70%]">
+            <div className="rounded-lg p-2 bg-primary-600 text-white">
               <div className="flex items-end gap-2">
                 <p className="text-sm whitespace-pre-wrap break-words flex-1">
                   {msg.message}
                 </p>
                 <div className="flex items-center gap-1 flex-shrink-0">
-                  <span
-                    className={`text-[10px] ${
-                      msg.userId === user?.id
-                        ? "text-white/70"
-                        : "text-gray-500 dark:text-gray-400"
-                    }`}
-                  >
+                  <span className="text-[10px] text-white/70">
                     {format(parseISO(msg.createdAt), "HH:mm")}
                   </span>
                   {getStatusText()}
@@ -119,7 +82,39 @@ const MessageBox = ({ msg, user, idx, sortedMessages }: MessageBoxProps) => {
               </div>
             </div>
           </div>
-        </div>
+        ) : (
+          <div className="flex items-start gap-2 max-w-[85%] sm:max-w-[70%]">
+            <div className="flex-shrink-0">
+              {msg.user.profile ? (
+                <img
+                  src={msg.user.profile}
+                  className="h-8 w-8 rounded-full object-cover"
+                />
+              ) : (
+                <UserIcon className="h-8 w-8 text-gray-400" />
+              )}
+            </div>
+
+            <div className="flex flex-col min-w-0 flex-1">
+              <p className="text-xs font-medium mb-1 px-1 text-left text-gray-700 dark:text-gray-300 truncate w-fit max-w-[100px]">
+                {msg.user.name}
+              </p>
+
+              <div className="rounded-lg p-2 bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white w-fit">
+                <div className="flex items-end gap-2">
+                  <p className="text-sm whitespace-pre-wrap break-words">
+                    {msg.message}
+                  </p>
+                  <div className="flex items-center gap-1 flex-shrink-0">
+                    <span className="text-[10px] text-gray-500 dark:text-gray-400">
+                      {format(parseISO(msg.createdAt), "HH:mm")}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </>
   );

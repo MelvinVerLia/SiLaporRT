@@ -631,9 +631,11 @@ const ChatPage: React.FC = () => {
                           </span>
                         </div>
                         {!selectedReport.isAnonymous && selectedReport.user && (
-                          <div className="flex justify-between">
-                            <span>Pelapor:</span>
-                            <span>{selectedReport.user.name}</span>
+                          <div className="flex justify-between gap-2">
+                            <span className="flex-shrink-0">Pelapor:</span>
+                            <span className="text-right truncate">
+                              {selectedReport.user.name}
+                            </span>
                           </div>
                         )}
                       </div>

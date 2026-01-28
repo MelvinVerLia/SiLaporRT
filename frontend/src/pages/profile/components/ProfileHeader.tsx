@@ -130,7 +130,7 @@ const ProfileHeader: React.FC<ProfileHeaderProps> = ({
           {/* User Info */}
           <div className="flex-1 text-center sm:text-left">
             <div className="flex flex-col sm:flex-row sm:items-center gap-3 mb-2">
-              <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100">
+              <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100 truncate max-w-[200px] md:max-w-[400px] lg:max-w-[600px] mx-auto sm:mx-0">
                 {user.name}
               </h2>
               <Badge
