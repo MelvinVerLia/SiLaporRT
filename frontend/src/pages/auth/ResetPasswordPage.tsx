@@ -38,7 +38,7 @@ const ResetPasswordPage: React.FC = () => {
       setIsTokenValid(false);
     }
   };
-
+  
   useEffect(() => {
     validateToken();
   }, []);
@@ -307,8 +307,7 @@ const ResetPasswordPage: React.FC = () => {
               </Button>
             </form>
 
-            {/* Back to Login */}
-            <div className="mt-6 pt-6 border-t border-gray-200">
+            <div className="mt-6 pt-6 border-t border-gray-200 dark:border-gray-700">
               <div className="flex items-center justify-center">
                 <Link
                   to="/login"

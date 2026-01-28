@@ -15,7 +15,7 @@ export function AnnouncementManageTableSkeleton() {
             <col className="w-15/100" /> {/* Aksi - 15% */}
           </colgroup>
           <thead>
-            <tr className="border-b border-gray-200">
+            <tr className="border-b border-gray-200 dark:border-gray-700">
               <th className="text-left py-4 pr-6 text-sm font-medium text-gray-600">
                 Pengumuman
               </th>
@@ -78,16 +78,14 @@ export function AnnouncementManageTableSkeleton() {
         </table>
       </div>
 
-      {/* Mobile Card View Skeleton */}
       <div className="lg:hidden space-y-4">
         {Array.from({ length: 5 }).map((_, index) => (
           <div
             key={`skeleton-card-${index}`}
-            className="border border-gray-200 rounded-lg"
+            className="border border-gray-200 dark:border-gray-700 rounded-lg"
           >
             <div className="p-4">
               <div className="space-y-3">
-                {/* Header */}
                 <div className="flex items-start justify-between">
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center space-x-2 mb-1">
@@ -98,19 +96,16 @@ export function AnnouncementManageTableSkeleton() {
                   </div>
                 </div>
 
-                {/* Badges */}
                 <div className="flex flex-wrap gap-2">
                   <Skeleton className="h-6 w-16 rounded-full" />
                   <Skeleton className="h-6 w-16 rounded-full" />
                   <Skeleton className="h-6 w-16 rounded-full" />
                 </div>
 
-                {/* Date */}
                 <div className="space-y-1">
                   <Skeleton className="h-3 w-32" />
                 </div>
 
-                {/* Actions */}
                 <div className="flex justify-between pt-2 border-t border-gray-100">
                   <div className="flex space-x-2">
                     <Skeleton className="h-8 w-16 rounded" />

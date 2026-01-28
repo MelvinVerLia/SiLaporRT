@@ -16,6 +16,8 @@ import MessageBoxSkeleton from "./components/MessageBoxSkeleton";
 import ReportBoxSkeleton from "./components/ReportBoxSkeleton";
 import ReportBox from "./components/ReportBox";
 import TextBoxSkeleton from "./components/TextBoxSkeleton";
+import LoadingSpinner from "../../components/ui/LoadingSpinner";
+import { useToast } from "../../hooks/useToast";
 
 type Message = {
   id: string;
@@ -40,12 +42,19 @@ const ChatPage: React.FC = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [messages, setMessages] = useState<Message[]>([]);
   const [isLoadingMessages, setIsLoadingMessages] = useState(false);
+  const [isLoadingStartChat, setIsLoadingStartChat] = useState(false);
   const [isTyping, setIsTyping] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const messagesContainerRef = useRef<HTMLDivElement>(null);
+  const toast = useToast();
   const typingTimeoutRef = useRef<number | null>(null);
 
-  const { data: chatData, isLoading: isLoadingChat } = useQuery({
+  const {
+    data: chatData,
+    isLoading: isLoadingChat,
+    isFetching: isFetchingChat,
+    refetch: refetchChat,
+  } = useQuery({
     queryKey: ["chat", selectedReport?.id],
     queryFn: () => getChatId(selectedReport?.id || ""),
     enabled: !!selectedReport,
@@ -56,10 +65,15 @@ const ChatPage: React.FC = () => {
   useEffect(() => {
     if (!ChatId) return;
     setMessages([]);
+
+    const reportId = selectedReport?.id;
+
+    if (!reportId) return;
+
     const fetchMessages = async () => {
       setIsLoadingMessages(true);
       try {
-        const response = await getMessages(selectedReport!.id);
+        const response = await getMessages(reportId);
         setMessages(response.data);
 
         // Mark all received messages as read
@@ -79,7 +93,7 @@ const ChatPage: React.FC = () => {
     };
 
     fetchMessages();
-  }, [ChatId, selectedReport, user?.id]);
+  }, [ChatId, selectedReport?.id, user?.id]);
 
   const scrollToBottom = () => {
     const el = messagesContainerRef.current;
@@ -118,7 +132,7 @@ const ChatPage: React.FC = () => {
 
           const filteredReports = allReports
             .filter((report: Report) => {
-              const hasUser = !!report.user;
+              const hasUser = report.user;
               const isCitizen = report.user?.role === Role.CITIZEN;
               const sameRT = report.user?.rtId === user.rtId;
               const validStatus =
@@ -163,9 +177,12 @@ const ChatPage: React.FC = () => {
   }, [user]);
 
   useEffect(() => {
+    toast.info("Socket connecting", "Success");
     socket.connect();
-
+    toast.success("Socket connected", "Success");
+    console.log("socket connected");
     return () => {
+      toast.error("Socket dead", "Error");
       socket.disconnect();
     };
   }, []);
@@ -180,14 +197,10 @@ const ChatPage: React.FC = () => {
       setMessages((prev) => {
         if (tempId) {
           const exists = prev.some((m) => m.id === tempId);
-
-          if (exists) {
-            // Update optimistic message with real one
+          if (exists)
             return prev.map((m) => (m.id === tempId ? { ...payload } : m));
-          }
         }
 
-        // New message from other user - mark as read immediately since they're in the chat
         if (payload.userId !== user?.id) {
           socket.emit("message_read", {
             messageId: payload.id,
@@ -276,8 +289,15 @@ const ChatPage: React.FC = () => {
   const handleStartChat = async (reportId: string) => {
     if (!selectedReport) return;
 
-    const response = await startChat(reportId || "");
-    console.log(response);
+    try {
+      setIsLoadingStartChat(true);
+      await startChat(reportId || "");
+      await refetchChat();
+    } catch (error) {
+      console.log(error);
+    } finally {
+      setIsLoadingStartChat(false);
+    }
   };
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
@@ -368,15 +388,28 @@ const ChatPage: React.FC = () => {
                   <MessageBoxSkeleton />
                 ) : !ChatId ? (
                   <div className="flex items-center justify-center h-full">
-                    <div className="text-gray-500 dark:text-gray-400">
-                      <Button
-                        onClick={() => handleStartChat(selectedReport.id)}
-                        variant="primary"
-                        size="sm"
-                      >
-                        Start Chat
-                      </Button>
-                    </div>
+                    {isLoadingStartChat ? (
+                      <div>
+                        <LoadingSpinner />
+                      </div>
+                    ) : (
+                      <div className="text-gray-500 dark:text-gray-400">
+                        <Button
+                          onClick={() => handleStartChat(selectedReport.id)}
+                          variant="primary"
+                          size="sm"
+                          disabled={isLoadingStartChat || isFetchingChat}
+                        >
+                          Start Chat
+                        </Button>
+                      </div>
+                    )}
+                  </div>
+                ) : messages.length === 0 ? (
+                  <div className="flex items-center justify-center h-full text-center">
+                    <p className="text-gray-700 dark:text-gray-200 font-medium">
+                      Belum ada pesan
+                    </p>
                   </div>
                 ) : (
                   <>
@@ -431,7 +464,7 @@ const ChatPage: React.FC = () => {
                         setNewMessage(e.target.value);
                         handleTyping();
                       }}
-                      onKeyPress={handleKeyPress}
+                      onKeyDown={handleKeyPress}
                       placeholder="Ketik pesan..."
                       rows={1}
                       className="flex-1 px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 dark:bg-gray-700 dark:text-white resize-none"

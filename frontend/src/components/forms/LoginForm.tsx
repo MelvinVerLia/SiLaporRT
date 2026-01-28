@@ -173,7 +173,7 @@ const LoginForm: React.FC = () => {
             </form>
 
             {/* Google Login Button */}
-            <div className="mt-3 pt-3 border-t border-gray-200">
+            <div className="mt-3 pt-3 border-t border-gray-200 dark:border-gray-700">
               <Button
                 type="button"
                 variant="outline"

@@ -232,7 +232,7 @@ const Header: React.FC = () => {
                     className={cn(
                       "flex items-center space-x-2 rounded-md px-3 py-2 text-sm font-medium transition-all duration-200",
                       isActive
-                        ? "bg-primary-50 text-primary-700 dark:bg-gray-700 dark:text-gray-100"
+                        ? "bg-primary-50 text-primary-700 dark:bg-gray-700 dark:text-orange-300"
                         : "text-gray-600 dark:text-gray-300 hover:bg-primary-50 hover:text-primary-700 dark:hover:bg-gray-700 dark:hover:text-gray-100"
                     )}
                   >
@@ -254,7 +254,6 @@ const Header: React.FC = () => {
 
             {isAuthenticated && (
               <>
-                {/* Chat Button */}
                 <button
                   onClick={() => navigate("/chat")}
                   className="relative p-2 text-gray-400 dark:text-gray-300 hover:text-gray-600 dark:hover:text-gray-100 transition-colors hover:cursor-pointer"
@@ -263,7 +262,6 @@ const Header: React.FC = () => {
                   <MessageCircle className="h-5 w-5" />
                 </button>
 
-                {/* Notification Button */}
                 <div
                   className="relative"
                   onClick={toggleNotification}
