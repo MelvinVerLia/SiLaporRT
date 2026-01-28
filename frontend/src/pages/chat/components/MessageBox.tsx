@@ -1,6 +1,6 @@
 import { format, isSameDay, isToday, isYesterday, parseISO } from "date-fns";
 import { id } from "date-fns/locale";
-import { User as UserIcon } from "lucide-react";
+import { User as UserIcon, Clock, CheckCheck } from "lucide-react";
 import type { User as UserProps } from "../../../types/auth.types";
 
 type Message = {
@@ -41,26 +41,14 @@ const MessageBox = ({ msg, user, idx, sortedMessages }: MessageBoxProps) => {
     if (msg.userId !== user?.id) return null;
 
     if (msg.optimistic) {
-      return (
-        <span className="text-[10px] text-gray-400 dark:text-gray-500">
-          Mengirim...
-        </span>
-      );
+      return <Clock className="h-3 w-3 text-white/70" />;
     }
 
     if (msg.isRead) {
-      return (
-        <span className="text-[10px] text-gray-500 dark:text-gray-400">
-          Dibaca
-        </span>
-      );
+      return <CheckCheck className="h-3 w-3 text-blue-400" />;
     }
 
-    return (
-      <span className="text-[10px] text-gray-400 dark:text-gray-500">
-        Belum dibaca
-      </span>
-    );
+    return <CheckCheck className="h-3 w-3 text-white/70" />;
   };
 
   return (
@@ -90,30 +78,46 @@ const MessageBox = ({ msg, user, idx, sortedMessages }: MessageBoxProps) => {
                 className="h-8 w-8 rounded-full object-cover"
               />
             ) : (
-              <UserIcon />
+              <UserIcon className="h-8 w-8 text-gray-400" />
             )}
           </div>
 
-          <div>
+          <div className="flex flex-col">
+            <p
+              className={`text-xs font-medium mb-1 px-1 ${
+                msg.userId === user?.id
+                  ? "text-right text-gray-700 dark:text-gray-300"
+                  : "text-left text-gray-700 dark:text-gray-300"
+              }`}
+            >
+              {msg.user.name}
+            </p>
+
             <div
-              className={`rounded-lg p-3 ${
+              className={`rounded-lg p-2 ${
                 msg.userId === user?.id
                   ? "bg-primary-600 text-white"
                   : "bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white"
               }`}
             >
-              <p className="text-xs font-medium mb-1 opacity-80">
-                {msg.user.name}
-              </p>
-              <p className="text-sm whitespace-pre-wrap break-all">
-                {msg.message}
-              </p>
+              <div className="flex items-end gap-2">
+                <p className="text-sm whitespace-pre-wrap break-words flex-1">
+                  {msg.message}
+                </p>
+                <div className="flex items-center gap-1 flex-shrink-0">
+                  <span
+                    className={`text-[10px] ${
+                      msg.userId === user?.id
+                        ? "text-white/70"
+                        : "text-gray-500 dark:text-gray-400"
+                    }`}
+                  >
+                    {format(parseISO(msg.createdAt), "HH:mm")}
+                  </span>
+                  {getStatusText()}
+                </div>
+              </div>
             </div>
-
-            <p className="text-xs text-gray-500 dark:text-gray-400 mt-1 px-1 flex items-center gap-1">
-              {format(parseISO(msg.createdAt), "HH:mm")}
-              {getStatusText()}
-            </p>
           </div>
         </div>
       </div>

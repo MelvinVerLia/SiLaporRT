@@ -4,6 +4,7 @@ export class ChatRepository {
   static async saveMessage(message: string, userId: string, chatId: string) {
     return prisma.message.create({
       data: { message, chatId, userId },
+      include: { user: { select: { name: true, role: true, profile: true } } },
     });
   }
 

@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, useMemo } from "react";
-import { Send, User, MapPin } from "lucide-react";
+import { Send, User, MapPin, ChevronLeft, FileText } from "lucide-react";
 import { useAuthContext } from "../../contexts/AuthContext";
 import { Report } from "../../types/report.types";
 import { Role } from "../../types/auth.types";
@@ -44,10 +44,14 @@ const ChatPage: React.FC = () => {
   const [isLoadingMessages, setIsLoadingMessages] = useState(false);
   const [isLoadingStartChat, setIsLoadingStartChat] = useState(false);
   const [isTyping, setIsTyping] = useState(false);
+  const [mobileView, setMobileView] = useState<"list" | "chat" | "detail">(
+    "list",
+  );
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const messagesContainerRef = useRef<HTMLDivElement>(null);
   const toast = useToast();
   const typingTimeoutRef = useRef<number | null>(null);
+  const typingIndicatorTimeoutRef = useRef<number | null>(null);
 
   const {
     data: chatData,
@@ -101,7 +105,7 @@ const ChatPage: React.FC = () => {
 
     el.scrollTo({
       top: el.scrollHeight,
-      behavior: "smooth",
+      behavior: "auto",
     });
   };
 
@@ -194,11 +198,22 @@ const ChatPage: React.FC = () => {
     socket.emit("join_room", ChatId);
 
     const handleReceiveMessage = (tempId: string, payload: Message) => {
+      // Clear typing indicator immediately when message is received
+      if (payload.userId !== user?.id) {
+        if (typingIndicatorTimeoutRef.current) {
+          clearTimeout(typingIndicatorTimeoutRef.current);
+          typingIndicatorTimeoutRef.current = null;
+        }
+        setIsTyping(false);
+      }
+
       setMessages((prev) => {
         if (tempId) {
           const exists = prev.some((m) => m.id === tempId);
-          if (exists)
-            return prev.map((m) => (m.id === tempId ? { ...payload } : m));
+          if (exists) {
+            const realMessage = { ...payload, optimistic: false };
+            return prev.map((m) => (m.id === tempId ? realMessage : m));
+          }
         }
 
         if (payload.userId !== user?.id) {
@@ -220,8 +235,14 @@ const ChatPage: React.FC = () => {
 
     const handleUserTyping = (data: { userId: string }) => {
       if (data.userId !== user?.id) {
+        if (typingIndicatorTimeoutRef.current) {
+          clearTimeout(typingIndicatorTimeoutRef.current);
+        }
         setIsTyping(true);
-        setTimeout(() => setIsTyping(false), 3000);
+        typingIndicatorTimeoutRef.current = window.setTimeout(() => {
+          setIsTyping(false);
+          typingIndicatorTimeoutRef.current = null;
+        }, 3000);
       }
     };
 
@@ -322,11 +343,13 @@ const ChatPage: React.FC = () => {
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
         <div className="lg:col-span-12">
-          <div
-            className="grid grid-cols-1 lg:grid-cols-12 gap-6 h-[calc(100vh-250px)]"
-            style={{ minHeight: "600px" }}
-          >
-            <div className="lg:col-span-3 bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden flex flex-col">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+            {/* Reports List - Hidden on mobile when chat/detail is active */}
+            <div
+              className={`lg:col-span-3 bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden flex flex-col h-[80vh] ${
+                mobileView !== "list" ? "hidden lg:flex" : ""
+              }`}
+            >
               <div className="p-4 border-b border-gray-200 dark:border-gray-700">
                 <h2 className="font-semibold text-gray-900 dark:text-white">
                   {user?.role === Role.RT_ADMIN
@@ -337,7 +360,7 @@ const ChatPage: React.FC = () => {
                   </span>
                 </h2>
               </div>
-              <div className="flex-1 overflow-y-auto ">
+              <div className="flex-1 overflow-y-auto [&::-webkit-scrollbar]:hidden [scrollbar-width:none]">
                 {isLoading ? (
                   <ReportBoxSkeleton />
                 ) : reports.length === 0 ? (
@@ -354,27 +377,55 @@ const ChatPage: React.FC = () => {
                 ) : (
                   <div className="divide-y divide-gray-200 dark:divide-gray-700">
                     {reports.map((report) => (
-                      <ReportBox
-                        report={report}
-                        selectedReport={selectedReport}
-                        setSelectedReport={setSelectedReport}
-                      />
+                      <div
+                        key={report.id}
+                        onClick={() => {
+                          setSelectedReport(report);
+                          setMobileView("chat");
+                        }}
+                      >
+                        <ReportBox
+                          report={report}
+                          selectedReport={selectedReport}
+                          setSelectedReport={setSelectedReport}
+                        />
+                      </div>
                     ))}
                   </div>
                 )}
               </div>
             </div>
 
-            <div className="lg:col-span-5 bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden flex flex-col">
-              <div className="p-4 border-b border-gray-200 dark:border-gray-700">
-                <h2 className="font-semibold text-gray-900 dark:text-white">
-                  Chat
-                </h2>
+            {/* Chat Panel - Hidden on mobile when list is active */}
+            <div
+              className={`lg:col-span-5 bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden flex flex-col h-[80vh] ${
+                mobileView !== "chat" ? "hidden lg:flex" : ""
+              }`}
+            >
+              {/* Mobile Header with Back Button */}
+              <div className="p-4 border-b border-gray-200 dark:border-gray-700 flex items-center gap-3">
+                <button
+                  onClick={() => setMobileView("list")}
+                  className="lg:hidden text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white"
+                >
+                  <ChevronLeft className="h-5 w-5" />
+                </button>
+                <div className="flex-1">
+                  <h2 className="font-semibold text-gray-900 dark:text-white">
+                    {selectedReport ? selectedReport.title : "Chat"}
+                  </h2>
+                </div>
+                <button
+                  onClick={() => setMobileView("detail")}
+                  className="lg:hidden text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white"
+                >
+                  <FileText className="h-5 w-5" />
+                </button>
               </div>
 
               <div
                 ref={messagesContainerRef}
-                className="flex-1 overflow-y-auto p-4 space-y-4 "
+                className="flex-1 overflow-y-auto p-4 space-y-4 [&::-webkit-scrollbar]:hidden [scrollbar-width:none]"
               >
                 {!selectedReport ? (
                   <div className="flex items-center justify-center h-full">
@@ -481,13 +532,25 @@ const ChatPage: React.FC = () => {
               ) : null}
             </div>
 
-            <div className="lg:col-span-4 bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden flex flex-col">
-              <div className="p-4 border-b border-gray-200 dark:border-gray-700">
-                <h2 className="font-semibold text-gray-900 dark:text-white">
+            {/* Detail Panel - Show as modal on mobile */}
+            <div
+              className={`lg:col-span-4 bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden flex flex-col h-[80vh] ${
+                mobileView !== "detail" ? "hidden lg:flex" : ""
+              }`}
+            >
+              {/* Mobile Header with Back Button */}
+              <div className="p-4 border-b border-gray-200 dark:border-gray-700 flex items-center gap-3">
+                <button
+                  onClick={() => setMobileView("chat")}
+                  className="lg:hidden text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white"
+                >
+                  <ChevronLeft className="h-5 w-5" />
+                </button>
+                <h2 className="font-semibold text-gray-900 dark:text-white flex-1">
                   Detail Laporan
                 </h2>
               </div>
-              <div className="flex-1 overflow-y-auto p-4">
+              <div className="flex-1 overflow-y-auto p-4 [&::-webkit-scrollbar]:hidden [scrollbar-width:none]">
                 {!selectedReport ? (
                   <div className="flex items-center justify-center h-full">
                     <p className="text-gray-500 dark:text-gray-400">
