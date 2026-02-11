@@ -139,42 +139,11 @@ export default function AnnouncementDetailPage() {
         </CardHeader>
       </Card>
 
-      {/* Content */}
+      {/* Informasi + Isi Pengumuman */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div className="lg:col-span-2 space-y-6">
-          <Card>
-            <CardHeader>
-              <CardTitle>Isi Pengumuman</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="prose prose-sm max-w-none whitespace-pre-wrap break-words text-gray-700 dark:text-gray-300">
-                {a.content}
-              </div>
-            </CardContent>
-          </Card>
-
-          {a.attachments?.length > 0 && (
-            <Card>
-              <CardContent className="p-6">
-                <AttachmentViewer
-                  attachments={a.attachments.map((att) => ({
-                    id: att.id,
-                    filename: att.filename,
-                    url: att.url,
-                    fileType: att.fileType as "image" | "video" | "document",
-                    format: att.filename.split(".").pop()?.toLowerCase(),
-                  }))}
-                  title="Lampiran"
-                  gridCols={3}
-                />
-              </CardContent>
-            </Card>
-          )}
-        </div>
-
-        {/* Sidebar (opsional perlu, sementara info singkat) */}
-        <div className="space-y-6">
-          <Card>
+        {/* Informasi - mobile first, desktop right */}
+        <div className="lg:order-2">
+          <Card className="h-full">
             <CardHeader>
               <CardTitle>Informasi</CardTitle>
             </CardHeader>
@@ -200,7 +169,42 @@ export default function AnnouncementDetailPage() {
             </CardContent>
           </Card>
         </div>
+
+        {/* Isi Pengumuman - mobile second, desktop left */}
+        <div className="lg:col-span-2 lg:order-1">
+          <Card className="h-full">
+            <CardHeader>
+              <CardTitle>Isi Pengumuman</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="prose prose-sm max-w-none whitespace-pre-wrap break-words text-gray-700 dark:text-gray-300">
+                {a.content}
+              </div>
+            </CardContent>
+          </Card>
+        </div>
       </div>
+
+      {/* Lampiran */}
+      {a.attachments?.length > 0 && (
+        <Card>
+          <CardContent className="p-6">
+            <AttachmentViewer
+              attachments={a.attachments.map((att) => ({
+                id: att.id,
+                filename: att.filename,
+                url: att.url,
+                fileType: att.fileType as "image" | "video" | "document",
+                format: att.filename.split(".").pop()?.toLowerCase(),
+              }))}
+              title="Lampiran"
+              gridCols={3}
+            />
+          </CardContent>
+        </Card>
+      )}
     </div>
   );
 }
+
+

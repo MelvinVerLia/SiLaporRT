@@ -431,7 +431,7 @@ const RegisterForm: React.FC = () => {
             </form>
 
             {/* Google Register Button */}
-            <div className="mt-3 pt-3 border-t border-gray-200">
+            <div className="mt-3 pt-3 border-t border-gray-200dark:border-gray-700">
               <Button
                 type="button"
                 variant="outline"

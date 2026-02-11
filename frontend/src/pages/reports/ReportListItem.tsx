@@ -93,7 +93,7 @@ const ReportListItem = ({ r }: { r: Report }) => {
               </div>
 
               <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-1 text-xs sm:text-sm text-gray-500 dark:text-gray-300">
-                <span className="flex items-center">
+                <span className="flex items-center min-w-0 max-w-[60%] sm:max-w-[70%]">
                   <User className="mr-1 h-3.5 w-3.5 sm:h-4 sm:w-4 flex-shrink-0" />
                   <span className="truncate">
                     {r.isAnonymous
@@ -103,13 +103,13 @@ const ReportListItem = ({ r }: { r: Report }) => {
                         : r.user?.name}
                   </span>
                 </span>
-                <span className="flex items-center">
+                <span className="flex items-center flex-shrink-0">
                   <Clock className="mr-1 h-3.5 w-3.5 sm:h-4 sm:w-4 flex-shrink-0" />
                   <span className="whitespace-nowrap">
                     {formatDistanceToNow(new Date(r.createdAt), {
                       addSuffix: true,
                       locale: id,
-                    })}
+                    }).replace(/^sekitar /i, "")}
                   </span>
                 </span>
               </div>

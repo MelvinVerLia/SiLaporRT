@@ -1,160 +1,144 @@
 import React from "react";
 import { Card, CardContent, CardHeader } from "../../../components/ui/Card";
+import { Skeleton } from "../../../components/ui/Skeleton";
 
 const ReportDetailSkeleton: React.FC = () => {
   return (
-    <div className="space-y-6 animate-pulse">
-      {/* Breadcrumb Skeleton */}
+    <div className="space-y-6">
+      {/* Breadcrumb */}
       <div className="flex items-center space-x-2">
-        <div className="h-4 w-16 bg-gray-200 rounded"></div>
-        <div className="h-4 w-2 bg-gray-200 rounded"></div>
-        <div className="h-4 w-32 bg-gray-200 rounded"></div>
+        <Skeleton className="h-4 w-16" />
+        <Skeleton className="h-4 w-2" />
+        <Skeleton className="h-4 w-32" />
       </div>
 
-      {/* Report Header Skeleton */}
+      {/* Header */}
       <Card>
         <CardHeader>
-          <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-4">
-            <div className="flex-1">
-              {/* Badges */}
-              <div className="flex flex-wrap gap-2 mb-3">
-                <div className="h-6 w-20 bg-gray-200 rounded-full"></div>
-                <div className="h-6 w-16 bg-gray-200 rounded-full"></div>
-                <div className="h-6 w-14 bg-gray-200 rounded-full"></div>
-              </div>
-
-              {/* Title */}
-              <div className="space-y-2 mb-4">
-                <div className="h-8 w-3/4 bg-gray-200 rounded"></div>
-                <div className="h-8 w-1/2 bg-gray-200 rounded"></div>
-              </div>
-
-              {/* Meta info */}
-              <div className="flex flex-col sm:flex-row sm:items-center gap-4">
-                <div className="flex items-center gap-2">
-                  <div className="h-4 w-4 bg-gray-200 rounded"></div>
-                  <div className="h-4 w-24 bg-gray-200 rounded"></div>
-                </div>
-                <div className="flex items-center gap-2">
-                  <div className="h-4 w-4 bg-gray-200 rounded"></div>
-                  <div className="h-4 w-32 bg-gray-200 rounded"></div>
-                </div>
-                <div className="flex items-center gap-2">
-                  <div className="h-4 w-4 bg-gray-200 rounded"></div>
-                  <div className="h-4 w-40 bg-gray-200 rounded"></div>
-                </div>
-              </div>
-            </div>
-
-            {/* Action Buttons */}
-            <div className="flex items-center gap-2">
-              <div className="h-8 w-16 bg-gray-200 rounded"></div>
-              <div className="h-8 w-20 bg-gray-200 rounded"></div>
-            </div>
+          <div className="space-y-2">
+            <Skeleton className="h-8 w-3/4" />
+            <Skeleton className="h-8 w-1/2" />
           </div>
         </CardHeader>
+        <CardContent className="pt-0 space-y-4">
+          <Skeleton className="h-64 sm:h-80 lg:h-96 rounded-lg" />
+          <div className="flex flex-wrap items-center gap-4">
+            <div className="flex items-center gap-2">
+              <Skeleton className="h-4 w-4" />
+              <Skeleton className="h-4 w-24" />
+            </div>
+            <Skeleton className="h-8 w-16" />
+          </div>
+        </CardContent>
       </Card>
 
-      {/* Content Grid */}
+      {/* Deskripsi + Info Laporan */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Main Content */}
-        <div className="lg:col-span-2 space-y-6">
-          {/* Description Card */}
-          <Card>
+        <div className="lg:order-2">
+          <Card className="h-full">
             <CardHeader>
-              <div className="h-6 w-32 bg-gray-200 rounded"></div>
+              <Skeleton className="h-6 w-24" />
+            </CardHeader>
+            <CardContent className="space-y-4">
+              {Array.from({ length: 4 }).map((_, index) => (
+                <div key={index}>
+                  <Skeleton className="h-4 w-16 mb-1" />
+                  <Skeleton className="h-6 w-24 rounded-full" />
+                </div>
+              ))}
+            </CardContent>
+          </Card>
+        </div>
+
+        <div className="lg:col-span-2 lg:order-1">
+          <Card className="h-full">
+            <CardHeader>
+              <Skeleton className="h-6 w-32" />
             </CardHeader>
             <CardContent>
               <div className="space-y-3">
-                <div className="h-4 w-full bg-gray-200 rounded"></div>
-                <div className="h-4 w-full bg-gray-200 rounded"></div>
-                <div className="h-4 w-3/4 bg-gray-200 rounded"></div>
-                <div className="h-4 w-full bg-gray-200 rounded"></div>
-                <div className="h-4 w-2/3 bg-gray-200 rounded"></div>
+                <Skeleton className="h-4 w-full" />
+                <Skeleton className="h-4 w-full" />
+                <Skeleton className="h-4 w-3/4" />
+                <Skeleton className="h-4 w-full" />
+                <Skeleton className="h-4 w-2/3" />
               </div>
             </CardContent>
           </Card>
+        </div>
+      </div>
 
-          {/* Attachments Card */}
+      {/* Lampiran */}
+      <Card>
+        <CardContent className="p-6">
+          <Skeleton className="h-6 w-20 mb-4" />
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            <Skeleton className="aspect-video rounded-lg" />
+            <Skeleton className="aspect-video rounded-lg" />
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Kontrol Admin + Komentar */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="lg:order-2">
           <Card>
             <CardHeader>
-              <div className="h-6 w-20 bg-gray-200 rounded"></div>
+              <Skeleton className="h-6 w-28" />
             </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div className="aspect-video bg-gray-200 rounded-lg"></div>
-                <div className="aspect-video bg-gray-200 rounded-lg"></div>
+            <CardContent className="space-y-4">
+              <div>
+                <Skeleton className="h-4 w-20 mb-2" />
+                <Skeleton className="h-10 w-full" />
               </div>
-            </CardContent>
-          </Card>
-
-          {/* Comments Card */}
-          <Card>
-            <CardHeader>
-              <div className="h-6 w-36 bg-gray-200 rounded"></div>
-            </CardHeader>
-            <CardContent>
-              {/* Comment Form */}
-              <div className="mb-6">
-                <div className="flex items-start space-x-3">
-                  <div className="w-8 h-8 bg-gray-200 rounded-full"></div>
-                  <div className="flex-1 space-y-2">
-                    <div className="h-20 bg-gray-200 rounded"></div>
-                    <div className="flex justify-end">
-                      <div className="h-8 w-16 bg-gray-200 rounded"></div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              {/* Comments List */}
-              <div className="space-y-4">
-                {Array.from({ length: 3 }).map((_, index) => (
-                  <div key={index} className="flex items-start space-x-3">
-                    <div className="w-8 h-8 bg-gray-200 rounded-full"></div>
-                    <div className="flex-1 space-y-2">
-                      <div className="flex items-center space-x-2">
-                        <div className="h-4 w-24 bg-gray-200 rounded"></div>
-                        <div className="h-4 w-16 bg-gray-200 rounded-full"></div>
-                        <div className="h-4 w-20 bg-gray-200 rounded"></div>
-                      </div>
-                      <div className="space-y-1">
-                        <div className="h-4 w-full bg-gray-200 rounded"></div>
-                        <div className="h-4 w-3/4 bg-gray-200 rounded"></div>
-                      </div>
-                    </div>
-                  </div>
-                ))}
+              <div>
+                <Skeleton className="h-4 w-28 mb-2" />
+                <Skeleton className="h-20 w-full" />
+                <Skeleton className="h-8 w-full mt-2" />
               </div>
             </CardContent>
           </Card>
         </div>
 
-        {/* Sidebar */}
-        <div className="space-y-6">
-          {/* Report Info Card */}
+        <div className="lg:col-span-2 lg:order-1">
           <Card>
             <CardHeader>
-              <div className="h-6 w-24 bg-gray-200 rounded"></div>
+              <div className="flex items-center gap-2">
+                <Skeleton className="h-6 w-6" />
+                <Skeleton className="h-6 w-36" />
+              </div>
             </CardHeader>
-            <CardContent className="space-y-4">
-              {Array.from({ length: 5 }).map((_, index) => (
-                <div key={index}>
-                  <div className="h-4 w-16 bg-gray-200 rounded mb-1"></div>
-                  <div className="h-4 w-32 bg-gray-200 rounded"></div>
+            <CardContent>
+              <div className="mb-6">
+                <div className="flex items-start space-x-3">
+                  <Skeleton className="w-8 h-8 rounded-full" />
+                  <div className="flex-1 space-y-2">
+                    <Skeleton className="h-20" />
+                    <div className="flex justify-end">
+                      <Skeleton className="h-8 w-16" />
+                    </div>
+                  </div>
                 </div>
-              ))}
-            </CardContent>
-          </Card>
+              </div>
 
-          {/* Quick Actions Card */}
-          <Card>
-            <CardHeader>
-              <div className="h-6 w-20 bg-gray-200 rounded"></div>
-            </CardHeader>
-            <CardContent className="space-y-2">
-              <div className="h-8 w-full bg-gray-200 rounded"></div>
-              <div className="h-8 w-full bg-gray-200 rounded"></div>
+              <div className="space-y-4">
+                {Array.from({ length: 3 }).map((_, index) => (
+                  <div key={index} className="flex items-start space-x-3">
+                    <Skeleton className="w-8 h-8 rounded-full" />
+                    <div className="flex-1 space-y-2">
+                      <div className="flex items-center space-x-2">
+                        <Skeleton className="h-4 w-24" />
+                        <Skeleton className="h-4 w-16 rounded-full" />
+                        <Skeleton className="h-4 w-20" />
+                      </div>
+                      <div className="space-y-1">
+                        <Skeleton className="h-4 w-full" />
+                        <Skeleton className="h-4 w-3/4" />
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
             </CardContent>
           </Card>
         </div>
