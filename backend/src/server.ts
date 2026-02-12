@@ -1,15 +1,24 @@
-import app from "./app";
 import dotenv from "dotenv";
+import { createServer } from "http";
+import { Server } from "socket.io";
+import app from "./app";
+import { RegisterSocket } from "./utils/RegisterSocket";
 
 dotenv.config();
 
-const PORT = process.env.PORT || 5001;
+const PORT = process.env.PORT || 3001;
 
-app.listen(PORT, () => {
-  console.log(`Server running on http://localhost:${PORT}`);
+const httpServer = createServer(app);
+
+const io = new Server(httpServer, {
+  cors: {
+    origin: process.env.FRONTEND_URL_PROD || process.env.FRONTEND_URL,
+    credentials: true,
+  },
 });
 
-// setInterval(() => {
-//   const mem = process.memoryUsage();
-//   console.log(`Heap Used: ${(mem.heapUsed / 1024 / 1024).toFixed(2)} MB`);
-// }, 5000); // every 5 seconds
+RegisterSocket(io);
+
+httpServer.listen(PORT, () => {
+  console.log(`Server running on port ${PORT}`);
+});
