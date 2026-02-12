@@ -5,7 +5,8 @@ export class AnnouncementController {
   // === PUBLIC ===
   static async list(req: Request, res: Response) {
     try {
-      const data = await AnnouncementService.list(req.query as any);
+      const user = req.user as { id: string; rtId?: string };
+      const data = await AnnouncementService.list(req.query as any, user?.rtId);
       return res.status(200).json({ success: true, message: "OK", data });
     } catch (error) {
       return res.status(500).json({
@@ -41,7 +42,8 @@ export class AnnouncementController {
   // === ADMIN ===
   static async adminList(req: Request, res: Response) {
     try {
-      const data = await AnnouncementService.listAdmin(req.query as any);
+      const user = req.user as { id: string; rtId?: string };
+      const data = await AnnouncementService.listAdmin(req.query as any, user?.rtId);
       return res.status(200).json({ success: true, message: "OK", data });
     } catch (error) {
       return res.status(500).json({

@@ -88,6 +88,7 @@ class ReportRepository {
     sortBy,
     upvoteDateFrom,
     upvoteDateTo,
+    rtId,
   }: any) {
     try {
       const where: any = userId ? {} : { ...visibleWhere(includePrivate) };
@@ -96,6 +97,13 @@ class ReportRepository {
         where.isPublic = true;
       } else if (isPublic === "false" || isPublic === false) {
         where.isPublic = false;
+      }
+
+      // Filter by RT ID if provided
+      if (rtId) {
+        where.user = {
+          rtId: rtId,
+        };
       }
 
       if (q && q.trim()) {
