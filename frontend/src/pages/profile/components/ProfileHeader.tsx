@@ -107,7 +107,7 @@ const ProfileHeader: React.FC<ProfileHeaderProps> = ({
         className="h-32 relative transition-colors duration-500"
         style={{ backgroundColor: coverColor }}
       >
-        <div className="absolute inset-0 bg-gradient-to-br from-black/5 to-black/20"></div>
+        <div className="absolute inset-0 bg-gradient-to-br from-black/5 to-black/20 dark:from-black/10 dark:to-black/30"></div>
       </div>
 
       {/* Profile Content */}
@@ -130,7 +130,9 @@ const ProfileHeader: React.FC<ProfileHeaderProps> = ({
           {/* User Info */}
           <div className="flex-1 text-center sm:text-left">
             <div className="flex flex-col sm:flex-row sm:items-center gap-3 mb-2">
-              <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100">{user.name}</h2>
+              <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100 truncate max-w-[200px] md:max-w-[400px] lg:max-w-[600px] mx-auto sm:mx-0">
+                {user.name}
+              </h2>
               <Badge
                 variant={roleBadge.variant}
                 className="flex items-center w-fit mx-auto sm:mx-0"
@@ -140,8 +142,8 @@ const ProfileHeader: React.FC<ProfileHeaderProps> = ({
               </Badge>
             </div>
 
-            <div className="flex items-center gap-2 justify-center sm:justify-start text-sm text-gray-600 dark:text-gray-300">
-              <Calendar className="h-4 w-4" />
+            <div className="flex items-center gap-2 justify-center sm:justify-start text-sm text-gray-600 dark:text-gray-400">
+              <Calendar className="h-4 w-4 text-gray-500 dark:text-gray-400" />
               <span>Bergabung {formatJoinDate(user.createdAt!)}</span>
             </div>
           </div>

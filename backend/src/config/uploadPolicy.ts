@@ -1,27 +1,18 @@
-// Simple, explicit allowlist per konteks:
+// Upload policy per context
 export const UPLOAD_POLICY = {
   profile: {
-    // hanya gambar, kecil
     maxBytes: 5 * 1024 * 1024, // 5 MB
     resourceTypes: ["image"] as const,
-    formats: ["jpg", "jpeg", "png", "webp", "gif"],
+    formats: ["jpg", "jpeg", "png"],
   },
-  report: {
-    // fleksibel: image/video/pdf/raw
+  reports: {
     maxBytes: 50 * 1024 * 1024, // 50 MB
-    resourceTypes: ["image", "video", "raw"] as const,
+    resourceTypes: ["image", "video", "raw"] as const, // "video" = Cloudinary resource type for mp3
     formats: [
-      // image
       "jpg",
       "jpeg",
       "png",
-      "webp",
-      "gif",
-      // video (umum)
-      "mp4",
-      "mov",
-      "webm",
-      // dokumen
+      "mp3",
       "pdf",
       "doc",
       "docx",
@@ -29,25 +20,16 @@ export const UPLOAD_POLICY = {
       "xlsx",
       "ppt",
       "pptx",
-      "txt",
     ],
   },
-  announcement: {
-    // diseragamkan dengan report untuk mendukung lebih banyak file types
+  announcements: {
     maxBytes: 10 * 1024 * 1024, // 10 MB
-    resourceTypes: ["image", "video", "raw"] as const,
+    resourceTypes: ["image", "video", "raw"] as const, // "video" = Cloudinary resource type for mp3
     formats: [
-      // image
       "jpg",
       "jpeg",
       "png",
-      "webp",
-      "gif",
-      // video (umum)
-      "mp4",
-      "mov",
-      "webm",
-      // dokumen
+      "mp3",
       "pdf",
       "doc",
       "docx",
@@ -55,7 +37,6 @@ export const UPLOAD_POLICY = {
       "xlsx",
       "ppt",
       "pptx",
-      "txt",
     ],
   },
 } as const;
@@ -64,7 +45,7 @@ export type UploadContext = keyof typeof UPLOAD_POLICY;
 
 export function validateUpload(
   context: UploadContext,
-  params: { resourceType?: string; format?: string; bytes?: number }
+  params: { resourceType?: string; format?: string; bytes?: number },
 ) {
   const policy = UPLOAD_POLICY[context];
   const rtype = (params.resourceType || "").toLowerCase();
@@ -80,8 +61,8 @@ export function validateUpload(
   if (size > policy.maxBytes) {
     throw new Error(
       `Ukuran file melebihi batas ${Math.floor(
-        policy.maxBytes / 1024 / 1024
-      )}MB untuk ${context}`
+        policy.maxBytes / 1024 / 1024,
+      )}MB untuk ${context}`,
     );
   }
 }

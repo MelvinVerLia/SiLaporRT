@@ -37,7 +37,7 @@ const ProfilePictureUpload = React.forwardRef<ProfilePictureUploadRef, Props>(
       onFileSelected,
       isUploading = false,
     },
-    ref
+    ref,
   ) => {
     const inputRef = useRef<HTMLInputElement | null>(null);
     const [previewFile, setPreviewFile] = useState<File | null>(null);
@@ -63,11 +63,6 @@ const ProfilePictureUpload = React.forwardRef<ProfilePictureUploadRef, Props>(
         setPreviewUrl(null);
       },
     }));
-
-    useEffect(() => {
-      console.log(currentUrl);
-      // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, []);
 
     useEffect(() => {
       if (!editable) {
@@ -121,7 +116,7 @@ const ProfilePictureUpload = React.forwardRef<ProfilePictureUploadRef, Props>(
             <input
               ref={inputRef}
               type="file"
-              accept="image/*"
+              accept=".jpg,.jpeg,.png"
               className="hidden"
               disabled={isUploading}
               onChange={(e) => {
@@ -146,7 +141,7 @@ const ProfilePictureUpload = React.forwardRef<ProfilePictureUploadRef, Props>(
         </div>
       </div>
     );
-  }
+  },
 );
 
 export default ProfilePictureUpload;

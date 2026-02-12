@@ -232,7 +232,7 @@ const Header: React.FC = () => {
                     className={cn(
                       "flex items-center space-x-2 rounded-md px-3 py-2 text-sm font-medium transition-all duration-200",
                       isActive
-                        ? "bg-primary-50 text-primary-700 dark:bg-gray-700 dark:text-gray-100"
+                        ? "bg-primary-50 text-primary-700 dark:bg-gray-700 dark:text-orange-300"
                         : "text-gray-600 dark:text-gray-300 hover:bg-primary-50 hover:text-primary-700 dark:hover:bg-gray-700 dark:hover:text-gray-100"
                     )}
                   >
@@ -254,7 +254,6 @@ const Header: React.FC = () => {
 
             {isAuthenticated && (
               <>
-                {/* Chat Button */}
                 <button
                   onClick={() => navigate("/chat")}
                   className="relative p-2 text-gray-400 dark:text-gray-300 hover:text-gray-600 dark:hover:text-gray-100 transition-colors hover:cursor-pointer"
@@ -263,7 +262,6 @@ const Header: React.FC = () => {
                   <MessageCircle className="h-5 w-5" />
                 </button>
 
-                {/* Notification Button */}
                 <div
                   className="relative"
                   onClick={toggleNotification}
@@ -283,72 +281,77 @@ const Header: React.FC = () => {
                       </span>
                     )}
                   </button>
-                <AnimatePresence>
-                  {isNotifOpen && (
-                    <motion.div
-                      initial={{ opacity: 0, y: -10 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0, y: -10 }}
-                      transition={{ duration: 0.15 }}
-                      className="absolute left-0 mt-3 w-96 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-xl shadow-xs  z-50"
-                    >
-                      <div className="p-3 border-b border-gray-100 dark:border-gray-700 font-semibold text-gray-700 dark:text-gray-200 flex items-center justify-between">
-                        <div>
-                          <span className="mr-2">Notifications</span>
-                        </div>
-                        {unreadNotificationsCount > 0 && (
-                          <div
-                            className="flex gap-1 hover:cursor-pointer text-primary-600 hover:text-primary-700"
-                            onClick={() => markAllAsRead.mutate()}
-                          >
-                            <EyeIcon className=" w-5 h-5" />
-                            <div className="text-[13px]">Mark all as read</div>
+                  <AnimatePresence>
+                    {isNotifOpen && (
+                      <motion.div
+                        initial={{ opacity: 0, y: -10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -10 }}
+                        transition={{ duration: 0.15 }}
+                        className="absolute left-0 mt-3 w-96 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-xl shadow-xs  z-50"
+                      >
+                        <div className="p-3 border-b border-gray-100 dark:border-gray-700 font-semibold text-gray-700 dark:text-gray-200 flex items-center justify-between">
+                          <div>
+                            <span className="mr-2">Notifications</span>
                           </div>
-                        )}
-                      </div>
-
-                      <div className="max-h-64 overflow-y-auto divide-y divide-gray-100 dark:divide-gray-700">
-                        {recentNotifications.length > 0 ? (
-                          recentNotifications.map((n: Notification) => (
+                          {unreadNotificationsCount > 0 && (
                             <div
-                              key={n.id}
-                              className="p-3 hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer transition-colors flex items-center"
-                              onClick={() => handleNotificationClick(n)}
+                              className="flex gap-1 hover:cursor-pointer text-primary-600 hover:text-primary-700"
+                              onClick={() => markAllAsRead.mutate()}
                             >
-                              <div className="mr-2">
-                                {renderCategoryIcon(n.category)}
-                              </div>
-                              <div>
-                                <p className="text-sm text-gray-800 dark:text-gray-200 font-medium">
-                                  {n.title}
-                                </p>
-                                <p className="text-xs text-gray-500 dark:text-gray-400">
-                                  {formatDistanceToNow(new Date(n.createdAt), {
-                                    addSuffix: true,
-                                    locale: id,
-                                  })}
-                                </p>
+                              <EyeIcon className=" w-5 h-5" />
+                              <div className="text-[13px]">
+                                Mark all as read
                               </div>
                             </div>
-                          ))
-                        ) : (
-                          <div className="p-4 text-center text-sm text-gray-500 dark:text-gray-400">
-                            No recent notifications
-                          </div>
-                        )}
-                      </div>
+                          )}
+                        </div>
 
-                      <button
-                        className="flex items-center justify-center gap-1 text-xs text-primary-600 dark:text-primary-400 hover:text-primary-700 dark:hover:text-primary-300 py-2 w-full border-t border-gray-200 dark:border-gray-700 transition-colors hover:cursor-pointer"
-                        onClick={() => setNotificationSidebar(true)}
-                      >
-                        <ChevronDown className="w-4 h-4" />
-                        Lihat Semua
-                      </button>
-                    </motion.div>
-                  )}
-                </AnimatePresence>
-              </div>
+                        <div className="max-h-64 overflow-y-auto divide-y divide-gray-100 dark:divide-gray-700">
+                          {recentNotifications.length > 0 ? (
+                            recentNotifications.map((n: Notification) => (
+                              <div
+                                key={n.id}
+                                className="p-3 hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer transition-colors flex items-center"
+                                onClick={() => handleNotificationClick(n)}
+                              >
+                                <div className="mr-2">
+                                  {renderCategoryIcon(n.category)}
+                                </div>
+                                <div>
+                                  <p className="text-sm text-gray-800 dark:text-gray-200 font-medium">
+                                    {n.title}
+                                  </p>
+                                  <p className="text-xs text-gray-500 dark:text-gray-400">
+                                    {formatDistanceToNow(
+                                      new Date(n.createdAt),
+                                      {
+                                        addSuffix: true,
+                                        locale: id,
+                                      }
+                                    )}
+                                  </p>
+                                </div>
+                              </div>
+                            ))
+                          ) : (
+                            <div className="p-4 text-center text-sm text-gray-500 dark:text-gray-400">
+                              No recent notifications
+                            </div>
+                          )}
+                        </div>
+
+                        <button
+                          className="flex items-center justify-center gap-1 text-xs text-primary-600 dark:text-primary-400 hover:text-primary-700 dark:hover:text-primary-300 py-2 w-full border-t border-gray-200 dark:border-gray-700 transition-colors hover:cursor-pointer"
+                          onClick={() => setNotificationSidebar(true)}
+                        >
+                          <ChevronDown className="w-4 h-4" />
+                          Lihat Semua
+                        </button>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </div>
               </>
             )}
 

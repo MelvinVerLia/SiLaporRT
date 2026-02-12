@@ -18,23 +18,29 @@ import {
 import Button from "../../components/ui/Button";
 import Input from "../../components/ui/Input";
 import Textarea from "../../components/ui/Textarea";
-import LocationPicker from "../../components/features/maps/LocationPicker";
+import LocationPicker from "./components/LocationPicker";
 import CloudinaryUpload from "../../components/upload/CloudinaryUpload";
-import ReportPreview from "../../components/features/reports/ReportPreview";
+import ReportPreview from "./components/ReportPreview";
 import { useCreateReport } from "../../hooks/useCreateReport";
-import { CreateReportFormData, Location } from "../../types/report.types";
+import {
+  CreateReportFormData,
+  Location,
+  ReportCategory,
+} from "../../types/report.types";
 import { CloudinaryFile } from "../../types/announcement.types";
+import { classifyFile } from "../../utils/classifyFile";
 import { useToast } from "../../hooks/useToast";
+import Dropdown from "../../components/ui/Dropdown";
+import { generateReportCategory } from "../../services/reportService";
 
-// Extended CloudinaryFile untuk keperluan form data
 interface ExtendedCloudinaryFile extends CloudinaryFile {
-  fileType?: "image" | "video" | "document";
+  fileType?: "image" | "video" | "audio" | "document";
 }
 
-// Form validation errors interface
 interface FormErrors {
   title?: string;
   description?: string;
+  category?: string;
   location?: string;
   address?: string;
   rt?: string;
@@ -43,7 +49,6 @@ interface FormErrors {
   kecamatan?: string;
 }
 
-// Location form data interface
 interface LocationFormData {
   address: string;
   rt: string;
@@ -54,9 +59,24 @@ interface LocationFormData {
   longitude: number;
 }
 
+interface CategoryDropdownOption {
+  label: string;
+  value: string;
+}
+
+type CategoryDropdownChangeEvent = {
+  target: CategoryDropdownOption;
+};
+
 const CreateReportPage: React.FC = () => {
   const createReportMutation = useCreateReport();
   const toast = useToast();
+  const [category, setCategory] = useState<CategoryDropdownOption>({
+    label: "Pilih Kategori",
+    value: "",
+  });
+  const [categoryDropdown, setCategoryDropdown] = useState(false);
+
   const [currentStep, setCurrentStep] = useState(1);
   const [errors, setErrors] = useState<FormErrors>({});
   const [isUploading, setIsUploading] = useState(false);
@@ -65,13 +85,13 @@ const CreateReportPage: React.FC = () => {
   const [formData, setFormData] = useState<CreateReportFormData>({
     title: "",
     description: "",
+    category: null,
     isAnonymous: false,
     isPublic: true,
     location: null,
     attachments: [] as ExtendedCloudinaryFile[],
   });
 
-  // Separate location form state
   const [locationForm, setLocationForm] = useState<LocationFormData>({
     address: "",
     rt: "",
@@ -81,6 +101,65 @@ const CreateReportPage: React.FC = () => {
     latitude: 0,
     longitude: 0,
   });
+
+  const categories = [
+    {
+      label: "Infrastruktur",
+      value: "INFRASTRUCTURE",
+    },
+    {
+      label: "Kebersihan",
+      value: "CLEANLINESS",
+    },
+    {
+      label: "Penerangan",
+      value: "LIGHTING",
+    },
+    {
+      label: "Kejahatan",
+      value: "SECURITY",
+    },
+    {
+      label: "Lingkungan",
+      value: "ENVIRONMENT",
+    },
+    {
+      label: "Utilitas",
+      value: "UTILITIES",
+    },
+    {
+      label: "Sugesti",
+      value: "SUGGESTION",
+    },
+    {
+      label: "Lainnya",
+      value: "OTHER",
+    },
+  ];
+
+  const handleChangeCategory = (e: CategoryDropdownChangeEvent) => {
+    setCategory(e.target);
+    setFormData((prev) => ({
+      ...prev,
+      category: (e.target.value as ReportCategory) || null,
+    }));
+
+    if (errors.category) {
+      setErrors((prev) => ({ ...prev, category: undefined }));
+    }
+  };
+
+  const generateCategory = async (
+    data: CreateReportFormData,
+  ): Promise<ReportCategory | null> => {
+    const category = await generateReportCategory(data);
+    if (category === null) {
+      return null;
+    }
+    const generated = (category.data as ReportCategory) ?? null;
+    setFormData((prev) => ({ ...prev, category: generated }));
+    return generated;
+  };
 
   const steps = [
     {
@@ -109,17 +188,41 @@ const CreateReportPage: React.FC = () => {
     },
   ];
 
-  const validateStep = (step: number): boolean => {
+  const validateFirstStep = async (newErrors: FormErrors) => {
+    if (!formData.title.trim()) {
+      newErrors.title = "Judul laporan wajib diisi";
+    }
+    if (!formData.description.trim()) {
+      newErrors.description = "Deskripsi laporan wajib diisi";
+    }
+
+    // If manual category dropdown is already shown, do NOT try generating again.
+    if (categoryDropdown) {
+      if (!formData.category) {
+        newErrors.category = "Kategori laporan wajib diisi";
+      }
+      return;
+    }
+
+    // If category already exists (generated or previously set), no need to generate.
+    if (formData.category) return;
+
+    // Only attempt generation if required fields are valid.
+    if (newErrors.title || newErrors.description) return;
+
+    const generatedCategory = await generateCategory(formData);
+    if (!generatedCategory) {
+      setCategoryDropdown(true);
+      newErrors.category = "Kategori laporan wajib diisi";
+    }
+  };
+
+  const validateStep = async (step: number): Promise<boolean> => {
     const newErrors: FormErrors = {};
 
     switch (step) {
       case 1:
-        if (!formData.title.trim()) {
-          newErrors.title = "Judul laporan wajib diisi";
-        }
-        if (!formData.description.trim()) {
-          newErrors.description = "Deskripsi laporan wajib diisi";
-        }
+        await validateFirstStep(newErrors);
         break;
 
       case 2:
@@ -148,8 +251,8 @@ const CreateReportPage: React.FC = () => {
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleNext = () => {
-    if (validateStep(currentStep)) {
+  const handleNext = async () => {
+    if (await validateStep(currentStep)) {
       setCurrentStep((prev) => Math.min(prev + 1, steps.length));
     }
   };
@@ -159,10 +262,8 @@ const CreateReportPage: React.FC = () => {
   };
 
   const handleSubmit = async () => {
-    if (!validateStep(currentStep)) return;
-
+    if (!(await validateStep(currentStep))) return;
     try {
-      // Create the final form data with location
       const submitData: CreateReportFormData = {
         ...formData,
         location: {
@@ -178,7 +279,6 @@ const CreateReportPage: React.FC = () => {
 
       await createReportMutation.mutateAsync(submitData);
       toast.success("Laporan berhasil dibuat!", "Sukses");
-      // Navigation handled by the hook on success
     } catch (error: unknown) {
       const errorMessage =
         error instanceof Error
@@ -189,14 +289,12 @@ const CreateReportPage: React.FC = () => {
     }
   };
 
-  // Location form handlers
   const handleLocationFormChange = (
     field: keyof LocationFormData,
-    value: string | number
+    value: string | number,
   ) => {
     setLocationForm((prev) => ({ ...prev, [field]: value }));
 
-    // Clear related errors
     if (errors[field as keyof FormErrors]) {
       setErrors((prev) => ({ ...prev, [field]: undefined }));
     }
@@ -204,7 +302,6 @@ const CreateReportPage: React.FC = () => {
 
   const handleLocationSelect = (location: Location | null) => {
     setFormData((prev) => ({ ...prev, location }));
-    // Clear location error when location is selected
     if (errors.location) {
       setErrors((prev) => ({ ...prev, location: undefined }));
     }
@@ -212,13 +309,11 @@ const CreateReportPage: React.FC = () => {
 
   const handleCoordinatesChange = (lat: number, lng: number) => {
     setLocationForm((prev) => ({ ...prev, latitude: lat, longitude: lng }));
-    // Clear location error when coordinates are set
     if (errors.location) {
       setErrors((prev) => ({ ...prev, location: undefined }));
     }
   };
 
-  // Fungsi untuk mengklasifikasi file type seperti di announcement
   function classifyFile(f: CloudinaryFile): "image" | "video" | "document" {
     const fmt = (f.format || "").toLowerCase();
     const docFormats = [
@@ -236,16 +331,15 @@ const CreateReportPage: React.FC = () => {
     if (f.resource_type === "raw") return "document";
     if (f.resource_type === "image") return "image";
     if (f.resource_type === "video") return "video";
-    return "document"; // fallback teraman
+    return "document";
   }
 
-  // Handler untuk file upload
   function onUploaded(files: CloudinaryFile[]) {
     const mapped: ExtendedCloudinaryFile[] = files.map((f) => {
       const fileType = classifyFile(f);
       return {
-        ...f, // spread all CloudinaryFile properties
-        fileType, // add the fileType classification
+        ...f,
+        fileType,
       };
     });
     setFormData((prev) => ({
@@ -258,7 +352,7 @@ const CreateReportPage: React.FC = () => {
     setFormData((prev) => ({
       ...prev,
       attachments: prev.attachments.filter(
-        (file) => file.public_id !== identifier
+        (file) => file.public_id !== identifier,
       ),
     }));
   };
@@ -304,6 +398,18 @@ const CreateReportPage: React.FC = () => {
               error={errors.description}
               rows={4}
             />
+
+            {categoryDropdown && (
+              <Dropdown
+                label="Kategori Laporan"
+                name="kategori"
+                options={categories}
+                value={category.value}
+                onChange={handleChangeCategory}
+                error={errors.category}
+                placeholder="Pilih Kategori"
+              />
+            )}
           </div>
         );
 
@@ -313,7 +419,6 @@ const CreateReportPage: React.FC = () => {
             selectedLocation={formData.location}
             onLocationSelect={handleLocationSelect}
             error={errors.location}
-            // Location form props
             address={locationForm.address}
             rt={locationForm.rt}
             rw={locationForm.rw}
@@ -321,7 +426,6 @@ const CreateReportPage: React.FC = () => {
             kecamatan={locationForm.kecamatan}
             latitude={locationForm.latitude}
             longitude={locationForm.longitude}
-            // Form handlers
             onAddressChange={(address) =>
               handleLocationFormChange("address", address)
             }
@@ -334,7 +438,6 @@ const CreateReportPage: React.FC = () => {
               handleLocationFormChange("kecamatan", kecamatan)
             }
             onCoordinatesChange={handleCoordinatesChange}
-            // Error props
             addressError={errors.address}
             rtError={errors.rt}
             rwError={errors.rw}
@@ -351,21 +454,21 @@ const CreateReportPage: React.FC = () => {
                 Lampiran (Opsional)
               </h3>
               <p className="text-sm text-gray-600 dark:text-gray-300">
-                Tambahkan foto, video, atau dokumen sebagai bukti laporan Anda
+                Tambahkan foto, audio, atau dokumen sebagai bukti laporan Anda
               </p>
             </div>
 
             <CloudinaryUpload
               folder="reports"
               multiple={true}
-              accept="image/*,video/*,.pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt"
+              accept=".jpg,.jpeg,.png,.mp3,.pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx"
               maxFiles={5}
               attachments={formData.attachments.map((file) => ({
                 filename: file.original_filename || "file",
                 url: file.secure_url,
                 fileType:
                   (file as ExtendedCloudinaryFile).fileType ||
-                  classifyFile(file), // Use already classified or classify
+                  classifyFile(file),
                 provider: "cloudinary" as const,
                 publicId: file.public_id,
                 resourceType: file.resource_type,
@@ -393,7 +496,6 @@ const CreateReportPage: React.FC = () => {
               </p>
             </div>
 
-            {/* Pengaturan Privasi */}
             <div className="space-y-4">
               <div className="pb-3 border-b border-gray-200">
                 <h4 className="text-base font-medium text-gray-900 dark:text-gray-100 mb-1">
@@ -404,7 +506,6 @@ const CreateReportPage: React.FC = () => {
                 </p>
               </div>
 
-              {/* Anonymous Option */}
               <div className="flex items-start justify-between py-3 border-b border-gray-200">
                 <div className="flex-1 pr-3">
                   <label
@@ -434,7 +535,6 @@ const CreateReportPage: React.FC = () => {
                 </div>
               </div>
 
-              {/* Public Option */}
               <div className="flex items-start justify-between py-3 border-b border-gray-200">
                 <div className="flex-1 pr-3">
                   <label
@@ -475,15 +575,15 @@ const CreateReportPage: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      {/* Header */}
       <div>
-        <h1 className="text-3xl font-bold text-primary-600">Buat Laporan</h1>
-        <p className="text-gray-600 dark:text-gray-300 mt-1">
+        <h1 className="text-3xl font-bold text-primary-600 dark:text-primary-400">
+          Buat Laporan
+        </h1>
+        <p className="text-gray-600 dark:text-gray-400 mt-1">
           Laporkan masalah di lingkungan RT Anda
         </p>
       </div>
 
-      {/* Progress Steps */}
       <div className="flex items-center justify-between">
         {steps.map((step, index) => {
           const Icon = step.icon;
@@ -498,8 +598,8 @@ const CreateReportPage: React.FC = () => {
                     isCompleted
                       ? "bg-green-600 border-green-600 text-white"
                       : isActive
-                      ? "bg-primary-600 border-primary-600 text-white"
-                      : "bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600 text-gray-400 dark:text-gray-500"
+                        ? "bg-primary-600 border-primary-600 text-white"
+                        : "bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600 text-gray-400 dark:text-gray-500"
                   }`}
                 >
                   {isCompleted ? (
@@ -512,10 +612,10 @@ const CreateReportPage: React.FC = () => {
                   <p
                     className={`text-sm font-medium ${
                       isActive
-                        ? "text-primary-600"
+                        ? "text-primary-600 dark:text-primary-400"
                         : isCompleted
-                        ? "text-green-600"
-                        : "text-gray-500 dark:text-gray-400"
+                          ? "text-green-600 dark:text-green-400"
+                          : "text-gray-500 dark:text-gray-400"
                     }`}
                   >
                     {step.title}
@@ -538,11 +638,8 @@ const CreateReportPage: React.FC = () => {
         })}
       </div>
 
-      {/* Main Grid Layout: Form + Preview */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-        {/* LEFT COLUMN: Form Section */}
         <div className="lg:col-span-7 xl:col-span-8 space-y-6">
-          {/* Mobile Preview Button - Only visible on small screens */}
           <Button
             variant="outline"
             onClick={() => setIsPreviewModalOpen(true)}
@@ -552,10 +649,8 @@ const CreateReportPage: React.FC = () => {
             Lihat Preview
           </Button>
 
-          {/* Form Content */}
           <Card>
             <CardContent className="p-6">
-              {/* Mutation Error Display */}
               {createReportMutation.isError && (
                 <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg">
                   <p className="text-red-800 text-sm">
@@ -570,7 +665,6 @@ const CreateReportPage: React.FC = () => {
             </CardContent>
           </Card>
 
-          {/* Navigation Buttons */}
           <div className="flex justify-between">
             <Button
               variant="outline"
@@ -608,7 +702,6 @@ const CreateReportPage: React.FC = () => {
           </div>
         </div>
 
-        {/* RIGHT COLUMN: Live Preview Section */}
         <div className="lg:col-span-5 xl:col-span-4 hidden lg:block">
           <Card>
             <CardHeader>
@@ -632,16 +725,13 @@ const CreateReportPage: React.FC = () => {
         </div>
       </div>
 
-      {/* Mobile Preview Modal */}
       {isPreviewModalOpen && (
         <div className="fixed inset-0 z-50 lg:hidden">
-          {/* Overlay */}
           <div
             className="fixed inset-0 bg-black/50"
             onClick={() => setIsPreviewModalOpen(false)}
           />
 
-          {/* Modal Content */}
           <div className="fixed inset-x-0 bottom-0 z-50 bg-white dark:bg-gray-800 rounded-t-2xl shadow-xl max-h-[90vh] overflow-y-auto animate-slide-up">
             <div className="sticky z-10 top-0 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 p-4 flex items-center justify-between">
               <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 flex items-center gap-2">

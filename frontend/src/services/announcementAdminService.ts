@@ -18,7 +18,7 @@ export type UpsertAnnouncementPayload = {
   attachments?: Array<{
     filename: string;
     url: string;
-    fileType: "image" | "video" | "document";
+    fileType: "image" | "video" | "audio" | "document";
     provider?: "cloudinary";
     publicId?: string;
     resourceType?: string;
@@ -64,7 +64,7 @@ export async function createAnnouncement(payload: UpsertAnnouncementPayload) {
 
 export async function updateAnnouncement(
   id: string,
-  payload: UpsertAnnouncementPayload
+  payload: UpsertAnnouncementPayload,
 ) {
   const res = await request(`/announcements/${id}`, {
     method: "PATCH",

@@ -23,7 +23,7 @@ export class UploadService {
       process.env.CLOUDINARY_FOLDER_BASE || "silaporrt/dev"
     }/${params.folder}`;
 
-    // Parameter yang ikut ditandatangani
+    // Params to sign
     const toSign: Record<string, any> = {
       folder: fullFolder,
       timestamp,
@@ -31,7 +31,7 @@ export class UploadService {
 
     const signature = cloudinary.utils.api_sign_request(
       toSign,
-      process.env.CLOUDINARY_API_SECRET!
+      process.env.CLOUDINARY_API_SECRET!,
     );
 
     return {
@@ -46,10 +46,15 @@ export class UploadService {
     };
   }
 
-  // derive fileType untuk skema lama: image | video | document
+  // Map Cloudinary resource_type to app fileType: image | video | audio | document
   static normalizeFileType(resourceType?: string, format?: string) {
     if (resourceType === "image") return "image";
-    if (resourceType === "video") return "video";
+    // Cloudinary uses "video" for both video and audio
+    if (resourceType === "video") {
+      const audioFormats = ["mp3"];
+      if (format && audioFormats.includes(format.toLowerCase())) return "audio";
+      return "video";
+    }
     // pdf/word/excel ke "document"
     if (resourceType === "raw") return "document";
     return "document";

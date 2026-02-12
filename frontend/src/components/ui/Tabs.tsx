@@ -46,7 +46,12 @@ const TabsList: React.FC<{ children: React.ReactNode; className?: string }> = ({
   className,
 }) => {
   return (
-    <div className={cn("flex gap-6 border-b border-gray-200", className)}>
+    <div
+      className={cn(
+        "flex gap-6 border-b border-gray-200 dark:border-gray-700",
+        className,
+      )}
+    >
       {children}
     </div>
   );
@@ -67,8 +72,8 @@ const TabsTrigger: React.FC<{ value: string; children: React.ReactNode }> = ({
       className={cn(
         "pb-4 px-1 border-b-2 font-medium text-sm transition-colors cursor-pointer",
         active
-          ? "border-primary-500 text-primary-600"
-          : "border-transparent text-gray-600 hover:text-gray-900"
+          ? "border-primary-500 dark:border-primary-400 text-primary-600 dark:text-primary-400"
+          : "border-transparent text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100",
       )}
     >
       {children}

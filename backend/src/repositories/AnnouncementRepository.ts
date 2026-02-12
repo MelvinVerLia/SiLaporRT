@@ -9,6 +9,7 @@ type ListParams = {
   pinnedFirst?: boolean;
   dateFrom?: string;
   dateTo?: string;
+  rtId?: string;
 };
 
 const visibleWhere = () => {
@@ -41,11 +42,20 @@ export class AnnouncementRepository {
     type,
     priority,
     pinnedFirst,
+    rtId,
   }: ListParams) {
     // Auto-deactivate expired announcements before fetching
     await this.autoDeactivateExpired();
 
     const where: any = { ...visibleWhere() };
+    
+    // Filter by RT ID if provided
+    if (rtId) {
+      where.author = {
+        rtId: rtId,
+      };
+    }
+    
     if (q && q.trim()) {
       where.OR = [
         ...(where.OR || []),
@@ -117,6 +127,7 @@ export class AnnouncementRepository {
     dateFrom,
     dateTo,
     sortBy,
+    rtId,
   }: ListParams & { includeInactive?: boolean; showInactiveOnly?: boolean; sortBy?: string }) {
     // Auto-deactivate expired announcements before fetching (admin juga perlu melihat status yang akurat)
     await this.autoDeactivateExpired();
@@ -130,6 +141,13 @@ export class AnnouncementRepository {
       where.isActive = true;
     }
     // Jika includeInactive = true dan showInactiveOnly = false, tampilkan semua
+
+    // Filter by RT ID if provided
+    if (rtId) {
+      where.author = {
+        rtId: rtId,
+      };
+    }
 
     if (q && q.trim()) {
       where.OR = [

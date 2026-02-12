@@ -54,9 +54,7 @@ const LoginForm: React.FC = () => {
           </Link>
         </div>
 
-        {/* Main content: Form kanan, ilustrasi kiri */}
         <CardContent className="flex flex-col md:flex-row gap-8 p-8 pt-16 md:pt-8">
-          {/* Ilustrasi - Kolom kiri */}
           <div className="hidden md:flex md:w-1/2 items-center justify-center rounded-lg p-4 mt-12">
             <img
               src="/assets/login.webp"
@@ -65,15 +63,12 @@ const LoginForm: React.FC = () => {
             />
           </div>
 
-          {/* Form - Kolom kanan */}
           <div className="md:w-1/2 flex flex-col justify-center md:mt-12">
-            {/* Title dan Subtitle - Di atas form */}
             <div className="mb-6">
               <CardTitle className="text-3xl font-bold text-gray-900 dark:text-gray-100 mb-2">
                 Selamat Datang
               </CardTitle>
 
-              {/* Link Register - Di bawah title, sebelum form */}
               <p className="text-sm text-gray-600 dark:text-gray-300">
                 Belum punya akun?{" "}
                 <Link
@@ -129,7 +124,6 @@ const LoginForm: React.FC = () => {
                 </button>
               </div>
 
-              {/* Remember Me & Forgot Password */}
               <div className="flex items-center justify-between">
                 <label className="flex items-center space-x-2 cursor-pointer">
                   <input
@@ -172,8 +166,7 @@ const LoginForm: React.FC = () => {
               </Button>
             </form>
 
-            {/* Google Login Button */}
-            <div className="mt-3 pt-3 border-t border-gray-200">
+            <div className="mt-3 pt-3 border-t border-gray-200 dark:border-gray-700">
               <Button
                 type="button"
                 variant="outline"
@@ -209,7 +202,6 @@ const LoginForm: React.FC = () => {
         </CardContent>
       </Card>
 
-      {/* Footer */}
       <div className="mt-8 text-center px-4">
         <p className="text-xs text-gray-500 dark:text-gray-400">
           Dengan masuk, Anda menyetujui{" "}

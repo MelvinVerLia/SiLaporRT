@@ -1,7 +1,6 @@
 import React, { useState, useRef } from "react";
 import { useParams, Link, useLocation } from "react-router-dom";
 import {
-  Clock,
   User,
   ThumbsUp,
   MessageCircle,
@@ -9,6 +8,8 @@ import {
   AlertCircle,
   RefreshCw,
 } from "lucide-react";
+import { formatDistanceToNow } from "date-fns";
+import { id as idLocale } from "date-fns/locale";
 import {
   Card,
   CardContent,
@@ -31,12 +32,7 @@ import {
   addOfficialResponse,
 } from "../../services/reportAdminService";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import {
-  Attachment,
-  Response,
-  ReportComment,
-  Report,
-} from "../../types/report.types";
+import { Attachment, Response, ReportComment } from "../../types/report.types";
 import ReportDetailSkeleton from "./components/ReportDetailSkeleton";
 import { useAuthContext } from "../../contexts/AuthContext";
 import { Role } from "../../types/auth.types";
@@ -124,96 +120,44 @@ const ReportDetailPage: React.FC = () => {
     });
   };
 
+  const formatRelativeTime = (dateString: string) => {
+    return formatDistanceToNow(new Date(dateString), {
+      addSuffix: true,
+      locale: idLocale,
+    }).replace(/^sekitar /i, "");
+  };
+
   const handleMapClick = () => {
     window.open(
       `https://www.google.com/maps?q=${report.location.latitude},${report.location.longitude}`,
-      "_blank"
+      "_blank",
     );
   };
 
   const handleUpvote = useMutation({
-    mutationKey: ["upvote", id], // Unique key to prevent duplicate mutations
+    mutationKey: ["upvote", id],
     mutationFn: () => toggleUpvote(report!.id),
-    onMutate: async () => {
-      // Cancel outgoing refetches to prevent overwriting optimistic updates
-      await queryClient.cancelQueries({ queryKey: ["report", id] });
-      await queryClient.cancelQueries({ queryKey: ["upvote-status", id] });
-
-      // Snapshot the previous values for rollback
-      const previousReport = queryClient.getQueryData(["report", id]);
-      const previousUpvoteStatus = queryClient.getQueryData([
-        "upvote-status",
-        id,
-      ]);
-
-      // Get CURRENT upvote status from fresh query data (not stale upvoteStatus variable)
-      const currentUpvoteData = queryClient.getQueryData([
-        "upvote-status",
-        id,
-      ]) as { data: { result: boolean } } | undefined;
-      const currentHasUpvoted = currentUpvoteData?.data?.result || false;
-
-      // Optimistically update the upvote status and count
-      queryClient.setQueryData(["upvote-status", id], () => ({
-        data: { result: !currentHasUpvoted },
-      }));
-
-      queryClient.setQueryData(["report", id], (old: unknown) => {
-        if (!old || typeof old !== "object") return old;
-        const reportData = old as Report;
-        return {
-          ...reportData,
-          upvoteCount: currentHasUpvoted
-            ? reportData.upvoteCount - 1
-            : reportData.upvoteCount + 1,
-        };
-      });
-
-      return { previousReport, previousUpvoteStatus };
-    },
-    onError: (_err, _variables, context) => {
-      // Rollback on error (but not for cooldown errors)
-      if (context?.previousReport) {
-        queryClient.setQueryData(["report", id], context.previousReport);
-      }
-      if (context?.previousUpvoteStatus) {
-        queryClient.setQueryData(
-          ["upvote-status", id],
-          context.previousUpvoteStatus
-        );
-      }
-    },
     onSuccess: () => {
-      // Sync with other queries immediately
+      // Refetch data from server
+      queryClient.invalidateQueries({ queryKey: ["report", id] });
+      queryClient.invalidateQueries({ queryKey: ["upvote-status", id] });
       queryClient.invalidateQueries({ queryKey: ["reports"] });
       queryClient.invalidateQueries({ queryKey: ["recent-reports"] });
     },
-    onSettled: () => {
-      // Ensure data is fresh for next operations
-      queryClient.invalidateQueries({
-        queryKey: ["report", id],
-        refetchType: "none",
-      });
-      queryClient.invalidateQueries({
-        queryKey: ["upvote-status", id],
-        refetchType: "none",
-      });
+    onError: (error) => {
+      console.error("Error toggling upvote:", error);
     },
   });
 
-  // Helper function untuk handle upvote dengan cooldown check
   const handleUpvoteClick = () => {
     const now = Date.now();
 
-    // Check cooldown
     if (now - lastUpvoteTime.current < UPVOTE_COOLDOWN) {
-      // Silently ignore rapid clicks - no error thrown to user
       return;
     }
 
-    // Only proceed if not currently pending another upvote request
     if (!handleUpvote.isPending) {
-      lastUpvoteTime.current = now; // Update timestamp on successful call
+      lastUpvoteTime.current = now;
       handleUpvote.mutate();
     }
   };
@@ -223,11 +167,9 @@ const ReportDetailPage: React.FC = () => {
   //   // In real app, call API to toggle upvote
   // };
 
-  // Comment submission mutation
   const addCommentMutation = useMutation({
     mutationFn: (content: string) => addComment(report!.id, content),
     onSuccess: () => {
-      // Invalidate all report-related queries to keep data in sync across all pages
       queryClient.invalidateQueries({ queryKey: ["report"] });
       queryClient.invalidateQueries({ queryKey: ["reports"] });
       queryClient.invalidateQueries({ queryKey: ["recent-reports"] });
@@ -238,7 +180,6 @@ const ReportDetailPage: React.FC = () => {
     },
   });
 
-  // Admin mutations
   const updateStatusMutation = useMutation({
     mutationFn: ({ status, message }: { status: string; message?: string }) =>
       updateReportStatus(report!.id, status, message),
@@ -275,9 +216,7 @@ const ReportDetailPage: React.FC = () => {
     if (status === selectedStatus) return;
     setSelectedStatus(status);
 
-    // For certain status changes, we might want to require a message
     if (status === "REJECTED") {
-      // For now, just update without message - could add modal for message later
       updateStatusMutation.mutate({ status });
     } else {
       updateStatusMutation.mutate({ status });
@@ -295,11 +234,11 @@ const ReportDetailPage: React.FC = () => {
     return (
       <Card>
         <CardContent className="p-12 text-center">
-          <AlertCircle className="mx-auto h-12 w-12 text-red-500 mb-4" />
-          <h3 className="text-lg font-semibold text-gray-900 mb-2">
+          <AlertCircle className="mx-auto h-12 w-12 text-red-500 dark:text-red-400 mb-4" />
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-2">
             {!report ? "Laporan Tidak Ditemukan" : "Gagal Memuat Laporan"}
           </h3>
-          <p className="text-gray-600 dark:text-gray-300 mb-6">
+          <p className="text-gray-500 dark:text-gray-400 mb-6">
             {!report
               ? "Laporan yang Anda cari tidak ditemukan atau mungkin sudah dihapus."
               : "Terjadi kesalahan saat memuat detail laporan. Silakan coba lagi."}
@@ -325,119 +264,147 @@ const ReportDetailPage: React.FC = () => {
   }
   const statusInfo = getStatusBadge(report.status);
 
-  // Dynamic breadcrumb based on where user came from
+  // Dynamic breadcrumb
   const breadcrumbItems = isFromAdmin
     ? [
         { label: "Kelola Laporan", href: "/admin/reports" },
         { label: report.title },
       ]
     : isFromMyReports
-    ? [{ label: "Laporan Saya", href: "/my-reports" }, { label: report.title }]
-    : [{ label: "Laporan", href: "/reports" }, { label: report.title }];
+      ? [
+          { label: "Laporan Saya", href: "/my-reports" },
+          { label: report.title },
+        ]
+      : [{ label: "Laporan", href: "/reports" }, { label: report.title }];
 
   return (
     <div className="space-y-6">
-      {/* Breadcrumb */}
       <Breadcrumb items={breadcrumbItems} />
 
-      {/* Report Header */}
+      {/* Report Header*/}
       <Card>
         <CardHeader>
-          <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-4">
-            <div className="flex-1 min-w-0">
-              {/* <div className="flex flex-wrap gap-2 mb-3">
-                <Badge variant="default">
-                  {getCategoryLabel(report.category)}
-                </Badge>
-                <Badge variant={statusInfo.variant}>{statusInfo.label}</Badge>
-                {report.isAnonymous && <Badge variant="default">Anonim</Badge>}
-                {!report.isPublic && (
-                  <Badge variant="default">
-                    <EyeOff className="mr-1 h-3 w-3" />
-                    Privat
-                  </Badge>
-                )}
-              </div> */}
-
-              <CardTitle className="text-2xl text-gray-900 mb-5 whitespace-pre-wrap break-words">
-                {report.title}
-              </CardTitle>
-
-              <div className="rounded-md overflow-hidden border border-gray-200 h-96 mb-5">
-                <LoadScript
-                  googleMapsApiKey={import.meta.env.VITE_API_GOOGLE_MAP}
-                  libraries={libraries}
-                >
-                  <GoogleMap
-                    zoom={15}
-                    center={{
-                      lat: report.location.latitude,
-                      lng: report.location.longitude,
-                    }}
-                    onClick={handleMapClick}
-                    mapContainerClassName="w-full h-full"
-                  >
-                    <Marker
-                      position={{
-                        lat: report.location.latitude,
-                        lng: report.location.longitude,
-                      }}
-                    />
-                  </GoogleMap>
-                </LoadScript>
-              </div>
-              <div className="flex flex-col sm:flex-row sm:items-center gap-4 text-sm text-gray-600 dark:text-gray-300">
-                {isAuthenticated && (
-                  <div className="flex items-center">
-                    <Button
-                      variant={hasUpvoted ? "primary" : "outline"}
-                      size="sm"
-                      onClick={handleUpvoteClick}
-                      className={`flex items-center transition-all duration-200 ${
-                        hasUpvoted
-                          ? "bg-primary-600 text-white hover:bg-primary-700"
-                          : ""
-                      } ${
-                        handleUpvote.isPending
-                          ? "scale-95 opacity-75"
-                          : "hover:scale-105"
-                      }`}
-                    >
-                      <ThumbsUp
-                        className={`mr-1 h-4 w-4 transition-all duration-200 ${
-                          hasUpvoted ? "fill-current" : ""
-                        } ${handleUpvote.isPending ? "animate-pulse" : ""}`}
-                      />
-                      {report.upvoteCount}
-                    </Button>
-                  </div>
-                )}
-                <div className="flex items-center">
-                  <User className="mr-1 h-4 w-4" />
-                  <span>
-                    {report.isAnonymous
-                      ? "Anonim"
-                      : report.user?.isDeleted
-                      ? "Pengguna Terhapus"
-                      : report.user?.name}
-                  </span>
-                </div>
-                <div className="flex items-center">
-                  <Clock className="mr-1 h-4 w-4" />
-                  <span>{formatDateTime(report.createdAt)}</span>
-                </div>
-              </div>
-            </div>
-          </div>
+          {/* Title */}
+          <CardTitle className="text-2xl text-gray-900 dark:text-gray-100 whitespace-pre-wrap break-words">
+            {report.title}
+          </CardTitle>
         </CardHeader>
+        <CardContent className="pt-0 space-y-4">
+          {/* Map */}
+          <div className="rounded-lg overflow-hidden h-64 sm:h-80 lg:h-96">
+            <LoadScript
+              googleMapsApiKey={import.meta.env.VITE_API_GOOGLE_MAP}
+              libraries={libraries}
+            >
+              <GoogleMap
+                zoom={15}
+                center={{
+                  lat: report.location.latitude,
+                  lng: report.location.longitude,
+                }}
+                onClick={handleMapClick}
+                mapContainerClassName="w-full h-full cursor-pointer"
+              >
+                <Marker
+                  position={{
+                    lat: report.location.latitude,
+                    lng: report.location.longitude,
+                  }}
+                />
+              </GoogleMap>
+            </LoadScript>
+          </div>
+
+          {/* Meta Info */}
+          <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-sm text-gray-500 dark:text-gray-400">
+            <div className="flex items-center min-w-0">
+              <User className="mr-1.5 h-4 w-4 flex-shrink-0" />
+              <span className="truncate max-w-[150px] sm:max-w-[200px]">
+                {report.isAnonymous
+                  ? "Anonim"
+                  : report.user?.isDeleted
+                    ? "Pengguna Terhapus"
+                    : report.user?.name}
+              </span>
+            </div>
+            {isAuthenticated && (
+              <Button
+                variant={hasUpvoted ? "primary" : "outline"}
+                size="sm"
+                onClick={handleUpvoteClick}
+                disabled={handleUpvote.isPending}
+                className={
+                  hasUpvoted
+                    ? "bg-primary-600 text-white hover:bg-primary-700"
+                    : ""
+                }
+              >
+                <ThumbsUp
+                  className={`mr-1 h-4 w-4 ${hasUpvoted ? "fill-current" : ""}`}
+                />
+                {report.upvoteCount}
+              </Button>
+            )}
+          </div>
+        </CardContent>
       </Card>
 
-      {/* Report Content */}
+      {/* Deskripsi + Info Laporan */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Main Content */}
-        <div className="lg:col-span-2 space-y-6">
-          {/* Description */}
-          <Card>
+        {/* Info Laporan */}
+        <div className="lg:order-2">
+          <Card className="h-full">
+            <CardHeader>
+              <CardTitle>Info Laporan</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div>
+                <label className="text-sm font-medium text-gray-500 dark:text-gray-400">
+                  Status
+                </label>
+                <div className="mt-1">
+                  <Badge variant={statusInfo.variant}>{statusInfo.label}</Badge>
+                </div>
+              </div>
+
+              <div>
+                <label className="text-sm font-medium text-gray-500 dark:text-gray-400">
+                  Kategori
+                </label>
+                <div className="mt-1">
+                  <Badge variant="default">
+                    {getCategoryLabel(report.category)}
+                  </Badge>
+                </div>
+              </div>
+
+              <div>
+                <label className="text-sm font-medium text-gray-500 dark:text-gray-400">
+                  Lokasi
+                </label>
+                <p className="mt-1 text-sm text-gray-900 dark:text-gray-100">
+                  {report.location.address}
+                </p>
+                <p className="text-xs text-gray-500 dark:text-gray-400">
+                  RT {report.location.rt} RW {report.location.rw}
+                </p>
+              </div>
+
+              <div>
+                <label className="text-sm font-medium text-gray-500 dark:text-gray-400">
+                  Dilaporkan
+                </label>
+                <p className="mt-1 text-sm text-gray-900 dark:text-gray-100">
+                  {formatDateTime(report.createdAt)}
+                </p>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Deskripsi Laporan */}
+        <div className="lg:col-span-2 lg:order-1">
+          <Card className="h-full">
             <CardHeader>
               <CardTitle>Deskripsi Laporan</CardTitle>
             </CardHeader>
@@ -448,7 +415,7 @@ const ReportDetailPage: React.FC = () => {
                   .map((paragraph: string, index: number) => (
                     <p
                       key={index}
-                      className="mb-4 text-gray-700 leading-relaxed"
+                      className="mb-4 last:mb-0 text-gray-600 dark:text-gray-300 leading-relaxed"
                     >
                       {paragraph}
                     </p>
@@ -456,273 +423,88 @@ const ReportDetailPage: React.FC = () => {
               </div>
             </CardContent>
           </Card>
+        </div>
+      </div>
 
-          {/* Attachments */}
-          {report.attachments.length > 0 && (
-            <Card>
-              <CardContent className="p-6">
-                <AttachmentViewer
-                  attachments={report.attachments.map(
-                    (attachment: Attachment) => ({
-                      id: attachment.id,
-                      filename: attachment.filename,
-                      url: attachment.url,
-                      fileType: attachment.fileType as
-                        | "image"
-                        | "video"
-                        | "document",
-                      format: attachment.filename
-                        .split(".")
-                        .pop()
-                        ?.toLowerCase(),
-                    })
-                  )}
-                  title="Lampiran"
-                  gridCols={3}
-                />
-              </CardContent>
-            </Card>
-          )}
+      {/* Lampiran */}
+      {report.attachments.length > 0 && (
+        <Card>
+          <CardContent className="p-6">
+            <AttachmentViewer
+              attachments={report.attachments.map((attachment: Attachment) => ({
+                id: attachment.id,
+                filename: attachment.filename,
+                url: attachment.url,
+                fileType: attachment.fileType as
+                  | "image"
+                  | "video"
+                  | "audio"
+                  | "document",
+                format: attachment.filename.split(".").pop()?.toLowerCase(),
+              }))}
+              title="Lampiran"
+              gridCols={3}
+            />
+          </CardContent>
+        </Card>
+      )}
 
-          {/* Official Responses */}
-          {report.responseCount > 0 && (
-            <Card>
-              <CardHeader>
-                <CardTitle>Tanggapan Resmi RT</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  {report.responses.map((response: Response) => (
-                    <div
-                      key={response.id}
-                      className="bg-primary-50 border border-primary-100 rounded-lg p-4"
-                    >
-                      <div className="flex items-start justify-between mb-2">
-                        <div className="flex items-center">
-                          <div className="flex-shrink-0 w-8 h-8 rounded-full overflow-hidden flex items-center justify-center text-sm font-medium mr-3">
-                            {response.responder.profile ? (
-                              <img
-                                src={response.responder.profile}
-                                alt={response.responder.name
-                                  .charAt(0)
-                                  .toUpperCase()}
-                              />
-                            ) : (
-                              response.responder.name.charAt(0).toUpperCase()
-                            )}
-                          </div>
-                          <div>
-                            <p className="font-medium text-gray-900">
-                              {response.responder.name}
-                            </p>
-                            <p className="text-sm text-gray-600 dark:text-gray-300">Admin RT</p>
-                          </div>
-                        </div>
-                        <span className="text-sm text-gray-500 dark:text-gray-300">
-                          {formatDateTime(response.createdAt)}
-                        </span>
-                      </div>
-                      <p className="text-gray-700 ml-11">{response.message}</p>
-                    </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
-          )}
-
-          {/* Comments Section */}
-          <Card>
-            <CardHeader>
-              <div className="flex items-center gap-2">
-                <div className="flex items-center gap-2">
-                  <MessageCircle className="mx-1 h-7 w-7" />
-                  <CardTitle>Diskusi & Komentar</CardTitle>
-                </div>
-                <div className="flex items-center text-xl font-bold">
-                  <span>{report.commentCount}</span>
-                </div>
-              </div>
-            </CardHeader>
-            <CardContent>
-              {/* Comment Form */}
-              {isAuthenticated ? (
-                <div className="mb-6">
-                  <div className="flex items-start space-x-3">
-                    <div className="flex-shrink-0">
-                      <div className="w-8 h-8 bg-gray-200 rounded-full flex items-center overflow-hidden justify-center text-sm font-medium text-gray-600">
-                        {user!.profile ? (
-                          <img src={user!.profile} alt={user!.name.charAt(0)} />
-                        ) : (
-                          user!.name.charAt(0)
-                        )}
-                      </div>
-                    </div>
-                    <div className="flex-1">
-                      <Textarea
-                        placeholder="Tulis komentar Anda..."
-                        value={commentText}
-                        onChange={(e) => setCommentText(e.target.value)}
-                        limit={250}
-                        showCounter
-                        rows={3}
-                        onKeyDown={(e) => {
-                          if (e.key === "Enter" && !e.shiftKey) {
-                            e.preventDefault();
-                            handleSubmitComment();
-                          }
-                        }}
-                      />
-                      <div className="flex justify-end mt-2">
-                        <Button
-                          size="sm"
-                          onClick={handleSubmitComment}
-                          disabled={
-                            !commentText.trim() || addCommentMutation.isPending
-                          }
-                          loading={addCommentMutation.isPending}
-                        >
-                          <Send className="mr-1 h-4 w-4" />
-                          Kirim
-                        </Button>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              ) : (
-                <div className="mb-6 p-4 bg-gray-50 rounded-lg text-center">
-                  <p className="text-gray-600 mb-2">
-                    Silakan masuk untuk bergabung dalam diskusi
-                  </p>
-                  <Link to="/login">
-                    <Button size="sm">Masuk</Button>
-                  </Link>
-                </div>
-              )}
-
-              {/* Comments List */}
-              <div className="space-y-4">
-                {report.reportComments.map((comment: ReportComment) => (
-                  <div key={comment.id} className="flex items-start space-x-3">
-                    <div className="flex-shrink-0">
-                      <div
-                        className={`w-8 h-8 rounded-full overflow-hidden flex items-center justify-center text-sm font-medium ${
-                          comment.user.role === "RT_ADMIN"
-                            ? "bg-primary-600 text-white"
-                            : "bg-gray-200 text-gray-600"
-                        }`}
-                      >
-                        {comment.user.isDeleted ? (
-                          <Badge />
-                        ) : comment.user.profile ? (
+      {/* Tanggapan Resmi RT */}
+      {report.responseCount > 0 && (
+        <Card>
+          <CardHeader>
+            <CardTitle>Tanggapan Resmi RT</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              {report.responses.map((response: Response) => (
+                <div
+                  key={response.id}
+                  className="bg-primary-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg p-4"
+                >
+                  <div className="flex items-start justify-between mb-2">
+                    <div className="flex items-center">
+                      <div className="flex-shrink-0 w-8 h-8 rounded-full overflow-hidden flex items-center justify-center text-sm font-medium mr-3 bg-gray-200 dark:bg-gray-600 text-gray-600 dark:text-gray-300">
+                        {response.responder.profile ? (
                           <img
-                            src={comment.user.profile}
-                            alt={comment.user.name.charAt(0).toUpperCase()}
+                            src={response.responder.profile}
+                            alt={response.responder.name
+                              .charAt(0)
+                              .toUpperCase()}
+                            className="w-full h-full object-cover"
                           />
                         ) : (
-                          comment.user.name.charAt(0).toUpperCase()
+                          response.responder.name.charAt(0).toUpperCase()
                         )}
                       </div>
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center space-x-2 mb-1">
-                        <span className="font-medium text-gray-900">
-                          {comment.user.isDeleted
-                            ? "Pengguna Terhapus"
-                            : comment.user.name}
-                        </span>
-                        {comment.user.role === "RT_ADMIN" && (
-                          <Badge variant="info" size="sm">
-                            Admin RT
-                          </Badge>
-                        )}
-                        {comment.user.id === report.user.id &&
-                          !report.isAnonymous && (
-                            <Badge variant="success" size="sm">
-                              Penulis
-                            </Badge>
-                          )}
-                        <span className="text-sm text-gray-500 dark:text-gray-300">
-                          {formatDateTime(comment.createdAt)}
-                        </span>
+                      <div>
+                        <p className="font-medium text-gray-900 dark:text-gray-100">
+                          {response.responder.name}
+                        </p>
+                        <p className="text-sm text-gray-500 dark:text-gray-400">
+                          Admin RT
+                        </p>
                       </div>
-                      <p className="text-gray-700 whitespace-pre-wrap break-words">
-                        {comment.content}
-                      </p>
                     </div>
+                    <span className="text-sm text-gray-500 dark:text-gray-400">
+                      {formatDateTime(response.createdAt)}
+                    </span>
                   </div>
-                ))}
-              </div>
-
-              {report.reportComments.length === 0 && (
-                <div className="text-center py-8">
-                  <MessageCircle className="mx-auto h-8 w-8 text-gray-400 dark:text-gray-300 mb-2" />
-                  <p className="text-gray-500 dark:text-gray-300">Belum ada komentar</p>
+                  <p className="text-gray-600 dark:text-gray-300 ml-11">
+                    {response.message}
+                  </p>
                 </div>
-              )}
-            </CardContent>
-          </Card>
-        </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
-        {/* Sidebar */}
-        <div className="space-y-6">
-          {/* Report Info */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Info Laporan</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div>
-                <label className="text-sm font-medium text-gray-600 dark:text-gray-200">
-                  Status
-                </label>
-                <div className="mt-1">
-                  <Badge variant={statusInfo.variant}>{statusInfo.label}</Badge>
-                </div>
-              </div>
-
-              <div>
-                <label className="text-sm font-medium text-gray-600 dark:text-gray-200">
-                  Kategori
-                </label>
-                <p className="mt-1 text-sm text-gray-900 dark:text-gray-100">
-                  {getCategoryLabel(report.category)}
-                </p>
-              </div>
-
-              <div>
-                <label className="text-sm font-medium text-gray-600 dark:text-gray-200">
-                  Lokasi
-                </label>
-                <p className="mt-1 text-sm text-gray-900 dark:text-gray-100">
-                  {report.location.address}
-                </p>
-                <p className="text-xs text-gray-500 dark:text-gray-300">
-                  RT {report.location.rt} RW {report.location.rw}
-                </p>
-              </div>
-
-              <div>
-                <label className="text-sm font-medium text-gray-600 dark:text-gray-200">
-                  Dilaporkan
-                </label>
-                <p className="mt-1 text-sm text-gray-900 dark:text-gray-100">
-                  {formatDateTime(report.createdAt)}
-                </p>
-              </div>
-
-              <div>
-                <label className="text-sm font-medium text-gray-600 dark:text-gray-200">
-                  Dukungan
-                </label>
-                <p className="mt-1 text-sm text-gray-900 dark:text-gray-100">
-                  {report.upvoteCount} warga
-                </p>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Admin Controls */}
-          {isAdmin && (
+      {/* Kontrol Admin + Diskusi & Komentar */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* Kontrol Admin */}
+        {isAdmin && (
+          <div className="lg:order-2">
             <Card>
               <CardHeader>
                 <CardTitle>Kontrol Admin</CardTitle>
@@ -730,13 +512,13 @@ const ReportDetailPage: React.FC = () => {
               <CardContent className="space-y-4">
                 {/* Status Update */}
                 <div>
-                  <label className="text-sm font-medium text-gray-600 dark:text-gray-200 mb-2 block">
+                  <label className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-2 block">
                     Ubah Status
                   </label>
                   <select
                     value={selectedStatus || report.status}
                     onChange={(e) => handleStatusChange(e.target.value)}
-                    className="w-full text-sm border border-gray-300 rounded px-3 py-2 focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                    className="w-full text-sm border border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100 rounded px-3 py-2 focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
                     disabled={updateStatusMutation.isPending}
                   >
                     <option value="PENDING">Menunggu</option>
@@ -749,7 +531,7 @@ const ReportDetailPage: React.FC = () => {
 
                 {/* Quick Response */}
                 <div>
-                  <label className="text-sm font-medium text-gray-600 dark:text-gray-200 mb-2 block">
+                  <label className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-2 block">
                     Tanggapan Resmi
                   </label>
                   <Textarea
@@ -788,7 +570,153 @@ const ReportDetailPage: React.FC = () => {
                 </div>
               </CardContent>
             </Card>
-          )}
+          </div>
+        )}
+
+        {/* Diskusi & Komentar */}
+        <div className="lg:col-span-2 lg:order-1">
+          <Card>
+            <CardHeader>
+              <div className="flex items-center gap-2">
+                <MessageCircle className="h-6 w-6 dark:text-white" />
+                <CardTitle>Diskusi & Komentar</CardTitle>
+                <span className="text-lg font-bold text-gray-500 dark:text-gray-400">
+                  {report.commentCount}
+                </span>
+              </div>
+            </CardHeader>
+            <CardContent>
+              {/* Comment Form */}
+              {isAuthenticated ? (
+                <div className="mb-6">
+                  <div className="flex items-start space-x-3">
+                    <div className="flex-shrink-0">
+                      <div className="w-8 h-8 bg-gray-200 dark:bg-gray-700 rounded-full flex items-center overflow-hidden justify-center text-sm font-medium text-gray-600 dark:text-gray-300">
+                        {user!.profile ? (
+                          <img
+                            src={user!.profile}
+                            alt={user!.name.charAt(0)}
+                            className="w-full h-full object-cover"
+                          />
+                        ) : (
+                          user!.name.charAt(0)
+                        )}
+                      </div>
+                    </div>
+                    <div className="flex-1">
+                      <Textarea
+                        placeholder="Tulis komentar Anda..."
+                        value={commentText}
+                        onChange={(e) => setCommentText(e.target.value)}
+                        limit={250}
+                        showCounter
+                        rows={3}
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter" && !e.shiftKey) {
+                            e.preventDefault();
+                            handleSubmitComment();
+                          }
+                        }}
+                      />
+                      <div className="flex justify-end mt-2">
+                        <Button
+                          size="sm"
+                          onClick={handleSubmitComment}
+                          disabled={
+                            !commentText.trim() || addCommentMutation.isPending
+                          }
+                          loading={addCommentMutation.isPending}
+                        >
+                          <Send className="mr-1 h-4 w-4" />
+                          Kirim
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              ) : (
+                <div className="mb-6 p-4 bg-gray-50 dark:bg-gray-800 rounded-lg text-center">
+                  <p className="text-gray-500 dark:text-gray-400 mb-2">
+                    Silakan masuk untuk bergabung dalam diskusi
+                  </p>
+                  <Link to="/login">
+                    <Button size="sm">Masuk</Button>
+                  </Link>
+                </div>
+              )}
+
+              {/* Comments List */}
+              <div className="space-y-4">
+                {report.reportComments.map((comment: ReportComment) => (
+                  <div key={comment.id} className="flex items-start space-x-3">
+                    <div className="flex-shrink-0">
+                      <div
+                        className={`w-8 h-8 rounded-full overflow-hidden flex items-center justify-center text-sm font-medium ${
+                          comment.user.role === "RT_ADMIN"
+                            ? "bg-primary-600 text-white"
+                            : "bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-300"
+                        }`}
+                      >
+                        {comment.user.isDeleted ? (
+                          <User className="h-4 w-4" />
+                        ) : comment.user.profile ? (
+                          <img
+                            src={comment.user.profile}
+                            alt={comment.user.name.charAt(0).toUpperCase()}
+                            className="w-full h-full object-cover"
+                          />
+                        ) : (
+                          comment.user.name.charAt(0).toUpperCase()
+                        )}
+                      </div>
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center flex-wrap gap-x-2 gap-y-1 mb-1">
+                        <span
+                          className="font-medium text-gray-900 dark:text-gray-100 truncate max-w-[150px] sm:max-w-[200px]"
+                          title={
+                            comment.user.isDeleted
+                              ? "Pengguna Terhapus"
+                              : comment.user.name
+                          }
+                        >
+                          {comment.user.isDeleted
+                            ? "Pengguna Terhapus"
+                            : comment.user.name}
+                        </span>
+                        {comment.user.role === "RT_ADMIN" && (
+                          <Badge variant="info" size="sm">
+                            Admin RT
+                          </Badge>
+                        )}
+                        {comment.user.id === report.user.id &&
+                          !report.isAnonymous && (
+                            <Badge variant="success" size="sm">
+                              Penulis
+                            </Badge>
+                          )}
+                        <span className="text-sm text-gray-500 dark:text-gray-400 whitespace-nowrap">
+                          {formatRelativeTime(comment.createdAt)}
+                        </span>
+                      </div>
+                      <p className="text-gray-600 dark:text-gray-300 whitespace-pre-wrap break-words">
+                        {comment.content}
+                      </p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              {report.reportComments.length === 0 && (
+                <div className="text-center py-8">
+                  <MessageCircle className="mx-auto h-8 w-8 text-gray-400 dark:text-gray-500 mb-2" />
+                  <p className="text-gray-500 dark:text-gray-400">
+                    Belum ada komentar
+                  </p>
+                </div>
+              )}
+            </CardContent>
+          </Card>
         </div>
       </div>
     </div>

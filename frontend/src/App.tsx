@@ -30,7 +30,6 @@ import ManageReportsPage from "./pages/reports/ManageReportsPage";
 import ChatPage from "./pages/chat/ChatPage";
 import NotFoundPage from "./pages/NotFoundPage";
 
-// Wrapper
 import PublicOnlyRoute from "./routes/PublicOnlyRoute";
 import ProtectedRoute from "./routes/ProtectedRoute";
 import { AuthProvider } from "./contexts/AuthContext";
@@ -55,7 +54,6 @@ function App() {
               <Router>
                 <div className="bg-gray-50 dark:bg-gray-900 min-h-screen">
                   <Routes>
-                    {/* Public-only routes (redirect ke "/" jika sudah login) */}
                     <Route
                       path="/login"
                       element={
@@ -188,7 +186,6 @@ function App() {
                       />
                     </Route>
 
-                    {/* Admin routes with AdminLayout */}
                     <Route
                       path="/admin"
                       element={
@@ -224,6 +221,7 @@ function App() {
                         path="announcements/edit/:id"
                         element={<EditAnnouncementPage />}
                       />
+                      <Route path="chat" element={<ChatPage />} />
                     </Route>
 
                     <Route path="*" element={<NotFoundPage />} />

@@ -24,6 +24,7 @@ import {
   UpsertAnnouncementPayload,
 } from "../../../services/announcementAdminService";
 import CloudinaryUpload from "../../../components/upload/CloudinaryUpload";
+import { classifyFile } from "../../../utils/classifyFile";
 import { useToast } from "../../../hooks/useToast";
 
 type Props = {
@@ -62,18 +63,18 @@ export default function AdminAnnouncementForm({ initial, onSuccess }: Props) {
   const [title, setTitle] = useState(initial?.title ?? "");
   const [content, setContent] = useState(initial?.content ?? "");
   const [type, setType] = useState<AnnouncementType>(
-    (initial?.type as AnnouncementType) ?? AnnouncementType.GENERAL
+    (initial?.type as AnnouncementType) ?? AnnouncementType.GENERAL,
   );
   const [priority, setPriority] = useState<Priority>(
-    (initial?.priority as Priority) ?? Priority.NORMAL
+    (initial?.priority as Priority) ?? Priority.NORMAL,
   );
   const [isPinned, setIsPinned] = useState<boolean>(initial?.isPinned ?? false);
   const [isActive, setIsActive] = useState<boolean>(initial?.isActive ?? true);
   const [publishAt, setPublishAt] = useState<string>(
-    toLocalInput(initial?.publishAt)
+    toLocalInput(initial?.publishAt),
   );
   const [expireAt, setExpireAt] = useState<string>(
-    toLocalInput(initial?.expireAt)
+    toLocalInput(initial?.expireAt),
   );
 
   // Extended type for form attachments (supports both DB and new uploads)
@@ -81,7 +82,7 @@ export default function AdminAnnouncementForm({ initial, onSuccess }: Props) {
     id?: string; // Database ID for existing attachments
     filename: string;
     url: string;
-    fileType: "image" | "video" | "document";
+    fileType: "image" | "video" | "audio" | "document";
     provider?: "cloudinary";
     publicId?: string;
     resourceType?: string;
@@ -117,12 +118,15 @@ export default function AdminAnnouncementForm({ initial, onSuccess }: Props) {
           // Convert database Attachment[] to form's expected format
           const convertedAttachments = (initial?.attachments ?? []).map(
             (att) => {
-              console.log("Converting attachment:", att);
               return {
                 id: att.id, // Keep database ID
                 filename: att.filename,
                 url: att.url,
-                fileType: att.fileType as "image" | "video" | "document",
+                fileType: att.fileType as
+                  | "image"
+                  | "video"
+                  | "audio"
+                  | "document",
                 provider: "cloudinary" as const,
                 publicId: att.id, // Still use ID as publicId for compatibility
                 resourceType: "",
@@ -131,9 +135,8 @@ export default function AdminAnnouncementForm({ initial, onSuccess }: Props) {
                 width: undefined,
                 height: undefined,
               };
-            }
+            },
           );
-          console.log("Converted attachments:", convertedAttachments);
           return convertedAttachments;
         }
         // Otherwise, keep current attachments to preserve user edits
@@ -189,7 +192,7 @@ export default function AdminAnnouncementForm({ initial, onSuccess }: Props) {
       publishAt,
       expireAt,
       attachments,
-    ]
+    ],
   );
 
   const mutCreate = useMutation({
@@ -251,33 +254,13 @@ export default function AdminAnnouncementForm({ initial, onSuccess }: Props) {
     setAttachments([]);
   };
 
-  function classifyFile(f: CloudinaryFile): "image" | "video" | "document" {
-    const fmt = (f.format || "").toLowerCase();
-    const docFormats = [
-      "pdf",
-      "doc",
-      "docx",
-      "xls",
-      "xlsx",
-      "ppt",
-      "pptx",
-      "txt",
-    ];
-
-    if (docFormats.includes(fmt)) return "document";
-    if (f.resource_type === "raw") return "document";
-    if (f.resource_type === "image") return "image";
-    if (f.resource_type === "video") return "video";
-    return "document"; // fallback teraman
-  }
-
   function onUploaded(files: CloudinaryFile[]) {
     const mapped = files.map((f) => {
       const fileType = classifyFile(f);
       return {
         filename: f.original_filename || "file",
         url: f.secure_url,
-        fileType, // <- hasil klasifikasi yang benar
+        fileType,
         provider: "cloudinary" as const,
         publicId: f.public_id || "",
         resourceType: f.resource_type || "",
@@ -285,39 +268,17 @@ export default function AdminAnnouncementForm({ initial, onSuccess }: Props) {
         bytes: f.bytes || 0,
         width: f.width,
         height: f.height,
-        // optional kalau skema DB-mu sudah siap:
-        // mimeType: mimeOf(f),
       };
     });
     setAttachments((prev) => [...(prev || []), ...mapped]);
   }
 
   const removeAttachment = (identifier: string) => {
-    console.log("=== REMOVE ATTACHMENT ===");
-    console.log("Removing attachment with identifier:", identifier);
-    console.log("Current attachments before removal:", attachments);
-
     setAttachments((prev) => {
       const currentAttachments = prev || [];
-      console.log("Previous attachments in setter:", currentAttachments);
-
-      const filtered = currentAttachments.filter((a) => {
-        // Check both id (for database attachments) and publicId (for new uploads)
-        const shouldKeep = a.id !== identifier && a.publicId !== identifier;
-        console.log(
-          `Attachment "${a.filename}" (id: "${a.id}", publicId: "${a.publicId}") - Keep: ${shouldKeep}`
-        );
-        return shouldKeep;
-      });
-
-      console.log(
-        "Before filter:",
-        currentAttachments.length,
-        "After filter:",
-        filtered.length
+      return currentAttachments.filter(
+        (a) => a.id !== identifier && a.publicId !== identifier,
       );
-      console.log("Filtered result:", filtered);
-      return filtered;
     });
   };
 
@@ -490,21 +451,20 @@ export default function AdminAnnouncementForm({ initial, onSuccess }: Props) {
         <CardContent className="p-4">
           <div className="flex items-center mb-3">
             <Paperclip className="h-4 w-4 text-gray-600 dark:text-gray-300 mr-2" />
-            <h3 className="text-sm font-medium text-gray-900 dark:text-gray-100">Lampiran</h3>
+            <h3 className="text-sm font-medium text-gray-900 dark:text-gray-100">
+              Lampiran
+            </h3>
           </div>
 
           <CloudinaryUpload
             folder="announcements"
             multiple
-            accept="image/*,video/*,.pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt"
+            accept=".jpg,.jpeg,.png,.mp3,.pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx"
             maxFiles={5}
             attachments={attachments}
             onUploaded={onUploaded}
             onRemove={removeAttachment}
-            onError={(m) => toast.error(m, "Upload Error")}
           />
-
-          {/* Hapus bagian list attachments yang lama karena sudah terintegrasi di CloudinaryUpload */}
         </CardContent>
       </Card>
 

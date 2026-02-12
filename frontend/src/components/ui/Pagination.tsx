@@ -53,7 +53,7 @@ export default function Pagination({
             options={pageSizeOptions}
             className="w-auto min-w-[140px]"
           />
-          <span className="text-sm text-gray-600">
+          <span className="text-sm text-gray-500 dark:text-gray-400">
             {totalItems > 0
               ? `${startItem}-${endItem} dari ${totalItems} item`
               : "0 item"}
@@ -63,7 +63,7 @@ export default function Pagination({
 
       {/* Simple pagination info when no page size selector */}
       {!showPageSizeSelector && totalPages > 1 && (
-        <div className="text-sm text-gray-600">
+        <div className="text-sm text-gray-500 dark:text-gray-400">
           Halaman {currentPage} dari {totalPages}
         </div>
       )}
@@ -80,7 +80,7 @@ export default function Pagination({
             Sebelumnya
           </Button>
 
-          <span className="px-3 py-2 text-sm text-gray-600">
+          <span className="px-3 py-2 text-sm text-gray-500 dark:text-gray-400">
             Halaman {currentPage} dari {totalPages}
           </span>
 

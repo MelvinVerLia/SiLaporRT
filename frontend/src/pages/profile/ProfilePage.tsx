@@ -89,6 +89,29 @@ const ProfilePage: React.FC = () => {
   };
 
   const handleProfilePictureChange = async (file: File) => {
+    // Client-side validation for profile picture
+    const MAX_PROFILE_BYTES = 5 * 1024 * 1024; // 5 MB
+    const ALLOWED_FORMATS = ["jpg", "jpeg", "png"];
+
+    if (file.size > MAX_PROFILE_BYTES) {
+      toast.error(
+        `Ukuran file terlalu besar (${(file.size / 1024 / 1024).toFixed(1)}MB). Maksimal 5MB.`,
+        "Upload Gagal",
+      );
+      uploadRef.current?.clearPreview();
+      return;
+    }
+
+    const ext = file.name.split(".").pop()?.toLowerCase() || "";
+    if (!ALLOWED_FORMATS.includes(ext)) {
+      toast.error(
+        `Format file '${ext}' tidak didukung. Gunakan: ${ALLOWED_FORMATS.join(", ")}`,
+        "Upload Gagal",
+      );
+      uploadRef.current?.clearPreview();
+      return;
+    }
+
     setIsUploadingPicture(true);
     try {
       // Upload using ref method from ProfilePictureUpload
@@ -108,14 +131,25 @@ const ProfilePage: React.FC = () => {
             toast.success("Foto profil berhasil diubah", "Berhasil");
           } else {
             toast.error("Gagal menyimpan foto profil", "Error");
+            uploadRef.current?.clearPreview();
           }
         } else {
           toast.error("Gagal mengupload foto", "Error");
+          uploadRef.current?.clearPreview();
         }
       }
-    } catch (error) {
+    } catch (error: unknown) {
       console.error("Error uploading profile picture:", error);
-      toast.error("Terjadi kesalahan saat mengubah foto profil", "Error");
+      const err = error as {
+        message?: string;
+        response?: { data?: { message?: string } };
+      };
+      const msg =
+        err?.message ||
+        err?.response?.data?.message ||
+        "Terjadi kesalahan saat mengubah foto profil";
+      toast.error(msg, "Upload Gagal");
+      uploadRef.current?.clearPreview();
     } finally {
       setIsUploadingPicture(false);
     }
@@ -141,7 +175,7 @@ const ProfilePage: React.FC = () => {
           onClose={() => setNotificationRequest(false)}
         />
       )}
-      <div className="space-y-6">
+      <div className="space-y-6 bg-transparent dark:bg-transparent">
         <ProfileHeader
           user={user}
           uploadRef={uploadRef}
