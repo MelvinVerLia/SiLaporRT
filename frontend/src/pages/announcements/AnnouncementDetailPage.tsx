@@ -85,8 +85,8 @@ export default function AnnouncementDetailPage() {
     a.priority === "URGENT"
       ? "danger"
       : a.priority === "HIGH"
-      ? "warning"
-      : "default";
+        ? "warning"
+        : "default";
 
   // Dynamic breadcrumb based on where user came from
   const breadcrumbItems = isFromAdmin
@@ -149,19 +149,25 @@ export default function AnnouncementDetailPage() {
             </CardHeader>
             <CardContent className="space-y-3 text-sm">
               <div className="flex items-center justify-between">
-                <span className="text-gray-600 dark:text-gray-200">Status Tayang</span>
+                <span className="text-gray-600 dark:text-gray-200">
+                  Status Tayang
+                </span>
                 <span className="font-medium text-gray-900 dark:text-gray-100">
                   {a.isActive ? "Aktif" : "Nonaktif"}
                 </span>
               </div>
               <div className="flex items-center justify-between">
-                <span className="text-gray-600 dark:text-gray-200">Mulai Tayang</span>
+                <span className="text-gray-600 dark:text-gray-200">
+                  Mulai Tayang
+                </span>
                 <span className="font-medium text-gray-900 dark:text-gray-100">
                   {formatDateTime(a.publishAt)}
                 </span>
               </div>
               <div className="flex items-center justify-between">
-                <span className="text-gray-600 dark:text-gray-200">Berakhir</span>
+                <span className="text-gray-600 dark:text-gray-200">
+                  Berakhir
+                </span>
                 <span className="font-medium text-gray-900 dark:text-gray-100">
                   {formatDateTime(a.expireAt)}
                 </span>
@@ -194,7 +200,11 @@ export default function AnnouncementDetailPage() {
                 id: att.id,
                 filename: att.filename,
                 url: att.url,
-                fileType: att.fileType as "image" | "video" | "document",
+                fileType: att.fileType as
+                  | "image"
+                  | "video"
+                  | "audio"
+                  | "document",
                 format: att.filename.split(".").pop()?.toLowerCase(),
               }))}
               title="Lampiran"
@@ -206,5 +216,3 @@ export default function AnnouncementDetailPage() {
     </div>
   );
 }
-
-

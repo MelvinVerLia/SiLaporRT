@@ -3,13 +3,14 @@ import {
   FileText,
   FileImage,
   FileVideo,
+  FileAudio,
   FileArchive,
   FileSpreadsheet,
   File,
 } from "lucide-react";
 
 interface FileTypeIconProps {
-  fileType: "image" | "video" | "document";
+  fileType: "image" | "video" | "audio" | "document";
   format?: string;
   filename?: string;
   size?: "sm" | "md" | "lg";
@@ -39,6 +40,10 @@ const FileTypeIcon: React.FC<FileTypeIconProps> = ({
 
     if (fileType === "video") {
       return <FileVideo className={`${iconSize} text-red-500`} />;
+    }
+
+    if (fileType === "audio") {
+      return <FileAudio className={`${iconSize} text-purple-500`} />;
     }
 
     // Document types

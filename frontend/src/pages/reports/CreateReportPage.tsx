@@ -24,11 +24,12 @@ import ReportPreview from "./components/ReportPreview";
 import { useCreateReport } from "../../hooks/useCreateReport";
 import { CreateReportFormData, Location } from "../../types/report.types";
 import { CloudinaryFile } from "../../types/announcement.types";
+import { classifyFile } from "../../utils/classifyFile";
 import { useToast } from "../../hooks/useToast";
 
 // Extended CloudinaryFile untuk keperluan form data
 interface ExtendedCloudinaryFile extends CloudinaryFile {
-  fileType?: "image" | "video" | "document";
+  fileType?: "image" | "video" | "audio" | "document";
 }
 
 // Form validation errors interface
@@ -218,28 +219,6 @@ const CreateReportPage: React.FC = () => {
     }
   };
 
-  // Fungsi untuk mengklasifikasi file type seperti di announcement
-  function classifyFile(f: CloudinaryFile): "image" | "video" | "document" {
-    const fmt = (f.format || "").toLowerCase();
-    const docFormats = [
-      "pdf",
-      "doc",
-      "docx",
-      "xls",
-      "xlsx",
-      "ppt",
-      "pptx",
-      "txt",
-    ];
-
-    if (docFormats.includes(fmt)) return "document";
-    if (f.resource_type === "raw") return "document";
-    if (f.resource_type === "image") return "image";
-    if (f.resource_type === "video") return "video";
-    return "document"; // fallback teraman
-  }
-
-  // Handler untuk file upload
   function onUploaded(files: CloudinaryFile[]) {
     const mapped: ExtendedCloudinaryFile[] = files.map((f) => {
       const fileType = classifyFile(f);
@@ -351,14 +330,14 @@ const CreateReportPage: React.FC = () => {
                 Lampiran (Opsional)
               </h3>
               <p className="text-sm text-gray-600 dark:text-gray-300">
-                Tambahkan foto, video, atau dokumen sebagai bukti laporan Anda
+                Tambahkan foto, audio, atau dokumen sebagai bukti laporan Anda
               </p>
             </div>
 
             <CloudinaryUpload
               folder="reports"
               multiple={true}
-              accept="image/*,video/*,.pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt"
+              accept=".jpg,.jpeg,.png,.mp3,.pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx"
               maxFiles={5}
               attachments={formData.attachments.map((file) => ({
                 filename: file.original_filename || "file",

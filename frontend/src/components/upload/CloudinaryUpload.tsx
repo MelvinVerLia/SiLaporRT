@@ -1,15 +1,22 @@
 import React, { useRef, useState } from "react";
-import { UploadCloud, X, FileText, FileImage, FileVideo } from "lucide-react";
+import {
+  UploadCloud,
+  X,
+  FileText,
+  FileImage,
+  FileVideo,
+  FileAudio,
+} from "lucide-react";
 import { signUpload, uploadToCloudinary } from "../../services/uploadService";
 import { CloudinaryFile } from "../../types/announcement.types";
 import { useToast } from "../../hooks/useToast";
 
-// Extended type untuk internal processing (sesuai dengan yang ada di AdminAnnouncementForm)
+// Extended type for upload attachments
 type AttachmentFile = {
   id?: string; // Database ID for existing attachments
   filename: string;
   url: string;
-  fileType: "image" | "video" | "document";
+  fileType: "image" | "video" | "audio" | "document";
   provider?: "cloudinary"; // Made optional to match FormAttachment
   publicId?: string; // Made optional to match FormAttachment
   resourceType?: string; // Made optional to match FormAttachment
@@ -48,11 +55,69 @@ const CloudinaryUpload: React.FC<Props> = ({
   const [uploading, setUploading] = useState(false);
   const toast = useToast();
 
-  // Notify parent when upload status changes
   const setUploadingWithCallback = (isUploading: boolean) => {
     setUploading(isUploading);
     onUploadingChange?.(isUploading);
   };
+
+  // Upload limits per folder (mirrors backend policy)
+  const UPLOAD_LIMITS: Record<string, { maxBytes: number; formats: string[] }> =
+    {
+      profile: {
+        maxBytes: 5 * 1024 * 1024,
+        formats: ["jpg", "jpeg", "png"],
+      },
+      reports: {
+        maxBytes: 50 * 1024 * 1024,
+        formats: [
+          "jpg",
+          "jpeg",
+          "png",
+          "mp3",
+          "pdf",
+          "doc",
+          "docx",
+          "xls",
+          "xlsx",
+          "ppt",
+          "pptx",
+        ],
+      },
+      announcements: {
+        maxBytes: 10 * 1024 * 1024,
+        formats: [
+          "jpg",
+          "jpeg",
+          "png",
+          "mp3",
+          "pdf",
+          "doc",
+          "docx",
+          "xls",
+          "xlsx",
+          "ppt",
+          "pptx",
+        ],
+      },
+    };
+
+  function validateFile(file: File): string | null {
+    const limits = UPLOAD_LIMITS[folder];
+    if (!limits) return null;
+
+    if (file.size > limits.maxBytes) {
+      const maxMB = Math.floor(limits.maxBytes / 1024 / 1024);
+      const fileMB = (file.size / 1024 / 1024).toFixed(1);
+      return `File "${file.name}" terlalu besar (${fileMB}MB). Maksimal ${maxMB}MB.`;
+    }
+
+    const ext = file.name.split(".").pop()?.toLowerCase() || "";
+    if (ext && !limits.formats.includes(ext)) {
+      return `Format "${ext}" tidak didukung untuk ${folder}. Format yang diizinkan: ${limits.formats.join(", ")}`;
+    }
+
+    return null;
+  }
 
   async function handleFiles(files: FileList | null) {
     if (!files || files.length === 0) return;
@@ -63,23 +128,35 @@ const CloudinaryUpload: React.FC<Props> = ({
       return;
     }
 
+    // Validate before upload
+    for (const f of list) {
+      const validationError = validateFile(f);
+      if (validationError) {
+        toast.error(validationError, "Upload Gagal");
+        onError?.(validationError);
+        return;
+      }
+    }
+
     try {
       setUploadingWithCallback(true);
 
       const uploaded: CloudinaryFile[] = [];
       for (const f of list) {
-        // Determine resource type based on file
+        // Determine Cloudinary resource type
         let resourceType: "image" | "video" | "raw" | "auto" = "auto";
         const isPdf =
           f.type === "application/pdf" || /\.pdf$/i.test(f.name || "");
-        const isDoc = /\.(doc|docx|xls|xlsx|ppt|pptx|txt)$/i.test(f.name || "");
+        const isDoc = /\.(doc|docx|xls|xlsx|ppt|pptx)$/i.test(f.name || "");
+        const isAudio =
+          f.type.startsWith("audio/") || /\.mp3$/i.test(f.name || "");
 
         if (isPdf || isDoc) {
           resourceType = "raw";
+        } else if (isAudio) {
+          resourceType = "video"; // Cloudinary uses "video" for audio
         } else if (f.type.startsWith("image/")) {
           resourceType = "image";
-        } else if (f.type.startsWith("video/")) {
-          resourceType = "video";
         }
 
         const sign = await signUpload({ folder, resourceType });
@@ -88,18 +165,19 @@ const CloudinaryUpload: React.FC<Props> = ({
       }
 
       onUploaded?.(uploaded);
-
-      // Show success toast
-      const fileCount = uploaded.length;
-      const fileText = fileCount === 1 ? "file" : "file";
       toast.success(
-        `${fileCount} ${fileText} berhasil diunggah`,
-        "Upload Berhasil"
+        `${uploaded.length} file berhasil diunggah`,
+        "Upload Berhasil",
       );
     } catch (e: unknown) {
-      const error = e as Error;
-      toast.error(error?.message || "Gagal mengunggah file", "Upload Gagal");
-      onError?.(error?.message || "Gagal upload");
+      const err = e as {
+        message?: string;
+        response?: { data?: { message?: string } };
+      };
+      const msg =
+        err?.message || err?.response?.data?.message || "Gagal mengunggah file";
+      toast.error(msg, "Upload Gagal");
+      onError?.(msg);
     } finally {
       setUploadingWithCallback(false);
       if (inputRef.current) inputRef.current.value = "";
@@ -114,7 +192,7 @@ const CloudinaryUpload: React.FC<Props> = ({
         Lampiran {hasFiles && `(${attachments.length}/${maxFiles})`}
       </label>
 
-      {/* Upload Area - berubah tampilan jika sudah ada file */}
+      {/* Upload Area */}
       <div
         className={`
           border-2 border-dashed rounded-xl p-6 transition cursor-pointer
@@ -172,10 +250,12 @@ const CloudinaryUpload: React.FC<Props> = ({
         </div>
       )}
 
-      {/* File Preview - Tampilan terpusat untuk semua file */}
+      {/* File Preview */}
       {attachments.length > 0 && (
         <div className="mt-4 space-y-3">
-          <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300">File Terlampir:</h4>
+          <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300">
+            File Terlampir:
+          </h4>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
             {attachments.map((attachment) => (
               <div
@@ -239,6 +319,8 @@ const CloudinaryUpload: React.FC<Props> = ({
                   <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium bg-white dark:bg-gray-800 bg-opacity-90 dark:bg-opacity-90 text-gray-700 dark:text-gray-300 shadow-sm">
                     {attachment.fileType === "image" ? (
                       <FileImage className="h-3 w-3" />
+                    ) : attachment.fileType === "audio" ? (
+                      <FileAudio className="h-3 w-3" />
                     ) : attachment.fileType === "video" ? (
                       <FileVideo className="h-3 w-3" />
                     ) : (

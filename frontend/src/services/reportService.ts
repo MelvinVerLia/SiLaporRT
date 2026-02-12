@@ -1,6 +1,7 @@
 import { request } from "./api";
 import { CreateReportFormData, Report } from "../types/report.types";
 import { CloudinaryFile } from "../types/announcement.types";
+import { classifyFile } from "../utils/classifyFile";
 
 export interface CreateReportPayload {
   title: string;
@@ -32,34 +33,10 @@ export interface CreateReportPayload {
 }
 
 export async function createReport(
-  formData: CreateReportFormData
+  formData: CreateReportFormData,
 ): Promise<Report> {
   if (!formData.location) {
     throw new Error("Lokasi wajib ditentukan");
-  }
-
-  // Helper function to classify file type (same as in CreateReportPage)
-  function classifyFile(f: {
-    format?: string;
-    resource_type?: string;
-  }): "image" | "video" | "document" {
-    const fmt = (f.format || "").toLowerCase();
-    const docFormats = [
-      "pdf",
-      "doc",
-      "docx",
-      "xls",
-      "xlsx",
-      "ppt",
-      "pptx",
-      "txt",
-    ];
-
-    if (docFormats.includes(fmt)) return "document";
-    if (f.resource_type === "raw") return "document";
-    if (f.resource_type === "image") return "image";
-    if (f.resource_type === "video") return "video";
-    return "document"; // fallback teraman
   }
 
   try {
@@ -198,12 +175,12 @@ export async function getAllReportsStatistic() {
 export async function updateReportStat(
   reportId: string,
   attachments?: string[],
-  message?: string
+  message?: string,
 ) {
   try {
     const res = await request(`/reports/${reportId}/update-status`, {
       method: "PUT",
-      data: {  attachments, message },
+      data: { attachments, message },
     });
     return res;
   } catch (error) {
@@ -240,7 +217,7 @@ export async function getReportsByStatus(status: string): Promise<Report[]> {
       console.warn(
         "Unexpected API response structure for status:",
         status,
-        res
+        res,
       );
       return [];
     }
@@ -252,7 +229,7 @@ export async function getReportsByStatus(status: string): Promise<Report[]> {
 
 // Get reports by category
 export async function getReportsByCategory(
-  category: string
+  category: string,
 ): Promise<Report[]> {
   try {
     console.log(`🔄 Fetching reports for category: ${category}`);
@@ -268,14 +245,14 @@ export async function getReportsByCategory(
       Array.isArray(categoryData.reports)
     ) {
       console.log(
-        `✅ Found ${categoryData.reports.length} reports for category ${category}`
+        `✅ Found ${categoryData.reports.length} reports for category ${category}`,
       );
       return categoryData.reports;
     } else {
       console.warn(
         "⚠️ Unexpected API response structure for category:",
         category,
-        res
+        res,
       );
       return [];
     }
@@ -286,13 +263,13 @@ export async function getReportsByCategory(
 }
 
 export async function getDashboardStats(
-  daysBack?: number
+  daysBack?: number,
 ): Promise<DashboardStats> {
   try {
     console.log("🚀 Starting dashboard stats calculation...");
     console.log(
       "📅 Time period filter:",
-      daysBack ? `${daysBack} days` : "All time"
+      daysBack ? `${daysBack} days` : "All time",
     );
 
     // Fetch status data (exclude CLOSED reports)
@@ -321,16 +298,16 @@ export async function getDashboardStats(
       console.log("📅 Filtering reports after:", cutoffDate.toISOString());
 
       filteredPending = pendingReports.filter(
-        (r) => new Date(r.createdAt) >= cutoffDate
+        (r) => new Date(r.createdAt) >= cutoffDate,
       );
       filteredInProgress = inProgressReports.filter(
-        (r) => new Date(r.createdAt) >= cutoffDate
+        (r) => new Date(r.createdAt) >= cutoffDate,
       );
       filteredResolved = resolvedReports.filter(
-        (r) => new Date(r.createdAt) >= cutoffDate
+        (r) => new Date(r.createdAt) >= cutoffDate,
       );
       filteredRejected = rejectedReports.filter(
-        (r) => new Date(r.createdAt) >= cutoffDate
+        (r) => new Date(r.createdAt) >= cutoffDate,
       );
     }
 
@@ -356,7 +333,7 @@ export async function getDashboardStats(
         }
         return acc;
       },
-      {}
+      {},
     );
 
     const statusSum =
@@ -397,7 +374,7 @@ export async function getDashboardStats(
 
     // Filter reports that have user data (non-anonymous reports)
     const reportsWithUsers = allActiveReports.filter(
-      (r) => r && r.user && r.user.id
+      (r) => r && r.user && r.user.id,
     );
     console.log("- Reports with user data:", reportsWithUsers.length);
 

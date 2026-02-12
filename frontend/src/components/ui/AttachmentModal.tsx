@@ -13,7 +13,7 @@ interface Attachment {
   id: string;
   filename: string;
   url: string;
-  fileType: "image" | "video" | "document";
+  fileType: "image" | "video" | "audio" | "document";
   format?: string;
   bytes?: number;
 }
@@ -110,6 +110,34 @@ const AttachmentModal: React.FC<AttachmentModalProps> = ({
             <source src={attachment.url} />
             Your browser does not support the video tag.
           </video>
+        </div>
+      );
+    }
+
+    if (attachment.fileType === "audio") {
+      return (
+        <div className="flex flex-col items-center justify-center py-12 space-y-6">
+          <FileTypeIcon
+            fileType="audio"
+            format={attachment.format}
+            filename={attachment.filename}
+            size="lg"
+            className="opacity-60"
+          />
+          <div className="text-center">
+            <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-2">
+              {attachment.filename}
+            </h3>
+            <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">
+              AUDIO
+              {attachment.format && ` • ${attachment.format.toUpperCase()}`}
+              {attachment.bytes && ` • ${formatFileSize(attachment.bytes)}`}
+            </p>
+          </div>
+          <audio controls className="w-full max-w-md">
+            <source src={attachment.url} />
+            Your browser does not support the audio tag.
+          </audio>
         </div>
       );
     }

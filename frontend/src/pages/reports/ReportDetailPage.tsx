@@ -435,7 +435,11 @@ const ReportDetailPage: React.FC = () => {
                 id: attachment.id,
                 filename: attachment.filename,
                 url: attachment.url,
-                fileType: attachment.fileType as "image" | "video" | "document",
+                fileType: attachment.fileType as
+                  | "image"
+                  | "video"
+                  | "audio"
+                  | "document",
                 format: attachment.filename.split(".").pop()?.toLowerCase(),
               }))}
               title="Lampiran"

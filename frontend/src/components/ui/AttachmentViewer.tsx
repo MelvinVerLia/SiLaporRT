@@ -7,7 +7,7 @@ interface Attachment {
   id: string;
   filename: string;
   url: string;
-  fileType: "image" | "video" | "document";
+  fileType: "image" | "video" | "audio" | "document";
   format?: string;
   bytes?: number;
 }
@@ -69,6 +69,7 @@ const AttachmentViewer: React.FC<AttachmentViewerProps> = ({
   const renderAttachmentCard = (attachment: Attachment) => {
     const isImage = attachment.fileType === "image";
     const isVideo = attachment.fileType === "video";
+    const isAudio = attachment.fileType === "audio";
     const isDocument = attachment.fileType === "document";
     const hasImageError = imageErrors.has(attachment.id);
 
@@ -92,7 +93,6 @@ const AttachmentViewer: React.FC<AttachmentViewerProps> = ({
               }}
               loading="eager"
               onError={() => handleImageError(attachment.id)}
-              onLoad={() => console.log("Image loaded:", attachment.filename)}
             />
           )}
 
@@ -108,6 +108,23 @@ const AttachmentViewer: React.FC<AttachmentViewerProps> = ({
               <div className="text-center">
                 <p className="text-xs font-medium uppercase tracking-wide">
                   {attachment.format?.toUpperCase() || "VIDEO"}
+                </p>
+              </div>
+            </div>
+          )}
+
+          {/* Audio Preview */}
+          {isAudio && (
+            <div className="flex flex-col items-center justify-center space-y-2 p-4 text-gray-500 dark:text-gray-400">
+              <FileTypeIcon
+                fileType="audio"
+                format={attachment.format}
+                filename={attachment.filename}
+                size="lg"
+              />
+              <div className="text-center">
+                <p className="text-xs font-medium uppercase tracking-wide">
+                  {attachment.format?.toUpperCase() || "AUDIO"}
                 </p>
               </div>
             </div>

@@ -4,6 +4,7 @@ import { CreateReportData } from "../types/reportTypes";
 import { generateCategory } from "../utils/llm";
 import { NotificationService } from "./NotificationService";
 import { AuthRepository } from "../repositories/AuthRepository";
+import { validateUpload } from "../config/uploadPolicy";
 
 interface UserContext {
   id: string;
@@ -13,6 +14,17 @@ interface UserContext {
 class ReportService {
   static async createReport(data: CreateReportData) {
     try {
+      // Validate attachments against upload policy
+      if (data.attachments && data.attachments.length > 0) {
+        for (const att of data.attachments) {
+          validateUpload("reports", {
+            resourceType: att.resourceType,
+            format: att.format,
+            bytes: att.bytes,
+          });
+        }
+      }
+
       // bruh gemini ada limit sekarang
       // const category = await generateCategory(data.title, data.description);
       // console.log(category);
@@ -48,7 +60,7 @@ class ReportService {
         `laporan baru telah diajukan. Silakan diproses lebih lanjut.`,
         url,
         "https://res.cloudinary.com/dgnedkivd/image/upload/v1757562088/silaporrt/dev/logo/logo_lnenhb.png",
-        "REPORT"
+        "REPORT",
       );
       return report;
     } catch (error) {
@@ -75,7 +87,7 @@ class ReportService {
     const page = Math.max(1, parseInt(params.page ?? "1", 10) || 1);
     const pageSize = Math.min(
       50,
-      Math.max(1, parseInt(params.pageSize ?? "10", 10) || 10)
+      Math.max(1, parseInt(params.pageSize ?? "10", 10) || 10),
     );
     console.log(params.status);
     try {
@@ -117,7 +129,7 @@ class ReportService {
       const comment = await ReportRepository.addComment(
         reportId,
         userId,
-        content.trim()
+        content.trim(),
       );
       return comment;
     } catch (error) {
@@ -139,7 +151,7 @@ class ReportService {
       console.log("masuk update status");
       const updatedReport = await ReportRepository.updateStatus(
         reportId,
-        status
+        status,
       );
 
       const baseUrl = process.env.FRONTEND_URL_PROD || process.env.FRONTEND_URL;
@@ -150,7 +162,7 @@ class ReportService {
         `Status laporan kamu kini berubah menjadi ${updatedReport.status}`,
         url,
         "https://res.cloudinary.com/dgnedkivd/image/upload/v1757562088/silaporrt/dev/logo/logo_lnenhb.png",
-        "REPORT"
+        "REPORT",
       );
       return updatedReport;
     } catch (error) {
@@ -162,14 +174,14 @@ class ReportService {
     reportId: string,
     userId: string,
     message: string,
-    attachments?: string[]
+    attachments?: string[],
   ) {
     try {
       const response = await ReportRepository.addOfficialResponse(
         reportId,
         userId,
         message.trim(),
-        attachments
+        attachments,
       );
 
       const baseUrl = process.env.FRONTEND_URL_PROD || process.env.FRONTEND_URL;
@@ -182,7 +194,7 @@ class ReportService {
         `Laporan anda telah diresponse oleh ${response?.responder.name}, silahkan cek laporan anda`,
         url,
         "https://res.cloudinary.com/dgnedkivd/image/upload/v1757562088/silaporrt/dev/logo/logo_lnenhb.png",
-        "REPORT"
+        "REPORT",
       );
 
       return {
@@ -207,7 +219,7 @@ class ReportService {
   static async getReportsByStatus(status: string) {
     try {
       const reports = await ReportRepository.getReportsByStatus(
-        status as ReportStatus
+        status as ReportStatus,
       );
       return {
         reports,
@@ -222,7 +234,7 @@ class ReportService {
     try {
       const hasUpvoted = await ReportRepository.getUserUpvoteStatus(
         reportId,
-        userId
+        userId,
       );
       return { hasUpvoted };
     } catch (error) {
@@ -274,14 +286,14 @@ class ReportService {
     reportId: string,
     responderId: string,
     attachments?: string[],
-    message?: string
+    message?: string,
   ) {
     try {
       const result = await ReportRepository.updateReportStatus(
         reportId,
         responderId,
         attachments,
-        message
+        message,
       );
       return result;
     } catch (error) {

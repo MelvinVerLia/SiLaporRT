@@ -23,7 +23,7 @@ export type Attachment = {
   id: string;
   filename: string;
   url: string;
-  fileType: string; // image, video, document
+  fileType: string; // image, video, audio, document
 };
 
 export interface Announcement {
@@ -50,13 +50,13 @@ export interface Paged<T> {
   total: number;
 }
 
-  export interface CloudinaryFile {
-    original_filename?: string;
-    secure_url: string;
-    resource_type: string;
-    public_id: string;
-    format?: string;
-    bytes?: number;
-    width?: number;
-    height?: number;
-  }
+export interface CloudinaryFile {
+  original_filename?: string;
+  secure_url: string;
+  resource_type: string;
+  public_id: string;
+  format?: string;
+  bytes?: number;
+  width?: number;
+  height?: number;
+}
