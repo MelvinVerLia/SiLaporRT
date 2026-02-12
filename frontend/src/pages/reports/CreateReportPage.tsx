@@ -28,12 +28,13 @@ import {
   ReportCategory,
 } from "../../types/report.types";
 import { CloudinaryFile } from "../../types/announcement.types";
+import { classifyFile } from "../../utils/classifyFile";
 import { useToast } from "../../hooks/useToast";
 import Dropdown from "../../components/ui/Dropdown";
 import { generateReportCategory } from "../../services/reportService";
 
 interface ExtendedCloudinaryFile extends CloudinaryFile {
-  fileType?: "image" | "video" | "document";
+  fileType?: "image" | "video" | "audio" | "document";
 }
 
 interface FormErrors {
@@ -453,14 +454,14 @@ const CreateReportPage: React.FC = () => {
                 Lampiran (Opsional)
               </h3>
               <p className="text-sm text-gray-600 dark:text-gray-300">
-                Tambahkan foto, video, atau dokumen sebagai bukti laporan Anda
+                Tambahkan foto, audio, atau dokumen sebagai bukti laporan Anda
               </p>
             </div>
 
             <CloudinaryUpload
               folder="reports"
               multiple={true}
-              accept="image/*,video/*,.pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt"
+              accept=".jpg,.jpeg,.png,.mp3,.pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx"
               maxFiles={5}
               attachments={formData.attachments.map((file) => ({
                 filename: file.original_filename || "file",

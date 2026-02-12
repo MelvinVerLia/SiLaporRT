@@ -85,8 +85,8 @@ export default function AnnouncementDetailPage() {
     a.priority === "URGENT"
       ? "danger"
       : a.priority === "HIGH"
-      ? "warning"
-      : "default";
+        ? "warning"
+        : "default";
 
   // Dynamic breadcrumb based on where user came from
   const breadcrumbItems = isFromAdmin
@@ -139,10 +139,46 @@ export default function AnnouncementDetailPage() {
         </CardHeader>
       </Card>
 
-      {/* Content */}
+      {/* Informasi + Isi Pengumuman */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div className="lg:col-span-2 space-y-6">
-          <Card>
+        {/* Informasi - mobile first, desktop right */}
+        <div className="lg:order-2">
+          <Card className="h-full">
+            <CardHeader>
+              <CardTitle>Informasi</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-3 text-sm">
+              <div className="flex items-center justify-between">
+                <span className="text-gray-600 dark:text-gray-200">
+                  Status Tayang
+                </span>
+                <span className="font-medium text-gray-900 dark:text-gray-100">
+                  {a.isActive ? "Aktif" : "Nonaktif"}
+                </span>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-gray-600 dark:text-gray-200">
+                  Mulai Tayang
+                </span>
+                <span className="font-medium text-gray-900 dark:text-gray-100">
+                  {formatDateTime(a.publishAt)}
+                </span>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-gray-600 dark:text-gray-200">
+                  Berakhir
+                </span>
+                <span className="font-medium text-gray-900 dark:text-gray-100">
+                  {formatDateTime(a.expireAt)}
+                </span>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Isi Pengumuman - mobile second, desktop left */}
+        <div className="lg:col-span-2 lg:order-1">
+          <Card className="h-full">
             <CardHeader>
               <CardTitle>Isi Pengumuman</CardTitle>
             </CardHeader>
@@ -152,55 +188,31 @@ export default function AnnouncementDetailPage() {
               </div>
             </CardContent>
           </Card>
-
-          {a.attachments?.length > 0 && (
-            <Card>
-              <CardContent className="p-6">
-                <AttachmentViewer
-                  attachments={a.attachments.map((att) => ({
-                    id: att.id,
-                    filename: att.filename,
-                    url: att.url,
-                    fileType: att.fileType as "image" | "video" | "document",
-                    format: att.filename.split(".").pop()?.toLowerCase(),
-                  }))}
-                  title="Lampiran"
-                  gridCols={3}
-                />
-              </CardContent>
-            </Card>
-          )}
-        </div>
-
-        {/* Sidebar (opsional perlu, sementara info singkat) */}
-        <div className="space-y-6">
-          <Card>
-            <CardHeader>
-              <CardTitle>Informasi</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-3 text-sm">
-              <div className="flex items-center justify-between">
-                <span className="text-gray-600 dark:text-gray-200">Status Tayang</span>
-                <span className="font-medium text-gray-900 dark:text-gray-100">
-                  {a.isActive ? "Aktif" : "Nonaktif"}
-                </span>
-              </div>
-              <div className="flex items-center justify-between">
-                <span className="text-gray-600 dark:text-gray-200">Mulai Tayang</span>
-                <span className="font-medium text-gray-900 dark:text-gray-100">
-                  {formatDateTime(a.publishAt)}
-                </span>
-              </div>
-              <div className="flex items-center justify-between">
-                <span className="text-gray-600 dark:text-gray-200">Berakhir</span>
-                <span className="font-medium text-gray-900 dark:text-gray-100">
-                  {formatDateTime(a.expireAt)}
-                </span>
-              </div>
-            </CardContent>
-          </Card>
         </div>
       </div>
+
+      {/* Lampiran */}
+      {a.attachments?.length > 0 && (
+        <Card>
+          <CardContent className="p-6">
+            <AttachmentViewer
+              attachments={a.attachments.map((att) => ({
+                id: att.id,
+                filename: att.filename,
+                url: att.url,
+                fileType: att.fileType as
+                  | "image"
+                  | "video"
+                  | "audio"
+                  | "document",
+                format: att.filename.split(".").pop()?.toLowerCase(),
+              }))}
+              title="Lampiran"
+              gridCols={3}
+            />
+          </CardContent>
+        </Card>
+      )}
     </div>
   );
 }

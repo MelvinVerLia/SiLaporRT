@@ -1,6 +1,7 @@
 import { request } from "./api";
 import { CreateReportFormData, Report, ReportCategory } from "../types/report.types";
 import { CloudinaryFile } from "../types/announcement.types";
+import { classifyFile } from "../utils/classifyFile";
 
 export interface CreateReportPayload {
   title: string;
@@ -37,30 +38,6 @@ export async function createReport(
 ): Promise<Report> {
   if (!formData.location) {
     throw new Error("Lokasi wajib ditentukan");
-  }
-
-  // Helper function to classify file type (same as in CreateReportPage)
-  function classifyFile(f: {
-    format?: string;
-    resource_type?: string;
-  }): "image" | "video" | "document" {
-    const fmt = (f.format || "").toLowerCase();
-    const docFormats = [
-      "pdf",
-      "doc",
-      "docx",
-      "xls",
-      "xlsx",
-      "ppt",
-      "pptx",
-      "txt",
-    ];
-
-    if (docFormats.includes(fmt)) return "document";
-    if (f.resource_type === "raw") return "document";
-    if (f.resource_type === "image") return "image";
-    if (f.resource_type === "video") return "video";
-    return "document"; // fallback teraman
   }
 
   try {

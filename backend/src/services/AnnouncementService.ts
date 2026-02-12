@@ -1,5 +1,6 @@
 import { AnnouncementRepository } from "../repositories/AnnouncementRepository";
 import { NotificationService } from "./NotificationService";
+import { validateUpload } from "../config/uploadPolicy";
 
 function parseBool(v: any): boolean | undefined {
   if (v === undefined) return undefined;
@@ -24,11 +25,11 @@ export class AnnouncementService {
     type?: string;
     priority?: string;
     pinnedFirst?: any;
-  }) {
+  }, rtId?: string) {
     const page = Math.max(1, parseInt(params.page ?? "1", 10) || 1);
     const pageSize = Math.min(
       50,
-      Math.max(1, parseInt(params.pageSize ?? "10", 10) || 10)
+      Math.max(1, parseInt(params.pageSize ?? "10", 10) || 10),
     );
     const pinnedFirst = parseBool(params.pinnedFirst) ?? true;
     const { total, items } = await AnnouncementRepository.listVisible({
@@ -38,6 +39,7 @@ export class AnnouncementService {
       type: params.type,
       priority: params.priority,
       pinnedFirst,
+      rtId,
     });
     return { page, pageSize, total, items };
   }
@@ -59,11 +61,11 @@ export class AnnouncementService {
     dateFrom?: string;
     dateTo?: string;
     sortBy?: string;
-  }) {
+  }, rtId?: string) {
     const page = Math.max(1, parseInt(params.page ?? "1", 10) || 1);
     const pageSize = Math.min(
       50,
-      Math.max(1, parseInt(params.pageSize ?? "10", 10) || 10)
+      Math.max(1, parseInt(params.pageSize ?? "10", 10) || 10),
     );
     const pinnedFirst = parseBool(params.pinnedFirst) ?? true;
     const includeInactive = parseBool(params.includeInactive) ?? false;
@@ -81,6 +83,7 @@ export class AnnouncementService {
       dateFrom: params.dateFrom,
       dateTo: params.dateTo,
       sortBy: params.sortBy,
+      rtId,
     });
     return { page, pageSize, total, items };
   }
@@ -106,6 +109,17 @@ export class AnnouncementService {
           }))
       : undefined;
 
+    // Validate attachments against upload policy
+    if (attachments && attachments.length > 0) {
+      for (const att of attachments) {
+        validateUpload("announcements", {
+          resourceType: att.fileType === "document" ? "raw" : att.fileType,
+          format: att.filename?.split(".").pop()?.toLowerCase(),
+          bytes: (att as any).bytes,
+        });
+      }
+    }
+
     const announcement = await AnnouncementRepository.create({
       authorId,
       data: {
@@ -123,13 +137,13 @@ export class AnnouncementService {
 
     const baseUrl = process.env.FRONTEND_URL_PROD || process.env.FRONTEND_URL;
     const url = `${baseUrl}/announcements/${announcement.id}`;
-    
+
     await NotificationService.sendNotificationAll(
       `📢 Pengumuman Baru: "${announcement.title}"`,
       `Cek pengumuman terbaru berjudul "${announcement.title}" sekarang di aplikasi SiLaporRT.`,
       url,
       "https://res.cloudinary.com/dgnedkivd/image/upload/v1757562088/silaporrt/dev/logo/logo_lnenhb.png",
-      "ANNOUNCEMENT"
+      "ANNOUNCEMENT",
     );
 
     return announcement;
@@ -164,6 +178,17 @@ export class AnnouncementService {
             fileType: a.fileType,
           }))
       : undefined;
+
+    // Validate attachments against upload policy
+    if (attachments && attachments.length > 0) {
+      for (const att of attachments) {
+        validateUpload("announcements", {
+          resourceType: att.fileType === "document" ? "raw" : att.fileType,
+          format: att.filename?.split(".").pop()?.toLowerCase(),
+          bytes: (att as any).bytes,
+        });
+      }
+    }
 
     return AnnouncementRepository.updateWithAttachments(id, patch, attachments);
   }

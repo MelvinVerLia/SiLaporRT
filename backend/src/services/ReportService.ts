@@ -4,6 +4,7 @@ import { CreateReportData } from "../types/reportTypes";
 import { generateCategory } from "../utils/llm";
 import { NotificationService } from "./NotificationService";
 import { AuthRepository } from "../repositories/AuthRepository";
+import { validateUpload } from "../config/uploadPolicy";
 
 interface UserContext {
   id: string;
@@ -13,6 +14,17 @@ interface UserContext {
 class ReportService {
   static async createReport(data: CreateReportData) {
     try {
+      // Validate attachments against upload policy
+      if (data.attachments && data.attachments.length > 0) {
+        for (const att of data.attachments) {
+          validateUpload("reports", {
+            resourceType: att.resourceType,
+            format: att.format,
+            bytes: att.bytes,
+          });
+        }
+      }
+
       // bruh gemini ada limit sekarang
       // const category = await generateCategory(data.title, data.description);
       // console.log(category);
@@ -82,7 +94,7 @@ class ReportService {
     sortBy?: string;
     upvoteDateFrom?: string;
     upvoteDateTo?: string;
-  }) {
+  }, rtId?: string) {
     const page = Math.max(1, parseInt(params.page ?? "1", 10) || 1);
     const pageSize = Math.min(
       50,
@@ -106,6 +118,7 @@ class ReportService {
         sortBy: params.sortBy,
         upvoteDateFrom: params.upvoteDateFrom,
         upvoteDateTo: params.upvoteDateTo,
+        rtId,
       });
       return { page, pageSize, total, items };
     } catch (error) {
