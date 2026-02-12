@@ -6,8 +6,8 @@ import { Role } from "@prisma/client";
 
 const router = Router();
 
-// PUBLIC
-router.get("/", AnnouncementController.list);
+// PUBLIC (but requires authentication to filter by RT)
+router.get("/", authenticateJWT, AnnouncementController.list);
 router.get("/:id", AnnouncementController.detail);
 
 // ADMIN (RT_ADMIN)

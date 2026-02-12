@@ -71,7 +71,7 @@ class ReportService {
     sortBy?: string;
     upvoteDateFrom?: string;
     upvoteDateTo?: string;
-  }) {
+  }, rtId?: string) {
     const page = Math.max(1, parseInt(params.page ?? "1", 10) || 1);
     const pageSize = Math.min(
       50,
@@ -95,6 +95,7 @@ class ReportService {
         sortBy: params.sortBy,
         upvoteDateFrom: params.upvoteDateFrom,
         upvoteDateTo: params.upvoteDateTo,
+        rtId,
       });
       return { page, pageSize, total, items };
     } catch (error) {

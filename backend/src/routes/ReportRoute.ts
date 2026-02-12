@@ -5,7 +5,7 @@ import { authenticateJWT } from "../middleware/AuthMiddleware";
 const router = Router();
 
 // === CORE REPORT ROUTES ===
-router.get("/", ReportController.getAllReports);
+router.get("/", authenticateJWT, ReportController.getAllReports);
 router.get("/get-recent", ReportController.getRecentReports);
 router.get("/my-reports", authenticateJWT, ReportController.getUserReports);
 router.get(

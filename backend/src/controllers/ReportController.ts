@@ -34,7 +34,8 @@ class ReportController {
 
   static async getAllReports(req: Request, res: Response) {
     try {
-      const reports = await ReportService.getAllReports(req.query);
+      const user = req.user as { id: string; rtId?: string };
+      const reports = await ReportService.getAllReports(req.query, user?.rtId);
       res.json({
         success: true,
         message: `Retrieved ${reports.total} reports`,

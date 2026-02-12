@@ -24,7 +24,7 @@ export class AnnouncementService {
     type?: string;
     priority?: string;
     pinnedFirst?: any;
-  }) {
+  }, rtId?: string) {
     const page = Math.max(1, parseInt(params.page ?? "1", 10) || 1);
     const pageSize = Math.min(
       50,
@@ -38,6 +38,7 @@ export class AnnouncementService {
       type: params.type,
       priority: params.priority,
       pinnedFirst,
+      rtId,
     });
     return { page, pageSize, total, items };
   }
@@ -59,7 +60,7 @@ export class AnnouncementService {
     dateFrom?: string;
     dateTo?: string;
     sortBy?: string;
-  }) {
+  }, rtId?: string) {
     const page = Math.max(1, parseInt(params.page ?? "1", 10) || 1);
     const pageSize = Math.min(
       50,
@@ -81,6 +82,7 @@ export class AnnouncementService {
       dateFrom: params.dateFrom,
       dateTo: params.dateTo,
       sortBy: params.sortBy,
+      rtId,
     });
     return { page, pageSize, total, items };
   }
