@@ -28,7 +28,6 @@ import {
   ReportCategory,
 } from "../../types/report.types";
 import { CloudinaryFile } from "../../types/announcement.types";
-import { classifyFile } from "../../utils/classifyFile";
 import { useToast } from "../../hooks/useToast";
 import Dropdown from "../../components/ui/Dropdown";
 import { generateReportCategory } from "../../services/reportService";

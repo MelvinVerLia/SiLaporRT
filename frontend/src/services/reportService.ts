@@ -8,7 +8,7 @@ export interface CreateReportPayload {
   description: string;
   isAnonymous: boolean;
   isPublic: boolean;
-  category: ReportCategory;
+  category: ReportCategory | null;
   userId?: string;
   location: {
     latitude: number;
