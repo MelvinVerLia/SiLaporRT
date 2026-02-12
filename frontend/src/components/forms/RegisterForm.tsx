@@ -103,7 +103,6 @@ const RegisterForm: React.FC = () => {
   return (
     <div className="min-h-screen bg-gradient-to-l from-primary-100 to-white dark:from-gray-800 dark:to-gray-900 flex flex-col justify-center py-12 px-4 sm:px-6 lg:px-8">
       <Card className="max-w-6xl w-full mx-auto shadow-xl border-0 bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-xl">
-        {/* Logo positioned absolutely at the top of the card - visible on all screen sizes */}
         <div className="absolute top-4 left-8">
           <Link
             to="/"
@@ -121,9 +120,7 @@ const RegisterForm: React.FC = () => {
           </Link>
         </div>
 
-        {/* Main content: Form kanan, ilustrasi kiri */}
-        <CardContent className="flex flex-col md:flex-row gap-8 p-8 pt-16 md:pt-8">
-          {/* Ilustrasi - Kolom kiri */}
+        <CardContent className="flex flex-col md:flex-row gap-8 p-8 pt-16 md:pt-8 mt-8">
           <div className="hidden md:flex md:w-1/2 items-center justify-center rounded-lg p-4 relative">
             <img
               src="/assets/register.webp"
@@ -132,15 +129,12 @@ const RegisterForm: React.FC = () => {
             />
           </div>
 
-          {/* Form - Kolom Kanan */}
           <div className="md:w-1/2 flex flex-col justify-center md:mt-12">
-            {/* Title dan Subtitle - Di atas form */}
             <div className="mb-6">
               <CardTitle className="text-3xl font-bold text-gray-900 dark:text-gray-100 mb-2">
                 Bergabung dengan Kami
               </CardTitle>
 
-              {/* Link Login - Di bawah title, sebelum form */}
               <p className="text-sm text-gray-600 dark:text-gray-300">
                 Sudah punya akun?{" "}
                 <Link
@@ -430,7 +424,6 @@ const RegisterForm: React.FC = () => {
               </Button>
             </form>
 
-            {/* Google Register Button */}
             <div className="mt-3 pt-3 border-t border-gray-200">
               <Button
                 type="button"
@@ -467,7 +460,6 @@ const RegisterForm: React.FC = () => {
         </CardContent>
       </Card>
 
-      {/* Footer */}
       <div className="mt-8 text-center px-4">
         <p className="text-xs text-gray-500 dark:text-gray-300">
           Dengan mendaftar, Anda menyetujui{" "}

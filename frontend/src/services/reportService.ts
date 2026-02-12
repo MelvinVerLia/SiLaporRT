@@ -1,5 +1,5 @@
 import { request } from "./api";
-import { CreateReportFormData, Report } from "../types/report.types";
+import { CreateReportFormData, Report, ReportCategory } from "../types/report.types";
 import { CloudinaryFile } from "../types/announcement.types";
 
 export interface CreateReportPayload {
@@ -7,6 +7,7 @@ export interface CreateReportPayload {
   description: string;
   isAnonymous: boolean;
   isPublic: boolean;
+  category: ReportCategory;
   userId?: string;
   location: {
     latitude: number;
@@ -32,7 +33,7 @@ export interface CreateReportPayload {
 }
 
 export async function createReport(
-  formData: CreateReportFormData
+  formData: CreateReportFormData,
 ): Promise<Report> {
   if (!formData.location) {
     throw new Error("Lokasi wajib ditentukan");
@@ -68,6 +69,7 @@ export async function createReport(
       title: formData.title,
       description: formData.description,
       isAnonymous: formData.isAnonymous,
+      category: formData.category,
       isPublic: formData.isPublic,
       location: {
         latitude: formData.location.latitude,
@@ -198,12 +200,12 @@ export async function getAllReportsStatistic() {
 export async function updateReportStat(
   reportId: string,
   attachments?: string[],
-  message?: string
+  message?: string,
 ) {
   try {
     const res = await request(`/reports/${reportId}/update-status`, {
       method: "PUT",
-      data: {  attachments, message },
+      data: { attachments, message },
     });
     return res;
   } catch (error) {
@@ -240,7 +242,7 @@ export async function getReportsByStatus(status: string): Promise<Report[]> {
       console.warn(
         "Unexpected API response structure for status:",
         status,
-        res
+        res,
       );
       return [];
     }
@@ -252,7 +254,7 @@ export async function getReportsByStatus(status: string): Promise<Report[]> {
 
 // Get reports by category
 export async function getReportsByCategory(
-  category: string
+  category: string,
 ): Promise<Report[]> {
   try {
     console.log(`🔄 Fetching reports for category: ${category}`);
@@ -268,14 +270,14 @@ export async function getReportsByCategory(
       Array.isArray(categoryData.reports)
     ) {
       console.log(
-        `✅ Found ${categoryData.reports.length} reports for category ${category}`
+        `✅ Found ${categoryData.reports.length} reports for category ${category}`,
       );
       return categoryData.reports;
     } else {
       console.warn(
         "⚠️ Unexpected API response structure for category:",
         category,
-        res
+        res,
       );
       return [];
     }
@@ -285,14 +287,27 @@ export async function getReportsByCategory(
   }
 }
 
+export async function generateReportCategory(data: any) {
+  try {
+    const response = await request(`/reports/generate/category`, {
+      method: "POST",
+      data,
+    });
+    return response;
+  } catch (error) {
+    console.error("Error generating report status:", error);
+    return null;
+  }
+}
+
 export async function getDashboardStats(
-  daysBack?: number
+  daysBack?: number,
 ): Promise<DashboardStats> {
   try {
     console.log("🚀 Starting dashboard stats calculation...");
     console.log(
       "📅 Time period filter:",
-      daysBack ? `${daysBack} days` : "All time"
+      daysBack ? `${daysBack} days` : "All time",
     );
 
     // Fetch status data (exclude CLOSED reports)
@@ -321,16 +336,16 @@ export async function getDashboardStats(
       console.log("📅 Filtering reports after:", cutoffDate.toISOString());
 
       filteredPending = pendingReports.filter(
-        (r) => new Date(r.createdAt) >= cutoffDate
+        (r) => new Date(r.createdAt) >= cutoffDate,
       );
       filteredInProgress = inProgressReports.filter(
-        (r) => new Date(r.createdAt) >= cutoffDate
+        (r) => new Date(r.createdAt) >= cutoffDate,
       );
       filteredResolved = resolvedReports.filter(
-        (r) => new Date(r.createdAt) >= cutoffDate
+        (r) => new Date(r.createdAt) >= cutoffDate,
       );
       filteredRejected = rejectedReports.filter(
-        (r) => new Date(r.createdAt) >= cutoffDate
+        (r) => new Date(r.createdAt) >= cutoffDate,
       );
     }
 
@@ -356,7 +371,7 @@ export async function getDashboardStats(
         }
         return acc;
       },
-      {}
+      {},
     );
 
     const statusSum =
@@ -397,7 +412,7 @@ export async function getDashboardStats(
 
     // Filter reports that have user data (non-anonymous reports)
     const reportsWithUsers = allActiveReports.filter(
-      (r) => r && r.user && r.user.id
+      (r) => r && r.user && r.user.id,
     );
     console.log("- Reports with user data:", reportsWithUsers.length);
 

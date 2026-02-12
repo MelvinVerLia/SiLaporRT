@@ -6,7 +6,6 @@ class ReportController {
     try {
       const user = req.user as { id: string };
       const data = req.body;
-
       if (!user) {
         throw new Error("User not found");
       }
@@ -25,6 +24,25 @@ class ReportController {
       });
     } catch (error: any) {
       console.error("Error in createReport controller:", error);
+      res.status(400).json({
+        success: false,
+        message: error.message,
+      });
+    }
+  }
+
+  static async generateReportCategory(req: Request, res: Response) {
+    try {
+      const data = req.body;
+
+      const result = await ReportService.generateReportCategory(data);
+
+      res.status(201).json({
+        success: true,
+        message: "Report created successfully",
+        data: result,
+      });
+    } catch (error: any) {
       res.status(400).json({
         success: false,
         message: error.message,
@@ -95,7 +113,7 @@ class ReportController {
       const comment = await ReportService.addComment(
         reportId,
         user.id,
-        content
+        content,
       );
       res.json({
         success: true,
@@ -177,7 +195,7 @@ class ReportController {
         reportId,
         user.id,
         message,
-        attachments
+        attachments,
       );
       res.json({
         success: true,
@@ -402,7 +420,7 @@ class ReportController {
         reportId,
         user.id,
         attachments,
-        message
+        message,
       );
       res.json({
         success: true,
@@ -417,8 +435,6 @@ class ReportController {
       });
     }
   }
-
-  
 }
 
 export default ReportController;

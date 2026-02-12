@@ -4,29 +4,26 @@ import { authenticateJWT } from "../middleware/AuthMiddleware";
 
 const router = Router();
 
-// === CORE REPORT ROUTES ===
 router.get("/", ReportController.getAllReports);
 router.get("/get-recent", ReportController.getRecentReports);
 router.get("/my-reports", authenticateJWT, ReportController.getUserReports);
 router.get(
   "/my-reports/stats",
   authenticateJWT,
-  ReportController.getUserReportStatistics
+  ReportController.getUserReportStatistics,
 );
-router.get(
-  "/all-reports/stats",
-  ReportController.getAllReportsStatistics
-);
+router.get("/all-reports/stats", ReportController.getAllReportsStatistics);
 router.get("/:reportId", ReportController.getReportById);
 
 router.post("/add", authenticateJWT, ReportController.createReport);
+router.post("/generate/category", ReportController.generateReportCategory);
 
 // === USER REPORT MANAGEMENT ===
 router.delete("/:reportId", authenticateJWT, ReportController.deleteReport);
 router.put(
   "/:reportId/visibility",
   authenticateJWT,
-  ReportController.toggleReportVisibility
+  ReportController.toggleReportVisibility,
 );
 
 // === COMMUNITY INTERACTION ROUTES ===
@@ -35,7 +32,7 @@ router.put("/:reportId/upvote", authenticateJWT, ReportController.toggleUpvote);
 router.get(
   "/:reportId/upvote-status",
   authenticateJWT,
-  ReportController.getUserUpvoteStatus
+  ReportController.getUserUpvoteStatus,
 );
 
 // === ADMIN/RT ROUTES ===
@@ -43,9 +40,13 @@ router.put("/:reportId/status", ReportController.updateStatus);
 router.post(
   "/:reportId/response",
   authenticateJWT,
-  ReportController.addOfficialResponse
+  ReportController.addOfficialResponse,
 );
-router.put("/:reportId/update-status", authenticateJWT,ReportController.updateReportStatus);
+router.put(
+  "/:reportId/update-status",
+  authenticateJWT,
+  ReportController.updateReportStatus,
+);
 
 // === FILTERING ROUTES ===
 router.get("/category/:category", ReportController.getReportsByCategory);
