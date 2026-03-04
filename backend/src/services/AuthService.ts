@@ -323,8 +323,12 @@ export class AuthService {
     return response;
   }
 
-  static async deleteAccount(userId: string) {
+  static async deleteAccount(userId: string, token: string) {
+    const hashedToken = crypto.createHash("sha256").update(token).digest("hex");
     await AuthRepository.deleteUser(userId);
+
+    await RedisClient.instance.del(`refresh:${hashedToken}`);
+
     return true;
   }
 

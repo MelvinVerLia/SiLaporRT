@@ -15,6 +15,7 @@ export interface User {
   createdAt?: string;
   updatedAt?: string;
   profile?: string;
+  isDeleted?: boolean;
 }
 
 export interface AuthUser {

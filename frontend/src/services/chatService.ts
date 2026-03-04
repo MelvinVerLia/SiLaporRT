@@ -20,7 +20,7 @@ export async function getChatId(reportId: string) {
 }
 
 export async function hasUnread() {
-  const res = await request(`/chats/get/chat/unread`, { method: "GET" });
+  const res = await request(`/chats/get/unread`, { method: "GET" });
   console.log({ res });
   return res;
 }

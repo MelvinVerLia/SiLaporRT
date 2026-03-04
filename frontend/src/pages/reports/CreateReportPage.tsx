@@ -151,7 +151,9 @@ const CreateReportPage: React.FC = () => {
   const generateCategory = async (
     data: CreateReportFormData,
   ): Promise<ReportCategory | null> => {
-    const category = await generateReportCategory(data);
+    const category = await generateReportCategory(
+      data as unknown as Record<string, unknown>,
+    );
     if (category === null) {
       return null;
     }

@@ -190,7 +190,7 @@ const RegisterForm: React.FC = () => {
                 value={formData.address}
                 onChange={handleChange}
                 error={error?.field === "address" ? error.message : undefined}
-                placeholder="Jl Hayam Goreng Tepung"
+                placeholder="Jl Sudirman No. 1"
                 required
                 disabled={isLoading}
                 className="transition-all duration-200"

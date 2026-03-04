@@ -34,7 +34,7 @@ export class AuthController {
       return res.status(200).json({
         success: true,
         message: "Login successful",
-        data: result, 
+        data: result,
       });
     } catch (error) {
       return res.status(401).json({
@@ -121,6 +121,7 @@ export class AuthController {
             profile: user.profile,
             role: user.role,
             isActive: user.isActive,
+            isDeleted: user.isDeleted,
             createdAt: user.createdAt,
             updatedAt: user.updatedAt,
           },
@@ -257,7 +258,7 @@ export class AuthController {
         name,
         phone,
         address,
-        rtId
+        rtId,
       );
       res.json({
         success: true,
@@ -317,6 +318,7 @@ export class AuthController {
 
   static async deleteAccount(req: Request, res: Response) {
     const user = JSON.parse(JSON.stringify(req.user));
+    const refreshToken = req.cookies.refresh_token;
 
     if (!user) {
       return res.status(400).json({
@@ -327,7 +329,19 @@ export class AuthController {
     const userId = user.id;
     console.log("userId", user.id);
     try {
-      await AuthService.deleteAccount(userId);
+      await AuthService.deleteAccount(userId, refreshToken);
+      res.clearCookie("refresh_token", {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === "production",
+        sameSite: process.env.NODE_ENV ? "none" : "lax",
+        path: "/",
+      });
+      res.clearCookie("access_token", {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === "production",
+        sameSite: process.env.NODE_ENV ? "none" : "lax",
+        path: "/",
+      });
       res.json({
         success: true,
         message: "Account deleted successfully",
@@ -506,7 +520,7 @@ export class AuthController {
       const users = await AuthService.getAllAvailableRT(
         kecamatan,
         kelurahan,
-        rw
+        rw,
       );
       return res.status(200).json({
         success: true,

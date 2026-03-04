@@ -10,15 +10,16 @@ function RequireCompleteProfile({ children }: { children: React.ReactNode }) {
 
   const isIncomplete =
     user &&
-    (!user.phone || !user.address || !user.rtId);
+    (!user.phone || !user.address || !user.rtId) &&
+    user.isDeleted !== true;
 
   useEffect(() => {
+    console.log("isIncomplete", isIncomplete);
     if (isIncomplete && !warnedRef.current) {
       toast.warning("Lengkapi profil terlebih dahulu", "Peringatan");
       warnedRef.current = true;
     }
   }, [isIncomplete, toast]);
-
 
   if (isIncomplete) {
     return <Navigate to="/profile" replace />;
