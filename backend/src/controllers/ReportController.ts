@@ -53,7 +53,11 @@ class ReportController {
   static async getAllReports(req: Request, res: Response) {
     try {
       const user = req.user as { id: string; rtId?: string };
-      const reports = await ReportService.getAllReports(req.query, user?.rtId);
+      const reports = await ReportService.getAllReports(
+        req.query,
+        user?.rtId,
+        user?.id,
+      );
       res.json({
         success: true,
         message: `Retrieved ${reports.total} reports`,
@@ -156,18 +160,25 @@ class ReportController {
   static async updateStatus(req: Request, res: Response) {
     try {
       const { reportId } = req.params;
-      const { status } = req.body;
+      const { status, message } = req.body;
       const user = req.user as { id: string };
 
       if (!reportId || !status) {
         throw new Error("Report ID and status are required");
       }
 
+      if (!user || !user.id) {
+        return res.status(401).json({
+          success: false,
+          message: "User authentication required",
+        });
+      }
+
       // if(req.user?.role !== Role.ADMIN && req.user?.id !== adminId) {
       //   throw new Error("You don't have permission to update this report");
       // }
 
-      const result = await ReportService.updateStatus(reportId, status);
+      const result = await ReportService.updateStatus(reportId, status, user.id, message);
 
       res.json({
         success: true,
@@ -220,6 +231,8 @@ class ReportController {
 
   static async getReportsByCategory(req: Request, res: Response) {
     const { category } = req.params;
+    const user = req.user as { id: string; rtId?: string };
+    const rtId = user?.rtId;
 
     if (!category)
       return res
@@ -227,7 +240,7 @@ class ReportController {
         .json({ success: false, message: "Category is required" });
 
     try {
-      const reports = await ReportService.getReportsByCategory(category);
+      const reports = await ReportService.getReportsByCategory(category, rtId);
       res.json({
         success: true,
         data: reports,
@@ -246,6 +259,8 @@ class ReportController {
 
   static async getReportsByStatus(req: Request, res: Response) {
     const { status } = req.params;
+    const user = req.user as { id: string; rtId?: string };
+    const rtId = user?.rtId;
 
     if (!status)
       return res
@@ -253,7 +268,7 @@ class ReportController {
         .json({ success: false, message: "Status is required" });
 
     try {
-      const reports = await ReportService.getReportsByStatus(status);
+      const reports = await ReportService.getReportsByStatus(status, rtId);
       res.json({
         success: true,
         data: reports,
@@ -300,7 +315,8 @@ class ReportController {
 
   static async getRecentReports(req: Request, res: Response) {
     try {
-      const reports = await ReportService.getRecentReports();
+      const user = req.user as { id: string; rtId?: string };
+      const reports = await ReportService.getRecentReports(user?.rtId);
       res.json({
         success: true,
         data: reports,
@@ -322,7 +338,7 @@ class ReportController {
       const user = req.user as { id: string };
       const params = { ...req.query, userId: user.id };
 
-      const reports = await ReportService.getAllReports(params);
+      const reports = await ReportService.getMyReports(params);
       res.json({
         success: true,
         message: `Retrieved ${reports.total} user reports`,

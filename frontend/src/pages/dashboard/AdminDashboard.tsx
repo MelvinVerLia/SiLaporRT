@@ -1,16 +1,6 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { Link } from "react-router-dom";
-import {
-  FileText,
-  Users,
-  Clock,
-  CheckCircle,
-  AlertTriangle,
-  MessageSquare,
-  ArrowRight,
-  Megaphone,
-  Activity,
-} from "lucide-react";
+import { FileText, Users, Clock, AlertTriangle, Megaphone } from "lucide-react";
 import {
   Card,
   CardContent,
@@ -35,28 +25,25 @@ const AdminDashboard: React.FC = () => {
   const { user } = useAuthContext();
   const [selectedPeriod, setSelectedPeriod] = useState("bulan-ini");
   const [dateRange, setDateRange] = useState<{ from?: string; to?: string }>(
-    {}
+    {},
   );
   const [displayDateRange, setDisplayDateRange] = useState<{
     from?: string;
     to?: string;
   }>({});
 
-  // State for real data - simple approach like AnnouncementsPage
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [dashboardData, setDashboardData] = useState<DashboardStats | null>(
-    null
+    null,
   );
   const [totalAnnouncements, setTotalAnnouncements] = useState<number>(0);
 
-  // Helper function to calculate date range based on period
   const getDateRangeForPeriod = (
-    period: string
+    period: string,
   ): { from: string; to: string } | null => {
     const today = new Date();
 
-    // Format date to YYYY-MM-DD in local timezone (not UTC)
     const formatDate = (date: Date) => {
       const year = date.getFullYear();
       const month = String(date.getMonth() + 1).padStart(2, "0");
@@ -74,16 +61,13 @@ const AdminDashboard: React.FC = () => {
         return { from: formatDate(yesterday), to: formatDate(yesterday) };
       }
       case "minggu-ini": {
-        // Minggu ini (Senin - Minggu)
         const firstDayOfWeek = new Date(today);
         const lastDayOfWeek = new Date(today);
         const dayOfWeek = today.getDay();
 
-        // Calculate Monday (first day of week)
-        const diff = dayOfWeek === 0 ? 6 : dayOfWeek - 1; // Monday as first day
+        const diff = dayOfWeek === 0 ? 6 : dayOfWeek - 1;
         firstDayOfWeek.setDate(today.getDate() - diff);
 
-        // Calculate Sunday (last day of week)
         const daysUntilSunday = dayOfWeek === 0 ? 0 : 7 - dayOfWeek;
         lastDayOfWeek.setDate(today.getDate() + daysUntilSunday);
 
@@ -96,12 +80,12 @@ const AdminDashboard: React.FC = () => {
         const firstDayOfMonth = new Date(
           today.getFullYear(),
           today.getMonth(),
-          1
+          1,
         );
         const lastDayOfMonth = new Date(
           today.getFullYear(),
           today.getMonth() + 1,
-          0
+          0,
         );
         return {
           from: formatDate(firstDayOfMonth),
@@ -117,13 +101,12 @@ const AdminDashboard: React.FC = () => {
         };
       }
       case "custom":
-        return null; // Use manual date range
+        return null;
       default:
         return null;
     }
   };
 
-  // Calculate active date range (either from period preset or manual)
   const getActiveDateRange = () => {
     if (selectedPeriod === "custom") {
       return dateRange.from && dateRange.to ? dateRange : null;
@@ -131,7 +114,6 @@ const AdminDashboard: React.FC = () => {
     return getDateRangeForPeriod(selectedPeriod);
   };
 
-  // Update display date range whenever period changes
   useEffect(() => {
     if (selectedPeriod !== "custom") {
       const calculatedRange = getDateRangeForPeriod(selectedPeriod);
@@ -143,7 +125,6 @@ const AdminDashboard: React.FC = () => {
     }
   }, [selectedPeriod, dateRange]);
 
-  // Fetch dashboard data - simple approach like AnnouncementsPage
   const fetchDashboardData = useCallback(async () => {
     try {
       setLoading(true);
@@ -151,7 +132,6 @@ const AdminDashboard: React.FC = () => {
 
       const activeDateRange = getActiveDateRange();
 
-      // If we have a date range, calculate days difference
       let daysBack: number | undefined = undefined;
       if (activeDateRange?.from && activeDateRange?.to) {
         const fromDate = new Date(activeDateRange.from);
@@ -170,7 +150,7 @@ const AdminDashboard: React.FC = () => {
     } catch (err) {
       console.error("Error fetching dashboard data:", err);
       setError(
-        err instanceof Error ? err.message : "Failed to load dashboard data"
+        err instanceof Error ? err.message : "Failed to load dashboard data",
       );
     } finally {
       setLoading(false);
@@ -182,7 +162,6 @@ const AdminDashboard: React.FC = () => {
     fetchDashboardData();
   }, [fetchDashboardData]);
 
-  // Generate statistics cards from real data
   const getStats = () => {
     if (!dashboardData) return [];
 
@@ -222,7 +201,6 @@ const AdminDashboard: React.FC = () => {
     ];
   };
 
-  // Generate status chart data from real data (excludes CLOSED reports)
   const getStatusChartData = () => {
     if (!dashboardData) return [];
 
@@ -254,7 +232,6 @@ const AdminDashboard: React.FC = () => {
     ];
   };
 
-  // Generate category chart data from real data (excludes CLOSED reports, shows all categories regardless of isPublic)
   const getCategoryChartData = () => {
     if (!dashboardData) return [];
 
@@ -291,42 +268,6 @@ const AdminDashboard: React.FC = () => {
     }));
   };
 
-  // Mock recent activities - simplified
-  const recentActivities = [
-    {
-      id: "1",
-      type: "NEW_REPORT",
-      message: 'Laporan baru: "Jalan berlubang di RT 05"',
-      user: "Budi Santoso",
-      time: "2 jam lalu",
-      icon: FileText,
-    },
-    {
-      id: "2",
-      type: "STATUS_UPDATE",
-      message: 'Laporan "Lampu jalan mati" selesai ditindaklanjuti',
-      user: "Admin RT",
-      time: "4 jam lalu",
-      icon: CheckCircle,
-    },
-    {
-      id: "3",
-      type: "NEW_ANNOUNCEMENT",
-      message: 'Pengumuman baru: "Rapat Bulanan RT"',
-      user: "Admin RT",
-      time: "6 jam lalu",
-      icon: Megaphone,
-    },
-    {
-      id: "4",
-      type: "NEW_COMMENT",
-      message: "Komentar baru pada laporan infrastruktur",
-      user: "Siti Aminah",
-      time: "1 hari lalu",
-      icon: MessageSquare,
-    },
-  ];
-
   const periodOptions = [
     { value: "hari-ini", label: "Hari Ini" },
     { value: "kemarin", label: "Kemarin" },
@@ -345,7 +286,6 @@ const AdminDashboard: React.FC = () => {
     return count;
   })();
 
-  // Filter fields for AdvancedFilter
   const filterFields: FilterField[] = [
     {
       name: "period",
@@ -354,7 +294,6 @@ const AdminDashboard: React.FC = () => {
       value: selectedPeriod,
       onChange: (value) => {
         setSelectedPeriod(value as string);
-        // Clear manual date range when switching to preset
         if (value !== "custom") {
           setDateRange({});
         }
@@ -382,7 +321,6 @@ const AdminDashboard: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      {/* Header */}
       <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4">
         <div>
           <h1 className="text-3xl font-bold text-primary-600">
@@ -398,19 +336,17 @@ const AdminDashboard: React.FC = () => {
             fields={filterFields}
             activeFilterCount={activeFilterCount}
             onReset={handleResetFilters}
+            dropdownClassName="left-0 lg:left-auto lg:right-0"
           />
         </div>
       </div>
 
-      {/* Loading State - Simple approach like AnnouncementsPage */}
       {loading && (
         <>
-          {/* Show skeleton items while loading */}
           <AdminDashboardSkeleton />
         </>
       )}
 
-      {/* Error State */}
       {error && (
         <Card>
           <CardContent className="p-6">
@@ -425,10 +361,8 @@ const AdminDashboard: React.FC = () => {
         </Card>
       )}
 
-      {/* Main Content - Simple approach like AnnouncementsPage */}
       {!loading && !error && dashboardData && (
         <div>
-          {/* Statistics Cards - Clickable for navigation */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
             {getStats().map((stat, index) => {
               const Icon = stat.icon;
@@ -456,9 +390,7 @@ const AdminDashboard: React.FC = () => {
             })}
           </div>
 
-          {/* Quick Actions & Overview */}
           <div className="grid grid-cols-1 xl:grid-cols-4 gap-6 mt-8">
-            {/* Status Chart */}
             <Card className="xl:col-span-2">
               <CardHeader>
                 <CardTitle className="flex items-center">
@@ -471,7 +403,6 @@ const AdminDashboard: React.FC = () => {
               </CardContent>
             </Card>
 
-            {/* Category Chart */}
             <Card className="xl:col-span-2">
               <CardHeader>
                 <CardTitle className="flex items-center">
@@ -481,55 +412,6 @@ const AdminDashboard: React.FC = () => {
               </CardHeader>
               <CardContent>
                 <CategoryBarChart data={getCategoryChartData()} />
-              </CardContent>
-            </Card>
-
-            {/* Recent Activities */}
-            <Card className="xl:col-span-4">
-              <CardHeader>
-                <CardTitle className="flex items-center">
-                  <Activity className="mr-2 h-5 w-5 text-green-500" />
-                  Aktivitas Terbaru
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-3">
-                <div className="space-y-3">
-                  {recentActivities.slice(0, 4).map((activity) => {
-                    const Icon = activity.icon;
-
-                    return (
-                      <div
-                        key={activity.id}
-                        className="flex items-start space-x-3"
-                      >
-                        <div className="flex-shrink-0">
-                          <div className="w-8 h-8 bg-gray-100 dark:bg-gray-700 rounded-full flex items-center justify-center">
-                            <Icon className="h-4 w-4 text-gray-600 dark:text-gray-200" />
-                          </div>
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <p className="text-sm text-gray-900 dark:text-gray-100 mb-1">
-                            {activity.message}
-                          </p>
-                          <div className="flex items-center text-xs text-gray-500 dark:text-gray-200">
-                            <span>{activity.user}</span>
-                            <span className="mx-1">•</span>
-                            <span>{activity.time}</span>
-                          </div>
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-
-                <div className="mt-4 pt-2 border-t border-gray-100">
-                  <Link to="/admin/activities">
-                    <Button variant="ghost" size="sm" className="w-full">
-                      Lihat Semua Aktivitas
-                      <ArrowRight className="ml-2 h-4 w-4" />
-                    </Button>
-                  </Link>
-                </div>
               </CardContent>
             </Card>
           </div>

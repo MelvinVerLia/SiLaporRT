@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef, useMemo } from "react";
+import { useLocation } from "react-router-dom";
 import { Send, User, MapPin, ChevronLeft, FileText } from "lucide-react";
 import { useAuthContext } from "../../contexts/AuthContext";
 import { Report } from "../../types/report.types";
@@ -9,7 +10,7 @@ import { id } from "date-fns/locale";
 import { getUserReports } from "../../services/reportService";
 import { adminListReports } from "../../services/reportAdminService";
 import { getMessages, startChat, getChatId } from "../../services/chatService";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { socket } from "../../utils/socket";
 import MessageBox from "./components/MessageBox";
 import MessageBoxSkeleton from "./components/MessageBoxSkeleton";
@@ -34,10 +35,16 @@ type Message = {
   isRead?: boolean;
 };
 
+type ReportWithUnread = Report & {
+  unreadCount: number;
+};
+
 const ChatPage: React.FC = () => {
   const { user } = useAuthContext();
+  const location = useLocation();
+  const queryClient = useQueryClient();
   const [selectedReport, setSelectedReport] = useState<Report | null>(null);
-  const [reports, setReports] = useState<Report[]>([]);
+  const [reports, setReports] = useState<ReportWithUnread[]>([]);
   const [newMessage, setNewMessage] = useState("");
   const [isLoading, setIsLoading] = useState(true);
   const [messages, setMessages] = useState<Message[]>([]);
@@ -80,7 +87,6 @@ const ChatPage: React.FC = () => {
         const response = await getMessages(reportId);
         setMessages(response.data);
 
-        // Mark all received messages as read
         response.data.forEach((msg: Message) => {
           if (msg.userId !== user?.id) {
             socket.emit("message_read", {
@@ -89,6 +95,8 @@ const ChatPage: React.FC = () => {
             });
           }
         });
+
+        queryClient.invalidateQueries({ queryKey: ["chatHasUnread"] });
       } catch (err) {
         console.log(err);
       } finally {
@@ -139,8 +147,7 @@ const ChatPage: React.FC = () => {
               const hasUser = report.user;
               const isCitizen = report.user?.role === Role.CITIZEN;
               const sameRT = report.user?.rtId === user.rtId;
-              const validStatus =
-                report.status === "IN_PROGRESS" || report.status === "PENDING";
+              const validStatus = report.status === "IN_PROGRESS";
 
               return hasUser && isCitizen && user.rtId && sameRT && validStatus;
             })
@@ -150,6 +157,7 @@ const ChatPage: React.FC = () => {
                 new Date(a.createdAt).getTime(),
             );
 
+          console.log({ filteredReports });
           setReports(filteredReports);
         } else {
           const response = await getUserReports({
@@ -164,7 +172,7 @@ const ChatPage: React.FC = () => {
               report.status === "IN_PROGRESS" || report.status === "PENDING";
             return isValidStatus;
           });
-
+          console.log({ filteredReports });
           setReports(filteredReports);
         }
       } catch (error) {
@@ -179,6 +187,20 @@ const ChatPage: React.FC = () => {
       fetchReports();
     }
   }, [user]);
+
+  // Auto-select report if reportId is passed via navigation state
+  useEffect(() => {
+    const state = location.state as { reportId?: string } | null;
+    if (state?.reportId && reports.length > 0) {
+      const report = reports.find((r) => r.id === state.reportId);
+      if (report) {
+        setSelectedReport(report);
+        setMobileView("chat");
+        // Clear the state after using it
+        window.history.replaceState({}, document.title);
+      }
+    }
+  }, [location.state, reports]);
 
   useEffect(() => {
     toast.info("Socket connecting", "Success");
@@ -221,6 +243,7 @@ const ChatPage: React.FC = () => {
             messageId: payload.id,
             chatId: ChatId,
           });
+          queryClient.invalidateQueries({ queryKey: ["chatHasUnread"] });
         }
 
         return [...prev, payload];
@@ -382,9 +405,15 @@ const ChatPage: React.FC = () => {
                         onClick={() => {
                           setSelectedReport(report);
                           setMobileView("chat");
+                          setReports((prev) =>
+                            prev.map((r) =>
+                              r.id === report.id ? { ...r, unreadCount: 0 } : r,
+                            ),
+                          );
                         }}
                       >
                         <ReportBox
+                          user={user}
                           report={report}
                           selectedReport={selectedReport}
                           setSelectedReport={setSelectedReport}

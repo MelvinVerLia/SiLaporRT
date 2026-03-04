@@ -1,5 +1,5 @@
-import { useState, useEffect, useMemo, useRef } from "react";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useState, useEffect, useMemo, useRef, useCallback } from "react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import {
   FileText,
@@ -28,12 +28,18 @@ import {
 import Badge from "../../components/ui/Badge";
 import Pagination from "../../components/ui/Pagination";
 import Input from "../../components/ui/Input";
-import { Report } from "../../types/report.types";
+import { Report, Role } from "../../types/report.types";
 import AdvancedFilter, {
   FilterField,
 } from "../../components/common/AdvancedFilter";
 import ReportManageTableSkeleton from "./components/ReportManageTableSkeleton";
 import { updateReportStat } from "../../services/reportService";
+import CloudinaryUpload from "../../components/upload/CloudinaryUpload";
+import { CloudinaryFile } from "../../types/announcement.types";
+import { classifyFile } from "../../utils/classifyFile";
+import { useToast } from "../../hooks/useToast";
+import Textarea from "../../components/ui/Textarea";
+import AttachmentViewer from "../../components/ui/AttachmentViewer";
 
 export default function ManageReportsPage() {
   const navigate = useNavigate();
@@ -44,22 +50,46 @@ export default function ManageReportsPage() {
   const [pageSize, setPageSize] = useState(5);
   const [q, setQ] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("");
-  const [selectedPriority, setSelectedPriority] = useState("");
   const [selectedStatus, setSelectedStatus] = useState(
-    searchParams.get("status") || ""
+    searchParams.get("status") || "",
   );
   const [dateRange, setDateRange] = useState<{ from?: string; to?: string }>(
-    {}
+    {},
   );
   const [selectedVisibility, setSelectedVisibility] = useState("");
   const [sortBy, setSortBy] = useState("");
   const [selectedPeriod, setSelectedPeriod] = useState("");
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [isRejectModalOpen, setIsRejectModalOpen] = useState(false);
   const dialogRef = useRef<HTMLDivElement>(null);
+  const rejectDialogRef = useRef<HTMLDivElement>(null);
   const [currentReportId, setCurrentReportId] = useState<string | null>(null);
+  const [currentReport, setCurrentReport] = useState<Report | null>(null);
   const [message, setMessage] = useState<string | undefined>(undefined);
+  const [rejectionReason, setRejectionReason] = useState<string>("");
+  const [dialogAttachments, setDialogAttachments] = useState<
+    {
+      id: string;
+      filename: string;
+      url: string;
+      fileType: "image" | "video" | "audio" | "document";
+      provider?: "cloudinary";
+      publicId?: string;
+      resourceType?: string;
+      format?: string;
+      bytes?: number;
+      width?: number;
+      height?: number;
+      createdAt: string;
+    }[]
+  >([]);
+  const [isUploading, setIsUploading] = useState(false);
+  const [responseError, setResponseError] = useState<string | null>(null);
+  const [imageError, setImageError] = useState<string | null>(null);
+  const [isResponseLoading, setIsResponseLoading] = useState(false);
+  const [rejectionError, setRejectionError] = useState<string | null>(null);
+  const toast = useToast();
 
-  // Update selected status when URL params change
   useEffect(() => {
     const statusParam = searchParams.get("status");
     if (statusParam && statusParam !== selectedStatus) {
@@ -67,7 +97,6 @@ export default function ManageReportsPage() {
     }
   }, [searchParams, selectedStatus]);
 
-  // Helper to calculate date range from period
   const getDateRangeFromPeriod = (period: string) => {
     const from = new Date();
     const to = new Date();
@@ -113,6 +142,44 @@ export default function ManageReportsPage() {
     };
   };
 
+  const closeDialog = () => {
+    document.body.style.overflow = "auto";
+    setIsDialogOpen(false);
+    setMessage(undefined);
+    setDialogAttachments([]);
+    setCurrentReportId(null);
+    setCurrentReport(null);
+    setImageError(null);
+    setResponseError(null);
+  };
+
+  const closeRejectModal = () => {
+    setIsRejectModalOpen(false);
+    setRejectionReason("");
+    setRejectionError(null);
+  };
+
+  const cancelRejection = useCallback(() => {
+    setIsRejectModalOpen(false);
+    setRejectionReason("");
+    setRejectionError(null);
+    document.body.style.overflow = "hidden";
+    setIsDialogOpen(true);
+  }, []);
+
+  const openDialog = (report: Report) => {
+    setCurrentReport(report);
+    setCurrentReportId(report.id);
+    document.body.style.overflow = "hidden";
+    setIsDialogOpen(true);
+  };
+
+  const openRejectModal = () => {
+    setIsDialogOpen(false);
+    document.body.style.overflow = "hidden";
+    setIsRejectModalOpen(true);
+  };
+
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (
@@ -121,6 +188,12 @@ export default function ManageReportsPage() {
       ) {
         closeDialog();
       }
+      if (
+        rejectDialogRef.current &&
+        !rejectDialogRef.current.contains(event.target as Node)
+      ) {
+        cancelRejection();
+      }
     };
 
     document.addEventListener("mousedown", handleClickOutside);
@@ -128,29 +201,116 @@ export default function ManageReportsPage() {
     return () => {
       document.removeEventListener("mousedown", handleClickOutside);
     };
-  }, []);
+  }, [cancelRejection]);
 
-  const closeDialog = () => {
-    document.body.style.overflow = "auto";
-    setIsDialogOpen(false);
+  const handleDialogUploaded = (files: CloudinaryFile[]) => {
+    const mapped = files.map((f) => {
+      const baseName = f.original_filename || "file";
+      const ext = f.format ? `.${f.format}` : "";
+      const filename = baseName.endsWith(ext) ? baseName : `${baseName}${ext}`;
+      return {
+        id: f.public_id,
+        filename,
+        url: f.secure_url,
+        fileType: classifyFile(f),
+        provider: "cloudinary" as const,
+        publicId: f.public_id,
+        resourceType: f.resource_type,
+        format: f.format,
+        bytes: f.bytes,
+        width: f.width,
+        height: f.height,
+        createdAt: new Date().toISOString(),
+      };
+    });
+    setDialogAttachments((prev) => [...prev, ...mapped]);
   };
-  const openDialog = () => {
-    if (isDialogOpen) {
-      document.body.style.overflow = "hidden";
-    } else {
-      document.body.style.overflow = "auto";
+
+  const handleDialogRemove = (identifier: string) => {
+    setDialogAttachments((prev) => prev.filter((a) => a.id !== identifier));
+  };
+
+  const handleSubmitResponse = async () => {
+    setIsResponseLoading(true);
+    try {
+      if (!currentReportId) return;
+
+      if (message === undefined) {
+        setResponseError("Pesan harus diisi");
+        return;
+      }
+
+      if (dialogAttachments.length === 0) {
+        setImageError("Lampiran harus diisi");
+        return;
+      }
+      await updateReportStat(currentReportId, dialogAttachments, message);
+      closeDialog();
+      toast.success("Tanggapan berhasil dikirim", "Berhasil");
+      qc.invalidateQueries({ queryKey: ["admin-reports"] });
+    } catch (error) {
+      toast.error("Terjadi kesalahan saat mengirim tanggapan", "Gagal");
+      console.error(error);
+    } finally {
+      setIsResponseLoading(false);
     }
-    setIsDialogOpen(true);
   };
 
-  const updateReport = async (attachments?: string[], message?: string) => {
-    if (!currentReportId) return;
-    const response = await updateReportStat(
-      currentReportId,
-      attachments,
-      message
-    );
-    return response;
+  const handleAcceptReport = async () => {
+    setIsResponseLoading(true);
+    try {
+      if (!currentReportId) return;
+
+      // Update status to IN_PROGRESS with response message
+      // Backend will create response entry and send notification
+      await updateReportStatus(
+        currentReportId,
+        "IN_PROGRESS",
+        "Laporan ini akan diproses",
+      );
+
+      closeDialog();
+      toast.success("Laporan berhasil diterima", "Berhasil");
+      qc.invalidateQueries({ queryKey: ["admin-reports"] });
+      qc.invalidateQueries({ queryKey: ["reports"] });
+      qc.invalidateQueries({ queryKey: ["report", currentReportId] });
+    } catch (error) {
+      toast.error("Terjadi kesalahan saat menerima laporan", "Gagal");
+      console.error("Accept report error:", error);
+    } finally {
+      setIsResponseLoading(false);
+    }
+  };
+
+  const handleSubmitRejection = async () => {
+    setIsResponseLoading(true);
+    setRejectionError(null);
+    try {
+      if (!currentReportId) return;
+
+      if (!rejectionReason.trim()) {
+        setRejectionError("Alasan penolakan harus diisi");
+        setIsResponseLoading(false);
+        return;
+      }
+
+      // Update status to REJECTED with rejection reason as response message
+      // Backend will create response entry and send notification
+      await updateReportStatus(currentReportId, "REJECTED", rejectionReason);
+
+      closeRejectModal();
+      closeDialog();
+      document.body.style.overflow = "auto";
+      toast.success("Laporan berhasil ditolak", "Berhasil");
+      qc.invalidateQueries({ queryKey: ["admin-reports"] });
+      qc.invalidateQueries({ queryKey: ["reports"] });
+      qc.invalidateQueries({ queryKey: ["report", currentReportId] });
+    } catch (error) {
+      toast.error("Terjadi kesalahan saat menolak laporan", "Gagal");
+      console.error(error);
+    } finally {
+      setIsResponseLoading(false);
+    }
   };
 
   const { data, isLoading, isError } = useQuery({
@@ -161,7 +321,6 @@ export default function ManageReportsPage() {
         pageSize,
         q,
         selectedCategory,
-        selectedPriority,
         selectedStatus,
         selectedVisibility,
         dateRange,
@@ -170,13 +329,14 @@ export default function ManageReportsPage() {
       },
     ],
     queryFn: () => {
-      const upvoteDateRange = selectedPeriod ? getDateRangeFromPeriod(selectedPeriod) : {};
+      const upvoteDateRange = selectedPeriod
+        ? getDateRangeFromPeriod(selectedPeriod)
+        : {};
       return adminListReports({
         page,
         pageSize,
         q,
         category: selectedCategory,
-        priority: selectedPriority,
         status: selectedStatus,
         visibility: selectedVisibility,
         dateFrom: dateRange.from,
@@ -187,96 +347,6 @@ export default function ManageReportsPage() {
       });
     },
     staleTime: 0,
-  });
-
-  const statusMutation = useMutation({
-    mutationFn: ({
-      id,
-      status,
-      message,
-    }: {
-      id: string;
-      status: string;
-      message?: string;
-    }) => updateReportStatus(id, status, message),
-    onMutate: async ({ id, status }) => {
-      // Cancel outgoing refetches
-      await qc.cancelQueries({ queryKey: ["admin-reports"] });
-
-      // Snapshot previous data
-      const previousData = qc.getQueryData([
-        "admin-reports",
-        {
-          page,
-          pageSize,
-          q,
-          selectedCategory,
-          selectedPriority,
-          selectedStatus,
-          selectedVisibility,
-          dateRange,
-        },
-      ]);
-
-      // Optimistically update
-      qc.setQueryData(
-        [
-          "admin-reports",
-          {
-            page,
-            pageSize,
-            q,
-            selectedCategory,
-            selectedPriority,
-            selectedStatus,
-            selectedVisibility,
-            dateRange,
-          },
-        ],
-        (old: unknown) => {
-          if (!old || typeof old !== "object") return old;
-          const data = old as { items: Report[]; total: number };
-          return {
-            ...data,
-            items: data.items.map((item: Report) =>
-              item.id === id
-                ? { ...item, status: status as Report["status"] }
-                : item
-            ),
-          };
-        }
-      );
-
-      return { previousData };
-    },
-    onError: (_err, _variables, context) => {
-      // Rollback on error
-      if (context?.previousData) {
-        qc.setQueryData(
-          [
-            "admin-reports",
-            {
-              page,
-              pageSize,
-              q,
-              selectedCategory,
-              selectedPriority,
-              selectedStatus,
-              selectedVisibility,
-              dateRange,
-            },
-          ],
-          context.previousData
-        );
-      }
-    },
-    onSettled: (_, __, variables) => {
-      // Always refetch to ensure consistency
-      qc.invalidateQueries({ queryKey: ["admin-reports"] });
-      qc.invalidateQueries({ queryKey: ["reports"] });
-      qc.invalidateQueries({ queryKey: ["report", variables.id] });
-      qc.invalidateQueries({ queryKey: ["report-statistics"] });
-    },
   });
 
   const items = data?.items ?? [];
@@ -348,18 +418,15 @@ export default function ManageReportsPage() {
     return labels[category as keyof typeof labels] || category;
   };
 
-  const getPriorityIndicator = (report: Report) => {
-    const daysSinceCreated = Math.floor(
-      (Date.now() - new Date(report.createdAt).getTime()) /
-        (1000 * 60 * 60 * 24)
-    );
-
-    if (report.upvoteCount >= 10 || daysSinceCreated >= 7) {
-      return { level: "HIGH", color: "text-red-500", label: "Tinggi" };
-    } else if (report.upvoteCount >= 5 || daysSinceCreated >= 3) {
-      return { level: "NORMAL", color: "text-yellow-500", label: "Normal" };
-    }
-    return { level: "LOW", color: "text-green-500", label: "Rendah" };
+  const getStatusLabel = (status: string) => {
+    const labels = {
+      PENDING: "Menunggu",
+      IN_PROGRESS: "Diproses",
+      RESOLVED: "Selesai",
+      REJECTED: "Ditolak",
+      CLOSED: "Ditutup",
+    };
+    return labels[status as keyof typeof labels] || status;
   };
 
   const formatDate = (dateString: string) => {
@@ -374,15 +441,6 @@ export default function ManageReportsPage() {
 
   const handleViewClick = (report: Report) => {
     navigate(`/admin/reports/${report.id}`);
-  };
-
-  const handleStatusChange = (reportId: string, newStatus: string) => {
-    const report = items.find((r: Report) => r.id === reportId);
-    if (!report) return;
-
-    // For status changes that need a reason, we might want to show a modal
-    // For now, let's do a quick status update
-    statusMutation.mutate({ id: reportId, status: newStatus });
   };
 
   const handlePageSizeChange = (newPageSize: number) => {
@@ -401,7 +459,6 @@ export default function ManageReportsPage() {
 
   const handleResetFilters = () => {
     setSelectedCategory("");
-    setSelectedPriority("");
     setSelectedStatus("");
     setSelectedVisibility("");
     setDateRange({});
@@ -414,7 +471,6 @@ export default function ManageReportsPage() {
   const activeFilterCount = useMemo(() => {
     let count = 0;
     if (selectedCategory) count++;
-    if (selectedPriority) count++;
     if (selectedStatus) count++;
     if (selectedVisibility) count++;
     if (dateRange.from || dateRange.to) count++;
@@ -423,7 +479,6 @@ export default function ManageReportsPage() {
     return count;
   }, [
     selectedCategory,
-    selectedPriority,
     selectedStatus,
     selectedVisibility,
     dateRange,
@@ -443,23 +498,6 @@ export default function ManageReportsPage() {
         setPage(1);
       },
       options: categoryOptions,
-    },
-    {
-      name: "priority",
-      label: "Prioritas",
-      type: "select",
-      value: selectedPriority,
-      onChange: (value) => {
-        setSelectedPriority(value as string);
-        setPage(1);
-      },
-      options: [
-        { value: "", label: "Semua Prioritas" },
-        { value: "LOW", label: "Rendah" },
-        { value: "NORMAL", label: "Normal" },
-        { value: "HIGH", label: "Tinggi" },
-        { value: "URGENT", label: "Urgent" },
-      ],
     },
     {
       name: "status",
@@ -567,6 +605,7 @@ export default function ManageReportsPage() {
                 fields={filterFields}
                 activeFilterCount={activeFilterCount}
                 onReset={handleResetFilters}
+                dropdownClassName="left-0 md:left-auto md:right-0"
               />
             </div>
           </div>
@@ -592,16 +631,15 @@ export default function ManageReportsPage() {
             </div>
           ) : (
             <>
-              {/* Desktop Table View */}
               <div className="hidden lg:block overflow-x-auto">
                 <table className="min-w-full table-fixed">
                   <colgroup>
-                    <col className="w-35/100" /> {/* Laporan - 35% */}
-                    <col className="w-1/10" /> {/* Kategori - 10% */}
-                    <col className="w-1/10" /> {/* Prioritas - 10% */}
-                    <col className="w-1/10" /> {/* Visibilitas - 10% */}
-                    <col className="w-2/10" /> {/* Tanggal - 20% */}
-                    <col className="w-15/100" /> {/* Status - 15% */}
+                    <col className="w-[32%]" /> {/* Laporan */}
+                    <col className="w-[13%]" /> {/* Kategori */}
+                    <col className="w-[12%]" /> {/* Visibilitas */}
+                    <col className="w-[17%]" /> {/* Tanggal */}
+                    <col className="w-[13%]" /> {/* Status */}
+                    <col className="w-[13%]" /> {/* Action */}
                   </colgroup>
                   <thead>
                     <tr className="border-b border-gray-200 dark:border-gray-700">
@@ -612,9 +650,6 @@ export default function ManageReportsPage() {
                         Kategori
                       </th>
                       <th className="text-left py-4 pr-4 text-sm font-medium text-gray-600 dark:text-gray-300">
-                        Prioritas
-                      </th>
-                      <th className="text-left py-4 pr-4 text-sm font-medium text-gray-600 dark:text-gray-300">
                         Visibilitas
                       </th>
                       <th className="text-left py-4 text-sm font-medium text-gray-600 dark:text-gray-300">
@@ -623,12 +658,13 @@ export default function ManageReportsPage() {
                       <th className="text-left py-4 pr-4 text-sm font-medium text-gray-600 dark:text-gray-300">
                         Status
                       </th>
+                      <th className="text-left py-4 pr-4 text-sm font-medium text-gray-600 dark:text-gray-300">
+                        Action
+                      </th>
                     </tr>
                   </thead>
                   <tbody>
                     {items.map((report: Report) => {
-                      const priority = getPriorityIndicator(report);
-
                       return (
                         <tr
                           key={report.id}
@@ -675,15 +711,6 @@ export default function ManageReportsPage() {
                             </Badge>
                           </td>
                           <td className="py-5 pr-4">
-                            <Badge variant="default" size="sm">
-                              <span
-                                className={`block truncate text-xs ${priority.color}`}
-                              >
-                                {priority.label}
-                              </span>
-                            </Badge>
-                          </td>
-                          <td className="py-5 pr-4">
                             <Badge
                               variant={report.isPublic ? "success" : "warning"}
                               size="sm"
@@ -693,32 +720,63 @@ export default function ManageReportsPage() {
                               </span>
                             </Badge>
                           </td>
-                          <td className="py-5">
-                            <div className="text-xs text-gray-600 dark:text-gray-300">
-                              <p className="font-medium">
+                          <td className="py-5 max-w-0">
+                            <div className="text-xs text-gray-600 dark:text-gray-300 w-full">
+                              <p className="font-medium whitespace-nowrap overflow-hidden text-ellipsis">
                                 {formatDate(report.createdAt)}
                               </p>
                               {report.user && !report.isAnonymous && (
-                                <p className="text-gray-500 dark:text-gray-300 truncate">
+                                <p className="text-gray-500 dark:text-gray-300 whitespace-nowrap overflow-hidden text-ellipsis max-w-[120px]">
                                   oleh {report.user.name}
                                 </p>
                               )}
                               {report.isAnonymous && (
-                                <p className="text-gray-500 dark:text-gray-300">Anonim</p>
+                                <p className="text-gray-500 dark:text-gray-300 whitespace-nowrap">
+                                  Anonim
+                                </p>
                               )}
                             </div>
                           </td>
                           <td className="py-5 pr-4">
-                            <Button
-                              size="sm"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                openDialog();
-                                setCurrentReportId(report.id);
-                              }}
-                            >
-                              Next Step
-                            </Button>
+                            <Badge variant="default" size="sm">
+                              <span className="block truncate text-xs">
+                                {getStatusLabel(report.status)}
+                              </span>
+                            </Badge>
+                          </td>
+                          <td className="py-5 pr-4">
+                            <div className="flex items-center gap-2">
+                              <Button
+                                size="sm"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  openDialog(report);
+                                }}
+                                disabled={
+                                  report.status === "RESOLVED" ||
+                                  report.status === "REJECTED"
+                                }
+                              >
+                                Tanggapi
+                              </Button>
+                              {report.status === "IN_PROGRESS" &&
+                                report.user?.role === Role.CITIZEN && (
+                                  <Button
+                                    size="sm"
+                                    variant="outline"
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      navigate("/admin/chat", {
+                                        state: { reportId: report.id },
+                                      });
+                                    }}
+                                    title="Buka Chat"
+                                    className="ml-2"
+                                  >
+                                    <MessageCircle className="h-4 w-4" />
+                                  </Button>
+                                )}
+                            </div>
                           </td>
                         </tr>
                       );
@@ -730,8 +788,6 @@ export default function ManageReportsPage() {
               {/* Mobile Card View */}
               <div className="lg:hidden space-y-4">
                 {items.map((report: Report) => {
-                  const priority = getPriorityIndicator(report);
-
                   return (
                     <Card
                       key={report.id}
@@ -766,11 +822,6 @@ export default function ManageReportsPage() {
                             >
                               {getStatusBadge(report.status).label}
                             </Badge>
-                            <Badge variant="default" size="sm">
-                              <span className={priority.color}>
-                                {priority.label}
-                              </span>
-                            </Badge>
                             <Badge
                               variant={report.isPublic ? "success" : "warning"}
                               size="sm"
@@ -799,22 +850,37 @@ export default function ManageReportsPage() {
                             </div>
                           </div>
 
-                          <div className="pt-2 border-t border-gray-100">
-                            <select
-                              value={report.status}
-                              onChange={(e) => {
+                          <div className="pt-2 border-t border-gray-100 dark:border-gray-600 flex gap-2">
+                            <Button
+                              size="sm"
+                              className="flex-1"
+                              onClick={(e) => {
                                 e.stopPropagation();
-                                handleStatusChange(report.id, e.target.value);
+                                openDialog(report);
                               }}
-                              className="w-full text-sm border rounded px-3 py-2"
-                              onClick={(e) => e.stopPropagation()}
+                              disabled={
+                                report.status === "RESOLVED" ||
+                                report.status === "REJECTED"
+                              }
                             >
-                              <option value="PENDING">Menunggu</option>
-                              <option value="IN_PROGRESS">Dalam Proses</option>
-                              <option value="RESOLVED">Selesai</option>
-                              <option value="REJECTED">Ditolak</option>
-                              <option value="CLOSED">Ditutup</option>
-                            </select>
+                              Tanggapi
+                            </Button>
+                            {report.status === "IN_PROGRESS" &&
+                              report.user?.role === Role.CITIZEN && (
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    navigate("/admin/chat", {
+                                      state: { reportId: report.id },
+                                    });
+                                  }}
+                                  title="Buka Chat"
+                                >
+                                  <MessageCircle className="h-4 w-4" />
+                                </Button>
+                              )}
                           </div>
                         </div>
                       </CardContent>
@@ -840,36 +906,232 @@ export default function ManageReportsPage() {
         </CardContent>
       </Card>
 
-      {isDialogOpen && (
+      {isDialogOpen && currentReport && (
+        <>
+          <div className="fixed inset-0 bg-black/40 dark:bg-black/60 backdrop-blur-sm z-40 mb-0" />
+
+          {currentReport.status === "PENDING" ? (
+            // Modal for PENDING status - Accept/Reject
+            <Card
+              ref={dialogRef}
+              className="fixed z-50 top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[90vw] max-w-[600px] bg-gray-50 dark:bg-gray-800 rounded-3xl max-h-[85vh] overflow-y-auto"
+            >
+              <CardHeader className="flex flex-row justify-between">
+                <CardTitle>Tanggapi Laporan</CardTitle>
+                <X
+                  className="w-5 h-5 hover:cursor-pointer text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200"
+                  onClick={closeDialog}
+                />
+              </CardHeader>
+
+              <CardContent>
+                <div className="flex flex-col gap-4">
+                  {/* Report Details */}
+                  <div className="space-y-3 p-4 bg-gray-100 dark:bg-gray-700 rounded-lg border border-gray-300 dark:border-gray-600">
+                    <h3 className="text-base font-bold text-gray-800 dark:text-white mb-3 pb-2 border-b border-gray-300 dark:border-gray-600">
+                      Detail Laporan
+                    </h3>
+                    <div>
+                      <h3 className="text-sm font-semibold text-gray-600 dark:text-gray-300 mb-1">
+                        Judul
+                      </h3>
+                      <p className="text-base text-gray-900 dark:text-white">
+                        {currentReport.title}
+                      </p>
+                    </div>
+                    <div>
+                      <h3 className="text-sm font-semibold text-gray-600 dark:text-gray-300 mb-1">
+                        Deskripsi
+                      </h3>
+                      <p className="text-sm text-gray-700 dark:text-gray-200 whitespace-pre-wrap">
+                        {currentReport.description}
+                      </p>
+                    </div>
+                    <div>
+                      <h3 className="text-sm font-semibold text-gray-600 dark:text-gray-300 mb-1">
+                        Kategori
+                      </h3>
+                      <Badge variant="default" size="sm">
+                        {getCategoryLabel(currentReport.category)}
+                      </Badge>
+                    </div>
+                    <div>
+                      <h3 className="text-sm font-semibold text-gray-600 dark:text-gray-300 mb-1">
+                        Lokasi
+                      </h3>
+                      <div className="flex items-start gap-2">
+                        <MapPin className="h-4 w-4 mt-0.5 text-gray-500 dark:text-gray-400" />
+                        <p className="text-sm text-gray-700 dark:text-gray-200">
+                          {currentReport.location.address}
+                        </p>
+                      </div>
+                    </div>
+                    <div>
+                      <h3 className="text-sm font-semibold text-gray-600 dark:text-gray-300 mb-1">
+                        Tanggal Dibuat
+                      </h3>
+                      <p className="text-sm text-gray-700 dark:text-gray-200">
+                        {formatDate(currentReport.createdAt)}
+                      </p>
+                    </div>
+                    {currentReport.attachments &&
+                      currentReport.attachments.length > 0 && (
+                        <div>
+                          <AttachmentViewer
+                            attachments={currentReport.attachments.map(
+                              (attachment) => ({
+                                id: attachment.id,
+                                filename: attachment.filename,
+                                url: attachment.url,
+                                fileType: attachment.fileType as
+                                  | "image"
+                                  | "video"
+                                  | "audio"
+                                  | "document",
+                                format: attachment.filename
+                                  .split(".")
+                                  .pop()
+                                  ?.toLowerCase(),
+                              }),
+                            )}
+                            title="Lampiran"
+                            gridCols={2}
+                          />
+                        </div>
+                      )}
+                  </div>
+
+                  {/* Accept/Reject Buttons */}
+                  <div className="flex gap-3 pt-4">
+                    <Button
+                      className="flex-1"
+                      variant="primary"
+                      onClick={handleAcceptReport}
+                      loading={isResponseLoading}
+                      disabled={isResponseLoading}
+                    >
+                      <CheckCircle className="h-4 w-4 mr-2" />
+                      Terima Laporan
+                    </Button>
+                    <Button
+                      className="flex-1"
+                      variant="danger"
+                      onClick={openRejectModal}
+                      disabled={isResponseLoading}
+                    >
+                      <XCircle className="h-4 w-4 mr-2" />
+                      Tolak Laporan
+                    </Button>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          ) : (
+            // Modal for IN_PROGRESS status - Response with message and attachments
+            <Card
+              ref={dialogRef}
+              className="fixed z-50 top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[90vw] max-w-[500px] bg-gray-50 dark:bg-gray-800 rounded-3xl max-h-[85vh] overflow-y-auto"
+            >
+              <CardHeader className="flex flex-row justify-between">
+                <CardTitle>Tanggapi Laporan</CardTitle>
+                <X
+                  className="w-5 h-5 hover:cursor-pointer text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200"
+                  onClick={closeDialog}
+                />
+              </CardHeader>
+
+              <CardContent>
+                <div className="flex flex-col gap-4">
+                  <Textarea
+                    label="Pesan Tanggapan"
+                    showCounter
+                    limit={200}
+                    placeholder="Isi Tanggapan Anda"
+                    error={responseError}
+                    onChange={(e) => setMessage(e.target.value)}
+                  />
+
+                  <CloudinaryUpload
+                    folder="reports"
+                    multiple
+                    accept="image/jpeg,image/png,image/jpg"
+                    maxFiles={3}
+                    attachments={dialogAttachments}
+                    onUploaded={handleDialogUploaded}
+                    onRemove={handleDialogRemove}
+                    onUploadingChange={setIsUploading}
+                    error={imageError}
+                  />
+
+                  <Button
+                    onClick={handleSubmitResponse}
+                    disabled={
+                      isUploading ||
+                      (!message && dialogAttachments.length === 0)
+                    }
+                    loading={isResponseLoading}
+                  >
+                    {isUploading ? "Mengunggah..." : "Kirim Tanggapan"}
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          )}
+        </>
+      )}
+
+      {/* Rejection Reason Modal */}
+      {isRejectModalOpen && (
         <>
           <div className="fixed inset-0 bg-black/40 dark:bg-black/60 backdrop-blur-sm z-40 mb-0" />
 
           <Card
-            ref={dialogRef}
-            className="absolute z-50 top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[400px] h-[300px] bg-gray-50 dark:bg-gray-800 rounded-3xl "
+            ref={rejectDialogRef}
+            className="fixed z-50 top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[90vw] max-w-[500px] bg-gray-50 dark:bg-gray-800 rounded-3xl max-h-[85vh] overflow-y-auto"
           >
-            <CardHeader className="flex flex-row justify-between ">
-              <CardTitle>Chupapimunyayo</CardTitle>
+            <CardHeader className="flex flex-row justify-between">
+              <CardTitle>Alasan Penolakan</CardTitle>
               <X
-                className="w-5 h-5 hover:cursor-pointer"
-                onClick={closeDialog}
+                className="w-5 h-5 hover:cursor-pointer text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200"
+                onClick={cancelRejection}
               />
             </CardHeader>
 
             <CardContent>
-              <div className="flex justify-between flex-col gap-4">
-                <Input
-                  label="response"
+              <div className="flex flex-col gap-4">
+                <p className="text-sm text-gray-600 dark:text-gray-300">
+                  Mohon berikan alasan mengapa laporan ini ditolak.
+                </p>
+
+                <Textarea
+                  label="Alasan Penolakan"
                   showCounter
-                  limit={200}
-                  onChange={(e) => setMessage(e.target.value)}
+                  limit={500}
+                  placeholder="Masukkan alasan penolakan laporan"
+                  value={rejectionReason}
+                  error={rejectionError}
+                  onChange={(e) => setRejectionReason(e.target.value)}
                 />
-                <Button
-                  className=""
-                  onClick={() => updateReport(undefined, message)}
-                >
-                  Submit
-                </Button>
+
+                <div className="flex gap-3 pt-2">
+                  <Button
+                    className="flex-1"
+                    variant="outline"
+                    onClick={cancelRejection}
+                    disabled={isResponseLoading}
+                  >
+                    Batal
+                  </Button>
+                  <Button
+                    className="flex-1"
+                    variant="danger"
+                    onClick={handleSubmitRejection}
+                    loading={isResponseLoading}
+                    disabled={isResponseLoading || !rejectionReason.trim()}
+                  >
+                    Tolak Laporan
+                  </Button>
+                </div>
               </div>
             </CardContent>
           </Card>

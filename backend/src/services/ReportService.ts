@@ -1,5 +1,5 @@
 import ReportRepository from "../repositories/ReportRepository";
-import { ReportStatus, ReportCategory, Role } from "@prisma/client";
+import { ReportStatus, ReportCategory, Role, Attachment } from "@prisma/client";
 import { CreateReportData } from "../types/reportTypes";
 import { generateCategory } from "../utils/llm";
 import { NotificationService } from "./NotificationService";
@@ -61,10 +61,9 @@ class ReportService {
   }
 
   static async generateReportCategory(data: CreateReportData) {
-    console.log(data);
     try {
       const category = await generateCategory(data.title, data.description);
-      if(!category) {
+      if (!category) {
         throw new Error("AI IS NOT WORKING");
       }
       // console.log({ category });
@@ -79,30 +78,83 @@ class ReportService {
     }
   }
 
-  static async getAllReports(params: {
-    page?: any;
-    pageSize?: any;
-    q?: string;
-    category?: string;
-    priority?: string;
-    status?: string;
-    includePrivate?: string | boolean;
-    isPublic?: string | boolean;
-    dateFrom?: string;
-    dateTo?: string;
-    userId?: string;
-    sortBy?: string;
-    upvoteDateFrom?: string;
-    upvoteDateTo?: string;
-  }, rtId?: string) {
+  static async getAllReports(
+    params: {
+      page?: any;
+      pageSize?: any;
+      q?: string;
+      category?: string;
+      priority?: string;
+      status?: string;
+      includePrivate?: string | boolean;
+      isPublic?: string | boolean;
+      dateFrom?: string;
+      dateTo?: string;
+      userId?: string;
+      sortBy?: string;
+      upvoteDateFrom?: string;
+      upvoteDateTo?: string;
+    },
+    rtId?: string,
+    requestingUserId?: string,
+  ) {
     const page = Math.max(1, parseInt(params.page ?? "1", 10) || 1);
     const pageSize = Math.min(
       50,
       Math.max(1, parseInt(params.pageSize ?? "10", 10) || 10),
     );
-    console.log(params.status);
     try {
       const { total, items } = await ReportRepository.getAllReports({
+        page,
+        pageSize,
+        q: params.q,
+        category: params.category,
+        priority: params.priority,
+        status: params.status,
+        userId: params.userId,
+        includePrivate:
+          params.includePrivate === true || params.includePrivate === "true",
+        isPublic: params.isPublic,
+        dateFrom: params.dateFrom,
+        dateTo: params.dateTo,
+        sortBy: params.sortBy,
+        upvoteDateFrom: params.upvoteDateFrom,
+        upvoteDateTo: params.upvoteDateTo,
+        rtId,
+        requestingUserId,
+      });
+      return { page, pageSize, total, items };
+    } catch (error) {
+      throw new Error(`Failed to fetch reports: ${error}`);
+    }
+  }
+
+  static async getMyReports(
+    params: {
+      page?: any;
+      pageSize?: any;
+      q?: string;
+      category?: string;
+      priority?: string;
+      status?: string;
+      includePrivate?: string | boolean;
+      isPublic?: string | boolean;
+      dateFrom?: string;
+      dateTo?: string;
+      userId?: string;
+      sortBy?: string;
+      upvoteDateFrom?: string;
+      upvoteDateTo?: string;
+    },
+    rtId?: string,
+  ) {
+    const page = Math.max(1, parseInt(params.page ?? "1", 10) || 1);
+    const pageSize = Math.min(
+      50,
+      Math.max(1, parseInt(params.pageSize ?? "10", 10) || 10),
+    );
+    try {
+      const { total, items } = await ReportRepository.getMyReports({
         page,
         pageSize,
         q: params.q,
@@ -158,20 +210,40 @@ class ReportService {
     }
   }
 
-  static async updateStatus(reportId: string, status: ReportStatus) {
+  static async updateStatus(reportId: string, status: ReportStatus, userId?: string, message?: string) {
     try {
-      console.log("masuk update status");
       const updatedReport = await ReportRepository.updateStatus(
         reportId,
         status,
       );
 
+      // If there's a message, create a response entry
+      if (message && userId) {
+        await ReportRepository.addOfficialResponse(
+          reportId,
+          userId,
+          message.trim(),
+          undefined
+        );
+      }
+
       const baseUrl = process.env.FRONTEND_URL_PROD || process.env.FRONTEND_URL;
       const url = `${baseUrl}/reports/${updatedReport.id}`;
+      
+      // Get status label for notification
+      const statusLabels: Record<string, string> = {
+        PENDING: "Menunggu",
+        IN_PROGRESS: "Diproses",
+        RESOLVED: "Selesai",
+        REJECTED: "Ditolak",
+        CLOSED: "Ditutup"
+      };
+      const statusLabel = statusLabels[updatedReport.status] || updatedReport.status;
+      
       await NotificationService.sendNotificationByUserId(
         [updatedReport.userId!],
         `Laporan "${updatedReport.title}" Telah Diperbarui!`,
-        `Status laporan kamu kini berubah menjadi ${updatedReport.status}`,
+        message || `Status laporan kamu kini berubah menjadi ${statusLabel}`,
         url,
         "https://res.cloudinary.com/dgnedkivd/image/upload/v1757562088/silaporrt/dev/logo/logo_lnenhb.png",
         "REPORT",
@@ -219,19 +291,23 @@ class ReportService {
     }
   }
 
-  static async getReportsByCategory(category: string) {
+  static async getReportsByCategory(category: string, rtId?: string) {
     try {
-      const reports = await ReportRepository.getReportsByCategory(category);
+      const reports = await ReportRepository.getReportsByCategory(
+        category,
+        rtId,
+      );
       return { reports, count: reports.length };
     } catch (error) {
       throw new Error(`Failed to fetch reports by category: ${error}`);
     }
   }
 
-  static async getReportsByStatus(status: string) {
+  static async getReportsByStatus(status: string, rtId?: string) {
     try {
       const reports = await ReportRepository.getReportsByStatus(
         status as ReportStatus,
+        rtId,
       );
       return {
         reports,
@@ -254,8 +330,8 @@ class ReportService {
     }
   }
 
-  static async getRecentReports() {
-    const { items } = await ReportRepository.getRecentReports();
+  static async getRecentReports(rtId?: string) {
+    const { items } = await ReportRepository.getRecentReports(rtId);
     return { items };
   }
 
@@ -294,20 +370,35 @@ class ReportService {
       throw new Error(`Failed to fetch all reports statistics: ${error}`);
     }
   }
+
   static async updateReportStatus(
     reportId: string,
     responderId: string,
-    attachments?: string[],
+    attachments?: Attachment[],
     message?: string,
   ) {
     try {
-      const result = await ReportRepository.updateReportStatus(
+      const updatedReport = await ReportRepository.updateReportStatus(
         reportId,
         responderId,
         attachments,
         message,
       );
-      return result;
+
+      const baseUrl = process.env.FRONTEND_URL_PROD ?? process.env.FRONTEND_URL;
+      const url = `${baseUrl}/reports/${updatedReport.id}`;
+
+      if (updatedReport) {
+        NotificationService.sendNotificationByUserId(
+          [updatedReport.userId!],
+          `Laporan "${updatedReport.title}" Telah Diperbarui!`,
+          `Status laporan kamu kini berubah menjadi ${updatedReport.status}`,
+          url,
+          "https://res.cloudinary.com/dgnedkivd/image/upload/v1757562088/silaporrt/dev/logo/logo_lnenhb.png",
+          "REPORT",
+        );
+      }
+      return updatedReport;
     } catch (error) {
       throw new Error(`Failed to update report status: ${error}`);
     }

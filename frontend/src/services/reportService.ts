@@ -1,5 +1,10 @@
 import { request } from "./api";
-import { CreateReportFormData, Report, ReportCategory } from "../types/report.types";
+import {
+  Attachment,
+  CreateReportFormData,
+  Report,
+  ReportCategory,
+} from "../types/report.types";
 import { CloudinaryFile } from "../types/announcement.types";
 import { classifyFile } from "../utils/classifyFile";
 
@@ -176,7 +181,7 @@ export async function getAllReportsStatistic() {
 
 export async function updateReportStat(
   reportId: string,
-  attachments?: string[],
+  attachments?: Attachment[],
   message?: string,
 ) {
   try {
@@ -229,7 +234,6 @@ export async function getReportsByStatus(status: string): Promise<Report[]> {
   }
 }
 
-// Get reports by category
 export async function getReportsByCategory(
   category: string,
 ): Promise<Report[]> {
@@ -264,7 +268,7 @@ export async function getReportsByCategory(
   }
 }
 
-export async function generateReportCategory(data: any) {
+export async function generateReportCategory(data: Record<string, unknown>) {
   try {
     const response = await request(`/reports/generate/category`, {
       method: "POST",
@@ -387,16 +391,16 @@ export async function getDashboardStats(
     // Get unique users from all active reports
     console.log("👥 Calculating active users...");
 
-    // Filter reports that have user data (non-anonymous reports)
-    const reportsWithUsers = allActiveReports.filter(
-      (r) => r && r.user && r.user.id,
+    // Filter reports that have user data (non-anonymous) and role CITIZEN only
+    const reportsWithCitizens = allActiveReports.filter(
+      (r) => r && r.user && r.user.id && r.user.role === "CITIZEN",
     );
-    console.log("- Reports with user data:", reportsWithUsers.length);
+    console.log("- Reports with citizen data:", reportsWithCitizens.length);
 
-    // Extract unique user IDs
-    const userIds = reportsWithUsers.map((r) => r.user!.id);
+    // Extract unique citizen user IDs
+    const userIds = reportsWithCitizens.map((r) => r.user!.id);
     const uniqueUsers = new Set(userIds);
-    console.log("- Active users count:", uniqueUsers.size);
+    console.log("- Active citizens count:", uniqueUsers.size);
 
     const stats: DashboardStats = {
       totalReports,

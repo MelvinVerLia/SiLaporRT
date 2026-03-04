@@ -6,7 +6,7 @@ const router = Router();
 
 // === CORE REPORT ROUTES ===
 router.get("/", authenticateJWT, ReportController.getAllReports);
-router.get("/get-recent", ReportController.getRecentReports);
+router.get("/get-recent", authenticateJWT, ReportController.getRecentReports);
 router.get("/my-reports", authenticateJWT, ReportController.getUserReports);
 router.get(
   "/my-reports/stats",
@@ -37,7 +37,7 @@ router.get(
 );
 
 // === ADMIN/RT ROUTES ===
-router.put("/:reportId/status", ReportController.updateStatus);
+router.put("/:reportId/status", authenticateJWT, ReportController.updateStatus);
 router.post(
   "/:reportId/response",
   authenticateJWT,
@@ -50,7 +50,15 @@ router.put(
 );
 
 // === FILTERING ROUTES ===
-router.get("/category/:category", ReportController.getReportsByCategory);
-router.get("/status/:status", ReportController.getReportsByStatus);
+router.get(
+  "/category/:category",
+  authenticateJWT,
+  ReportController.getReportsByCategory,
+);
+router.get(
+  "/status/:status",
+  authenticateJWT,
+  ReportController.getReportsByStatus,
+);
 
 export default router;
