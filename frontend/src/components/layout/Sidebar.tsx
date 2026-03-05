@@ -13,6 +13,7 @@ import {
   FilePlus,
   Bell,
   MessageCircle,
+  Users,
 } from "lucide-react";
 import { cn } from "../../utils/cn";
 import { useAuthContext } from "../../contexts/AuthContext";
@@ -107,18 +108,6 @@ const Sidebar: React.FC<SidebarProps> = ({ className }) => {
       path: "/admin/reports",
       label: "Kelola Laporan",
       icon: FileText,
-      submenu: [
-        {
-          path: "/admin/reports",
-          label: "Daftar Laporan",
-          icon: FileText,
-        },
-        {
-          path: "/admin/reports/create",
-          label: "Buat Laporan",
-          icon: FilePlus,
-        },
-      ],
     },
     {
       path: "/admin/announcements",
@@ -136,6 +125,11 @@ const Sidebar: React.FC<SidebarProps> = ({ className }) => {
           icon: FilePlus,
         },
       ],
+    },
+    {
+      path: "/admin/citizens",
+      label: "Kelola Warga",
+      icon: Users,
     },
     {
       path: "/admin/chat",

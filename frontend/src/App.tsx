@@ -34,6 +34,7 @@ import PublicOnlyRoute from "./routes/PublicOnlyRoute";
 import ProtectedRoute from "./routes/ProtectedRoute";
 import { AuthProvider } from "./contexts/AuthContext";
 import RequireCompleteProfile from "./routes/RequireCompleteProfile";
+import AdminRedirect from "./routes/AdminRedirect";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -104,7 +105,14 @@ function App() {
                     />
 
                     {/* Routes with layout */}
-                    <Route path="/" element={<CitizenLayout />}>
+                    <Route
+                      path="/"
+                      element={
+                        <AdminRedirect>
+                          <CitizenLayout />
+                        </AdminRedirect>
+                      }
+                    >
                       <Route
                         index
                         element={
@@ -204,10 +212,6 @@ function App() {
                     >
                       <Route index element={<AdminDashboard />} />
                       <Route path="profile" element={<ProfilePage />} />
-                      <Route
-                        path="reports/create"
-                        element={<CreateReportPage />}
-                      />
                       <Route path="reports" element={<ManageReportsPage />} />
                       <Route
                         path="reports/:id"

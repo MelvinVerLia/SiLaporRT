@@ -10,7 +10,6 @@ import {
   User,
   LogIn,
   LogOut,
-  Shield,
   Bell,
   ChevronDown,
   UserCircle,
@@ -190,15 +189,6 @@ const Header: React.FC = () => {
   const userDropdownItems = [
     { path: "/profile", label: "Profil Saya", icon: UserCircle },
     { path: "/my-reports", label: "Laporan Saya", icon: User },
-    ...(user?.role === Role.RT_ADMIN
-      ? [
-          {
-            path: "/admin",
-            label: "Admin Panel",
-            icon: Shield,
-          },
-        ]
-      : []),
   ];
 
   return (

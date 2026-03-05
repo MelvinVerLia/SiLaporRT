@@ -4,10 +4,17 @@ import ReportService from "../services/ReportService";
 class ReportController {
   static async createReport(req: Request, res: Response) {
     try {
-      const user = req.user as { id: string };
+      const user = req.user as { id: string; role: string };
       const data = req.body;
       if (!user) {
         throw new Error("User not found");
+      }
+
+      if (user.role === "RT_ADMIN") {
+        return res.status(403).json({
+          success: false,
+          message: "Admin tidak dapat membuat laporan",
+        });
       }
 
       if (!data.title || !data.description || !data.location) {

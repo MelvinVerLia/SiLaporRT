@@ -5,6 +5,7 @@ import { Card, CardContent, CardTitle } from "../ui/Card";
 import Button from "../ui/Button";
 import Input from "../ui/Input";
 import { useAuthContext } from "../../contexts/AuthContext";
+import { Role } from "../../types/auth.types";
 
 const LoginForm: React.FC = () => {
   const [email, setEmail] = useState("");
@@ -23,7 +24,11 @@ const LoginForm: React.FC = () => {
 
     const user = await login({ email, password, rememberMe });
     if (user.id) {
-      navigate(from, { replace: true });
+      if (user.role === Role.RT_ADMIN) {
+        navigate("/admin", { replace: true });
+      } else {
+        navigate(from, { replace: true });
+      }
     }
   };
 
@@ -201,25 +206,6 @@ const LoginForm: React.FC = () => {
           </div>
         </CardContent>
       </Card>
-
-      <div className="mt-8 text-center px-4">
-        <p className="text-xs text-gray-500 dark:text-gray-400">
-          Dengan masuk, Anda menyetujui{" "}
-          <Link
-            to="/terms"
-            className="text-primary-600 dark:text-primary-400 hover:text-primary-700 dark:hover:text-primary-300"
-          >
-            Syarat & Ketentuan
-          </Link>{" "}
-          dan{" "}
-          <Link
-            to="/privacy"
-            className="text-primary-600 dark:text-primary-400 hover:text-primary-700 dark:hover:text-primary-300"
-          >
-            Kebijakan Privasi
-          </Link>
-        </p>
-      </div>
     </div>
   );
 };
