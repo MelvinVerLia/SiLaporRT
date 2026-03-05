@@ -85,6 +85,7 @@ const ChatPage: React.FC = () => {
   const typingIndicatorTimeoutRef = useRef<number | null>(null);
   const selectedReportRef = useRef<Report | null>(null);
   const uploadRef = useRef<CloudinaryUploadRef>(null);
+  const hasAutoSelectedRef = useRef(false);
 
   // Keep ref in sync with state
   useEffect(() => {
@@ -106,7 +107,6 @@ const ChatPage: React.FC = () => {
 
   useEffect(() => {
     if (!ChatId) return;
-    setMessages([]);
 
     const reportId = selectedReport?.id;
 
@@ -116,6 +116,7 @@ const ChatPage: React.FC = () => {
       setIsLoadingMessages(true);
       try {
         const response = await getMessages(reportId);
+        // Clear and set messages in one operation to avoid flash
         setMessages(response.data);
 
         response.data.forEach((msg: Message) => {
@@ -138,19 +139,36 @@ const ChatPage: React.FC = () => {
     fetchMessages();
   }, [ChatId, selectedReport?.id, user?.id, queryClient]);
 
-  const scrollToBottom = () => {
+  const scrollToBottom = (behavior: ScrollBehavior = "auto") => {
     const el = messagesContainerRef.current;
     if (!el) return;
 
-    el.scrollTo({
-      top: el.scrollHeight,
-      behavior: "auto",
+    // Use requestAnimationFrame for smoother, no-blink scrolling
+    requestAnimationFrame(() => {
+      el.scrollTo({
+        top: el.scrollHeight,
+        behavior,
+      });
     });
   };
 
+  // Only scroll when message count changes, not on property updates (like isRead)
   useEffect(() => {
-    scrollToBottom();
-  }, [messages]);
+    if (messages.length > 0) {
+      scrollToBottom();
+    }
+  }, [messages.length]);
+
+  // Additional scroll after loading is complete to handle image rendering
+  useEffect(() => {
+    if (!isLoadingMessages && messages.length > 0) {
+      // Give extra time for images to load
+      const timer = setTimeout(() => {
+        scrollToBottom("auto");
+      }, 100);
+      return () => clearTimeout(timer);
+    }
+  }, [isLoadingMessages, messages.length]);
 
   const sortedMessages = useMemo(() => {
     return [...messages].sort(
@@ -223,17 +241,23 @@ const ChatPage: React.FC = () => {
   // Auto-select report if reportId is passed via navigation state
   useEffect(() => {
     const state = location.state as { reportId?: string } | null;
-    if (state?.reportId && reports.length > 0) {
+    if (state?.reportId && reports.length > 0 && !hasAutoSelectedRef.current) {
       const report = reports.find((r) => r.id === state.reportId);
       if (report) {
         setActiveTab(report.status === "RESOLVED" ? "history" : "ongoing");
         setSelectedReport(report);
         setMobileView("chat");
+        hasAutoSelectedRef.current = true;
         // Clear the state after using it
-        window.history.replaceState({}, document.title);
+        navigate(location.pathname, { replace: true, state: {} });
       }
     }
-  }, [location.state, reports]);
+
+    // Reset the ref when component unmounts so it works on re-navigation
+    return () => {
+      hasAutoSelectedRef.current = false;
+    };
+  }, [location.state, reports, location.pathname, navigate]);
 
   useEffect(() => {
     socket.connect();
@@ -277,7 +301,6 @@ const ChatPage: React.FC = () => {
   useEffect(() => {
     if (!ChatId) return;
 
-    setMessages([]);
     socket.emit("join_room", ChatId);
 
     const handleReceiveMessage = (tempId: string, payload: Message) => {

@@ -152,18 +152,26 @@ const MessageBox = ({ msg, user, idx, sortedMessages }: MessageBoxProps) => {
 
               {msg.attachments && msg.attachments.length > 0 ? (
                 <div>
-                  <AttachmentViewer
-                    attachments={msg.attachments.map((attachment) => ({
-                      id: attachment.id,
-                      filename: attachment.filename,
-                      url: attachment.url,
-                      fileType: attachment.fileType,
-                      format: attachment.format,
-                    }))}
-                    gridCols={msg.attachments.length === 1 ? 1 : 2}
-                    showTitle={false}
-                    hideFileInfo={true}
-                  />
+                  <div className="relative">
+                    <AttachmentViewer
+                      attachments={msg.attachments.map((attachment) => ({
+                        id: attachment.id,
+                        filename: attachment.filename,
+                        url: attachment.url,
+                        fileType: attachment.fileType,
+                        format: attachment.format,
+                      }))}
+                      gridCols={msg.attachments.length === 1 ? 1 : 2}
+                      showTitle={false}
+                      hideFileInfo={true}
+                    />
+                    {/* Timestamp overlay at bottom-left */}
+                    <div className="absolute bottom-2 left-2 flex items-center gap-1 bg-gray-900/60 dark:bg-gray-800/70 px-2 py-1 rounded">
+                      <span className="text-[10px] text-white">
+                        {format(parseISO(msg.createdAt), "HH:mm")}
+                      </span>
+                    </div>
+                  </div>
                   {msg.message && (
                     <div className="rounded-lg p-2 bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white mt-1">
                       <p className="text-sm whitespace-pre-wrap break-all">
@@ -171,12 +179,6 @@ const MessageBox = ({ msg, user, idx, sortedMessages }: MessageBoxProps) => {
                       </p>
                     </div>
                   )}
-                  {/* Timestamp for messages with attachments */}
-                  <div className="flex items-center gap-1 mt-1">
-                    <span className="text-[10px] text-gray-500 dark:text-gray-400">
-                      {format(parseISO(msg.createdAt), "HH:mm")}
-                    </span>
-                  </div>
                 </div>
               ) : (
                 <div className="rounded-lg p-2 bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white max-w-full overflow-hidden">
