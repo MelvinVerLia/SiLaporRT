@@ -39,11 +39,13 @@ export const RegisterSocket = (io: any) => {
         messagePayload.message,
         userId,
         messagePayload.chatId,
+        messagePayload.attachments,
       );
 
       const message = {
         ...messagePayload,
         id: savedMessage.id,
+        attachments: savedMessage.attachments,
       };
 
       io.to(savedMessage.chatId).emit(

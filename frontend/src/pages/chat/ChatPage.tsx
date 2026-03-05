@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef, useMemo } from "react";
-import { useLocation } from "react-router-dom";
-import { Send, User, MapPin, ChevronLeft, FileText } from "lucide-react";
+import { useLocation, useNavigate } from "react-router-dom";
+import { Send, User, MapPin, ChevronLeft, FileText, Camera, X } from "lucide-react";
 import { useAuthContext } from "../../contexts/AuthContext";
 import { Report } from "../../types/report.types";
 import { Role } from "../../types/auth.types";
@@ -18,6 +18,25 @@ import ReportBoxSkeleton from "./components/ReportBoxSkeleton";
 import ReportBox from "./components/ReportBox";
 import TextBoxSkeleton from "./components/TextBoxSkeleton";
 import LoadingSpinner from "../../components/ui/LoadingSpinner";
+import CloudinaryUpload, { CloudinaryUploadRef } from "../../components/upload/CloudinaryUpload";
+import AttachmentViewer from "../../components/ui/AttachmentViewer";
+import { CloudinaryFile } from "../../types/announcement.types";
+import { classifyFile } from "../../utils/classifyFile";
+
+type Attachment = {
+  id: string;
+  filename: string;
+  url: string;
+  fileType: "image" | "video" | "audio" | "document";
+  provider?: "cloudinary";
+  publicId?: string;
+  resourceType?: string;
+  format?: string;
+  bytes?: number;
+  width?: number;
+  height?: number;
+  createdAt: string;
+};
 
 type Message = {
   id: string;
@@ -32,6 +51,7 @@ type Message = {
   createdAt: string;
   optimistic?: boolean;
   isRead?: boolean;
+  attachments?: Attachment[];
 };
 
 type ReportWithUnread = Report & {
@@ -43,6 +63,7 @@ type ReportWithUnread = Report & {
 const ChatPage: React.FC = () => {
   const { user } = useAuthContext();
   const location = useLocation();
+  const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [selectedReport, setSelectedReport] = useState<Report | null>(null);
   const [reports, setReports] = useState<ReportWithUnread[]>([]);
@@ -56,11 +77,14 @@ const ChatPage: React.FC = () => {
   const [mobileView, setMobileView] = useState<"list" | "chat" | "detail">(
     "list",
   );
+  const [attachments, setAttachments] = useState<Attachment[]>([]);
+  const [isUploading, setIsUploading] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const messagesContainerRef = useRef<HTMLDivElement>(null);
   const typingTimeoutRef = useRef<number | null>(null);
   const typingIndicatorTimeoutRef = useRef<number | null>(null);
   const selectedReportRef = useRef<Report | null>(null);
+  const uploadRef = useRef<CloudinaryUploadRef>(null);
 
   // Keep ref in sync with state
   useEffect(() => {
@@ -112,7 +136,7 @@ const ChatPage: React.FC = () => {
     };
 
     fetchMessages();
-  }, [ChatId, selectedReport?.id, user?.id]);
+  }, [ChatId, selectedReport?.id, user?.id, queryClient]);
 
   const scrollToBottom = () => {
     const el = messagesContainerRef.current;
@@ -316,7 +340,7 @@ const ChatPage: React.FC = () => {
       socket.off("user_typing", handleUserTyping);
       socket.emit("leave_room", ChatId);
     };
-  }, [ChatId, user?.id]);
+  }, [ChatId, user?.id, queryClient]);
 
   const handleTyping = () => {
     if (typingTimeoutRef.current) {
@@ -330,8 +354,35 @@ const ChatPage: React.FC = () => {
     }, 1000);
   };
 
+  const handleAttachmentUploaded = (files: CloudinaryFile[]) => {
+    const mapped = files.map((f) => {
+      const baseName = f.original_filename || "file";
+      const ext = f.format ? `.${f.format}` : "";
+      const filename = baseName.endsWith(ext) ? baseName : `${baseName}${ext}`;
+      return {
+        id: f.public_id,
+        filename,
+        url: f.secure_url,
+        fileType: classifyFile(f),
+        provider: "cloudinary" as const,
+        publicId: f.public_id,
+        resourceType: f.resource_type,
+        format: f.format,
+        bytes: f.bytes,
+        width: f.width,
+        height: f.height,
+        createdAt: new Date().toISOString(),
+      };
+    });
+    setAttachments((prev) => [...prev, ...mapped]);
+  };
+
+  const handleAttachmentRemove = (identifier: string) => {
+    setAttachments((prev) => prev.filter((a) => a.id !== identifier));
+  };
+
   const sendMessage = () => {
-    if (!newMessage.trim()) return;
+    if (!newMessage.trim() && attachments.length === 0) return;
 
     if (typingTimeoutRef.current) {
       clearTimeout(typingTimeoutRef.current);
@@ -353,6 +404,7 @@ const ChatPage: React.FC = () => {
       createdAt: new Date().toISOString(),
       optimistic: true,
       isRead: false,
+      attachments: attachments.length > 0 ? attachments : undefined,
     };
 
     console.log(optimisticMessage);
@@ -365,6 +417,7 @@ const ChatPage: React.FC = () => {
     });
 
     setNewMessage("");
+    setAttachments([]);
   };
 
   const handleStartChat = async (reportId: string) => {
@@ -386,6 +439,17 @@ const ChatPage: React.FC = () => {
       e.preventDefault();
       sendMessage();
     }
+  };
+
+  const handleNavigateToReportDetail = () => {
+    if (!selectedReport) return;
+    const basePath = user?.role === Role.RT_ADMIN ? "/admin/reports" : "/reports";
+    navigate(`${basePath}/${selectedReport.id}`, { 
+      state: { 
+        from: "chat",
+        reportId: selectedReport.id 
+      } 
+    });
   };
 
   return (
@@ -630,8 +694,56 @@ const ChatPage: React.FC = () => {
               {isLoadingChat || isLoadingMessages ? (
                 <TextBoxSkeleton />
               ) : ChatId && selectedReport?.status !== "RESOLVED" ? (
-                <div className="p-4 border-t border-gray-200 dark:border-gray-700">
+                <div className="p-4 border-t border-gray-200 dark:border-gray-700 space-y-3">
+                  {/* Attachment Preview */}
+                  {attachments.length > 0 && (
+                    <div className="flex flex-wrap gap-2 p-2 bg-gray-50 dark:bg-gray-700 rounded-lg">
+                      {attachments.map((attachment) => (
+                        <div key={attachment.id} className="relative group">
+                          <img
+                            src={attachment.url}
+                            alt={attachment.filename}
+                            className="h-16 w-16 object-cover rounded"
+                          />
+                          <button
+                            onClick={() => handleAttachmentRemove(attachment.id)}
+                            className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"
+                          >
+                            <X className="h-3 w-3" />
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+
+                  {/* Hidden CloudinaryUpload for file handling */}
+                  <div className="hidden">
+                    <CloudinaryUpload
+                      ref={uploadRef}
+                      folder="reports"
+                      multiple
+                      accept="image/jpeg,image/png,image/jpg"
+                      maxFiles={3}
+                      attachments={attachments}
+                      onUploaded={handleAttachmentUploaded}
+                      onRemove={handleAttachmentRemove}
+                      onUploadingChange={setIsUploading}
+                    />
+                  </div>
+
                   <div className="flex items-center gap-2">
+                    <Button
+                      onClick={() => uploadRef.current?.openFileDialog()}
+                      className="px-3 h-10 flex items-center justify-center"
+                      title="Tambah Lampiran"
+                      disabled={attachments.length >= 3 || isUploading}
+                    >
+                      {isUploading ? (
+                        <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent"></div>
+                      ) : (
+                        <Camera className="h-4 w-4" />
+                      )}
+                    </Button>
                     <textarea
                       value={newMessage}
                       onChange={(e) => {
@@ -645,7 +757,7 @@ const ChatPage: React.FC = () => {
                     />
                     <Button
                       onClick={sendMessage}
-                      disabled={newMessage.trim() === ""}
+                      disabled={(newMessage.trim() === "" && attachments.length === 0) || isUploading}
                       className="px-3 h-10 flex items-center justify-center"
                     >
                       <Send className="h-4 w-4" />
@@ -688,19 +800,17 @@ const ChatPage: React.FC = () => {
                   </div>
                 ) : (
                   <div className="space-y-4">
+                    {/* Report Header */}
                     <div>
                       <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
                         {selectedReport.title}
                       </h3>
-                    </div>
-
-                    <div>
-                      <p className="text-sm text-gray-600 dark:text-gray-400">
+                      <p className="text-sm text-gray-600 dark:text-gray-400 mt-2">
                         {selectedReport.description}
                       </p>
                     </div>
 
-                    <div>
+                    <div className="pt-2">
                       <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 flex items-center gap-1">
                         <MapPin className="h-4 w-4" />
                         Lokasi
@@ -717,33 +827,38 @@ const ChatPage: React.FC = () => {
                     {selectedReport.attachments &&
                       selectedReport.attachments.length > 0 && (
                         <div>
-                          <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                            Lampiran ({selectedReport.attachments.length})
-                          </h4>
-                          <div className="grid grid-cols-2 gap-2">
-                            {selectedReport.attachments.map((attachment) => (
-                              <div
-                                key={attachment.id}
-                                className="relative aspect-square rounded-lg overflow-hidden"
-                              >
-                                {attachment.fileType === "image" ? (
-                                  <img
-                                    src={attachment.url}
-                                    alt={attachment.filename}
-                                    className="w-full h-full object-cover"
-                                  />
-                                ) : (
-                                  <div className="w-full h-full bg-gray-100 dark:bg-gray-700 flex items-center justify-center">
-                                    <p className="text-xs text-gray-600 dark:text-gray-400">
-                                      {attachment.fileType}
-                                    </p>
-                                  </div>
-                                )}
-                              </div>
-                            ))}
-                          </div>
+                          <AttachmentViewer
+                            attachments={selectedReport.attachments.map(
+                              (attachment) => ({
+                                id: attachment.id,
+                                filename: attachment.filename,
+                                url: attachment.url,
+                                fileType: attachment.fileType as
+                                  | "image"
+                                  | "video"
+                                  | "audio"
+                                  | "document",
+                                format: attachment.filename
+                                  .split(".")
+                                  .pop()
+                                  ?.toLowerCase(),
+                              }),
+                            )}
+                            title="Lampiran"
+                            gridCols={2}
+                          />
                         </div>
                       )}
+
+                    {/* Link to full detail */}
+                    <div className="pt-2">
+                      <button
+                        onClick={handleNavigateToReportDetail}
+                        className="text-sm text-primary-600 dark:text-primary-400 hover:underline cursor-pointer hover:text-primary-700 dark:hover:text-primary-300"
+                      >
+                        Lihat detail selengkapnya
+                      </button>
+                    </div>
 
                     <div className="pt-4 border-t border-gray-200 dark:border-gray-700">
                       <div className="space-y-2 text-xs text-gray-500 dark:text-gray-400">

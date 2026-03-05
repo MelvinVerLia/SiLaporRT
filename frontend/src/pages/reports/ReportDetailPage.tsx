@@ -58,6 +58,10 @@ const ReportDetailPage: React.FC = () => {
     location.state?.from === "my-reports" ||
     document.referrer.includes("/my-reports");
 
+  const isFromChat =
+    location.state?.from === "chat" ||
+    document.referrer.includes("/chat");
+
   const {
     data: report,
     isLoading,
@@ -213,17 +217,26 @@ const ReportDetailPage: React.FC = () => {
   const statusInfo = getStatusBadge(report.status);
 
   // Dynamic breadcrumb
-  const breadcrumbItems = isFromAdmin
+  const breadcrumbItems = isFromChat
     ? [
-        { label: "Kelola Laporan", href: "/admin/reports" },
+        { 
+          label: "Chat", 
+          href: user?.role === "RT_ADMIN" ? "/admin/chat" : "/chat",
+          state: { reportId: id }
+        },
         { label: report.title },
       ]
-    : isFromMyReports
+    : isFromAdmin
       ? [
-          { label: "Laporan Saya", href: "/my-reports" },
+          { label: "Kelola Laporan", href: "/admin/reports" },
           { label: report.title },
         ]
-      : [{ label: "Laporan", href: "/reports" }, { label: report.title }];
+      : isFromMyReports
+        ? [
+            { label: "Laporan Saya", href: "/my-reports" },
+            { label: report.title },
+          ]
+        : [{ label: "Laporan", href: "/reports" }, { label: report.title }];
 
   return (
     <div className="space-y-6">

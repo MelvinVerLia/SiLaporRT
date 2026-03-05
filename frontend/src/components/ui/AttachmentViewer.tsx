@@ -18,6 +18,7 @@ interface AttachmentViewerProps {
   className?: string;
   showTitle?: boolean;
   gridCols?: 1 | 2 | 3 | 4 | 5;
+  hideFileInfo?: boolean;
 }
 
 const AttachmentViewer: React.FC<AttachmentViewerProps> = ({
@@ -26,6 +27,7 @@ const AttachmentViewer: React.FC<AttachmentViewerProps> = ({
   className = "",
   showTitle = true,
   gridCols = 2,
+  hideFileInfo = false,
 }) => {
   const [selectedAttachment, setSelectedAttachment] =
     useState<Attachment | null>(null);
@@ -154,59 +156,63 @@ const AttachmentViewer: React.FC<AttachmentViewerProps> = ({
         </div>
 
         {/* File Info */}
-        <div className="p-3">
-          <div className="flex items-start justify-between">
-            <div className="flex-1 min-w-0">
-              <h4 className="text-sm font-medium text-gray-900 dark:text-gray-100 truncate group-hover:text-primary-600 dark:group-hover:text-primary-400 transition-colors duration-200">
-                {attachment.filename}
-              </h4>
-              <div className="flex items-center space-x-2 mt-1">
-                <span className="text-xs text-gray-500 dark:text-gray-400 uppercase">
-                  {attachment.fileType}
-                </span>
-                {attachment.bytes && (
-                  <>
-                    <span className="text-xs text-gray-300 dark:text-gray-600">
-                      •
+        {!hideFileInfo && (
+          <>
+            <div className="p-3">
+              <div className="flex items-start justify-between">
+                <div className="flex-1 min-w-0">
+                  <h4 className="text-sm font-medium text-gray-900 dark:text-gray-100 truncate group-hover:text-primary-600 dark:group-hover:text-primary-400 transition-colors duration-200">
+                    {attachment.filename}
+                  </h4>
+                  <div className="flex items-center space-x-2 mt-1">
+                    <span className="text-xs text-gray-500 dark:text-gray-400 uppercase">
+                      {attachment.fileType}
                     </span>
-                    <span className="text-xs text-gray-500 dark:text-gray-400">
-                      {formatFileSize(attachment.bytes)}
-                    </span>
-                  </>
-                )}
+                    {attachment.bytes && (
+                      <>
+                        <span className="text-xs text-gray-300 dark:text-gray-600">
+                          •
+                        </span>
+                        <span className="text-xs text-gray-500 dark:text-gray-400">
+                          {formatFileSize(attachment.bytes)}
+                        </span>
+                      </>
+                    )}
+                  </div>
+                </div>
+
+                {/* Quick download button */}
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    const link = document.createElement("a");
+                    link.href = attachment.url;
+                    link.download = attachment.filename;
+                    link.click();
+                  }}
+                  className="opacity-0 group-hover:opacity-100 transition-opacity duration-200 p-1 text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 rounded"
+                  title="Download"
+                >
+                  <Download className="h-4 w-4" />
+                </button>
               </div>
             </div>
 
-            {/* Quick download button */}
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-                const link = document.createElement("a");
-                link.href = attachment.url;
-                link.download = attachment.filename;
-                link.click();
-              }}
-              className="opacity-0 group-hover:opacity-100 transition-opacity duration-200 p-1 text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 rounded"
-              title="Download"
-            >
-              <Download className="h-4 w-4" />
-            </button>
-          </div>
-        </div>
-
-        {/* File type badge */}
-        <div className="absolute top-2 left-2">
-          <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-white dark:bg-gray-800 bg-opacity-90 dark:bg-opacity-90 text-gray-700 dark:text-gray-300 shadow-sm">
-            <FileTypeIcon
-              fileType={attachment.fileType}
-              format={attachment.format}
-              filename={attachment.filename}
-              size="sm"
-              className="mr-1"
-            />
-            {attachment.fileType.toUpperCase()}
-          </span>
-        </div>
+            {/* File type badge */}
+            <div className="absolute top-2 left-2">
+              <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-white dark:bg-gray-800 bg-opacity-90 dark:bg-opacity-90 text-gray-700 dark:text-gray-300 shadow-sm">
+                <FileTypeIcon
+                  fileType={attachment.fileType}
+                  format={attachment.format}
+                  filename={attachment.filename}
+                  size="sm"
+                  className="mr-1"
+                />
+                {attachment.fileType.toUpperCase()}
+              </span>
+            </div>
+          </>
+        )}
       </div>
     );
   };

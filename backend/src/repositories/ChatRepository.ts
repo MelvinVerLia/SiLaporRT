@@ -1,9 +1,19 @@
 import prisma from "../config/prisma";
 
 export class ChatRepository {
-  static async saveMessage(message: string, userId: string, chatId: string) {
+  static async saveMessage(
+    message: string,
+    userId: string,
+    chatId: string,
+    attachments?: any[],
+  ) {
     return prisma.message.create({
-      data: { message, chatId, userId },
+      data: { 
+        message, 
+        chatId, 
+        userId,
+        attachments: attachments ? attachments : undefined,
+      },
       include: { user: { select: { name: true, role: true, profile: true } } },
     });
   }
