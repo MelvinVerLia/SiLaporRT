@@ -17,7 +17,6 @@ router.get("/all-reports/stats", ReportController.getAllReportsStatistics);
 router.get("/:reportId", ReportController.getReportById);
 
 router.post("/add", authenticateJWT, ReportController.createReport);
-router.post("/generate/category", ReportController.generateReportCategory);
 
 // === USER REPORT MANAGEMENT ===
 router.delete("/:reportId", authenticateJWT, ReportController.deleteReport);

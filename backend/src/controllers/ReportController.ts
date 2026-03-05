@@ -17,8 +17,8 @@ class ReportController {
         });
       }
 
-      if (!data.title || !data.description || !data.location) {
-        throw new Error("Title, description, and location are required");
+      if (!data.title || !data.description || !data.location || !data.category) {
+        throw new Error("Title, description, location, and category are required");
       }
 
       const dataWithUser = { ...data, userId: user.id };
@@ -31,25 +31,6 @@ class ReportController {
       });
     } catch (error: any) {
       console.error("Error in createReport controller:", error);
-      res.status(400).json({
-        success: false,
-        message: error.message,
-      });
-    }
-  }
-
-  static async generateReportCategory(req: Request, res: Response) {
-    try {
-      const data = req.body;
-
-      const result = await ReportService.generateReportCategory(data);
-
-      res.status(201).json({
-        success: true,
-        message: "Report created successfully",
-        data: result,
-      });
-    } catch (error: any) {
       res.status(400).json({
         success: false,
         message: error.message,

@@ -1,10 +1,24 @@
 import React from "react";
 import { MapPin, FileText, Calendar, EyeOff, Globe, Lock } from "lucide-react";
 import { CloudinaryFile } from "../../../types/announcement.types";
+import { ReportCategory } from "../../../types/report.types";
+import Badge from "../../../components/ui/Badge";
+
+const categoryLabels: Record<ReportCategory, string> = {
+  INFRASTRUCTURE: "Infrastruktur",
+  CLEANLINESS: "Kebersihan",
+  LIGHTING: "Penerangan",
+  SECURITY: "Kejahatan",
+  ENVIRONMENT: "Lingkungan",
+  UTILITIES: "Utilitas",
+  SUGGESTION: "Sugesti",
+  OTHER: "Lainnya",
+};
 
 interface ReportPreviewProps {
   title: string;
   description: string;
+  category: ReportCategory | null;
   isAnonymous: boolean;
   isPublic: boolean;
   locationData: {
@@ -23,6 +37,7 @@ interface ReportPreviewProps {
 const ReportPreview: React.FC<ReportPreviewProps> = ({
   title,
   description,
+  category,
   isAnonymous,
   isPublic,
   locationData,
@@ -32,6 +47,7 @@ const ReportPreview: React.FC<ReportPreviewProps> = ({
   // Check if we have any data to preview
   const hasTitle = title.trim().length > 0;
   const hasDescription = description.trim().length > 0;
+  const hasCategory = category !== null;
   const hasLocation =
     locationData.address.trim().length > 0 &&
     locationData.latitude !== 0 &&
@@ -96,6 +112,11 @@ const ReportPreview: React.FC<ReportPreviewProps> = ({
             )}
           </div>
         </div>
+      )}
+
+      {/* Category */}
+      {hasCategory && (
+        <Badge variant="default">{categoryLabels[category]}</Badge>
       )}
 
       {/* Description */}

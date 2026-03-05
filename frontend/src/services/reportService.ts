@@ -268,19 +268,6 @@ export async function getReportsByCategory(
   }
 }
 
-export async function generateReportCategory(data: Record<string, unknown>) {
-  try {
-    const response = await request(`/reports/generate/category`, {
-      method: "POST",
-      data,
-    });
-    return response;
-  } catch (error) {
-    console.error("Error generating report status:", error);
-    return null;
-  }
-}
-
 export async function getDashboardStats(
   daysBack?: number,
 ): Promise<DashboardStats> {

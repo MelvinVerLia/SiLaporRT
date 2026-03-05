@@ -1,7 +1,6 @@
 import ReportRepository from "../repositories/ReportRepository";
 import { ReportStatus, ReportCategory, Role, Attachment } from "@prisma/client";
 import { CreateReportData } from "../types/reportTypes";
-import { generateCategory } from "../utils/llm";
 import { NotificationService } from "./NotificationService";
 import { AuthRepository } from "../repositories/AuthRepository";
 import { validateUpload } from "../config/uploadPolicy";
@@ -25,13 +24,9 @@ class ReportService {
         }
       }
 
-      // bruh gemini ada limit sekarang
-      // const category = await generateCategory(data.title, data.description);
-      // console.log(category);
-
-      // if (!category) {
-      //   throw new Error("Category could not be determined.");
-      // }
+      if (!data.category) {
+        throw new Error("Category is required.");
+      }
 
       const report = await ReportRepository.createReport(data);
 
@@ -60,23 +55,7 @@ class ReportService {
     }
   }
 
-  static async generateReportCategory(data: CreateReportData) {
-    try {
-      const category = await generateCategory(data.title, data.description);
-      if (!category) {
-        throw new Error("AI IS NOT WORKING");
-      }
-      // console.log({ category });
 
-      // const category = "INFRASTRUCTURE";
-      // console.log(category);
-      // throw new Error("Force catch block");
-
-      return category;
-    } catch (error) {
-      throw new Error(`Failed to generate report category: ${error}`);
-    }
-  }
 
   static async getAllReports(
     params: {
