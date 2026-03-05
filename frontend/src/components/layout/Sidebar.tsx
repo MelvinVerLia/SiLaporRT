@@ -1,4 +1,4 @@
-import React, { useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import {
   LayoutDashboard,
@@ -24,6 +24,7 @@ import { useQuery } from "@tanstack/react-query";
 import { getNotifications } from "../../services/authService";
 import NotificationSidebar from "./NotificationSidebar";
 import { hasUnread } from "../../services/chatService";
+import { socket } from "../../utils/socket";
 
 interface SidebarProps {
   className?: string;
@@ -55,12 +56,41 @@ const Sidebar: React.FC<SidebarProps> = ({ className }) => {
   const navigate = useNavigate();
   const { user, isLoggingOut, logout } = useAuthContext();
 
-  const { data: chatHasUnread } = useQuery({
-    queryKey: ["chatHasUnread"],
-    queryFn: hasUnread,
-    enabled: isAuthenticated,
-    refetchInterval: 30000,
-  });
+  // Initial fetch for unread state, then rely on socket
+  const [chatHasUnreadState, setChatHasUnreadState] = useState(false);
+
+  useEffect(() => {
+    if (!isAuthenticated) return;
+    // One-time fetch on mount
+    hasUnread()
+      .then((res) => {
+        if (res?.data === true) setChatHasUnreadState(true);
+      })
+      .catch(() => {});
+  }, [isAuthenticated]);
+
+  // Listen for real-time message notifications via socket
+  useEffect(() => {
+    if (!isAuthenticated) return;
+
+    const handleNewMessageNotification = (data: { isSender?: boolean }) => {
+      if (!data?.isSender) {
+        setChatHasUnreadState(true);
+      }
+    };
+
+    const handleChatUnreadUpdate = (data: { hasUnread: boolean }) => {
+      setChatHasUnreadState(data.hasUnread);
+    };
+
+    socket.on("new_message_notification", handleNewMessageNotification);
+    socket.on("chat_unread_update", handleChatUnreadUpdate);
+
+    return () => {
+      socket.off("new_message_notification", handleNewMessageNotification);
+      socket.off("chat_unread_update", handleChatUnreadUpdate);
+    };
+  }, [isAuthenticated]);
 
   const toggleNotification = () => {
     if (window.innerWidth < 640) setNotificationSidebar(true);
@@ -135,7 +165,7 @@ const Sidebar: React.FC<SidebarProps> = ({ className }) => {
       path: "/admin/chat",
       label: "Chat Laporan",
       icon: MessageCircle,
-      notification: chatHasUnread?.data === true,
+      notification: chatHasUnreadState,
     },
   ];
 
@@ -280,7 +310,10 @@ const Sidebar: React.FC<SidebarProps> = ({ className }) => {
                 ) : (
                   <Link
                     to={item.path}
-                    onClick={() => setIsMobileMenuOpen(false)}
+                    onClick={() => {
+                      setIsMobileMenuOpen(false);
+                      if (item.notification) setChatHasUnreadState(false);
+                    }}
                     className={cn(
                       "flex items-center space-x-3 rounded-md px-3 py-2.5 text-sm font-medium transition-all duration-200",
                       isActive

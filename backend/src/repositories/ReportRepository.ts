@@ -197,6 +197,11 @@ class ReportRepository {
                     },
                   },
                 },
+                message: {
+                  orderBy: { createdAt: "desc" as const },
+                  take: 1,
+                  select: { createdAt: true },
+                },
               },
             },
           },
@@ -213,7 +218,14 @@ class ReportRepository {
               (sum: number, c: any) => sum + (c._count?.message ?? 0),
               0,
             );
-            return { ...rest, unreadCount };
+            const hasChat = chat.length > 0;
+            const lastMessageAt = chat.reduce((latest: string | null, c: any) => {
+              const msgDate = c.message?.[0]?.createdAt;
+              if (!msgDate) return latest;
+              if (!latest) return msgDate;
+              return new Date(msgDate) > new Date(latest) ? msgDate : latest;
+            }, null);
+            return { ...rest, unreadCount, hasChat, lastMessageAt };
           });
 
         return { total, items: sortedReports };
@@ -258,6 +270,11 @@ class ReportRepository {
                     },
                   },
                 },
+                message: {
+                  orderBy: { createdAt: "desc" as const },
+                  take: 1,
+                  select: { createdAt: true },
+                },
               },
             },
           },
@@ -271,7 +288,14 @@ class ReportRepository {
           (sum: number, c: any) => sum + (c._count?.message ?? 0),
           0,
         );
-        return { ...rest, unreadCount };
+        const hasChat = chat.length > 0;
+        const lastMessageAt = chat.reduce((latest: string | null, c: any) => {
+          const msgDate = c.message?.[0]?.createdAt;
+          if (!msgDate) return latest;
+          if (!latest) return msgDate;
+          return new Date(msgDate) > new Date(latest) ? msgDate : latest;
+        }, null);
+        return { ...rest, unreadCount, hasChat, lastMessageAt };
       });
 
       return { total, items };
@@ -399,6 +423,11 @@ class ReportRepository {
                     },
                   },
                 },
+                message: {
+                  orderBy: { createdAt: "desc" as const },
+                  take: 1,
+                  select: { createdAt: true },
+                },
               },
             },
           },
@@ -415,7 +444,14 @@ class ReportRepository {
               (sum: number, c: any) => sum + (c._count?.message ?? 0),
               0,
             );
-            return { ...rest, unreadCount };
+            const hasChat = chat.length > 0;
+            const lastMessageAt = chat.reduce((latest: string | null, c: any) => {
+              const msgDate = c.message?.[0]?.createdAt;
+              if (!msgDate) return latest;
+              if (!latest) return msgDate;
+              return new Date(msgDate) > new Date(latest) ? msgDate : latest;
+            }, null);
+            return { ...rest, unreadCount, hasChat, lastMessageAt };
           });
 
         return { total, items: sortedReports };
@@ -460,6 +496,11 @@ class ReportRepository {
                     },
                   },
                 },
+                message: {
+                  orderBy: { createdAt: "desc" as const },
+                  take: 1,
+                  select: { createdAt: true },
+                },
               },
             },
           },
@@ -473,7 +514,14 @@ class ReportRepository {
           (sum: number, c: any) => sum + (c._count?.message ?? 0),
           0,
         );
-        return { ...rest, unreadCount };
+        const hasChat = chat.length > 0;
+        const lastMessageAt = chat.reduce((latest: string | null, c: any) => {
+          const msgDate = c.message?.[0]?.createdAt;
+          if (!msgDate) return latest;
+          if (!latest) return msgDate;
+          return new Date(msgDate) > new Date(latest) ? msgDate : latest;
+        }, null);
+        return { ...rest, unreadCount, hasChat, lastMessageAt };
       });
 
       return { total, items };

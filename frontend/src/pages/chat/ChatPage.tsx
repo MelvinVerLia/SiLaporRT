@@ -18,7 +18,6 @@ import ReportBoxSkeleton from "./components/ReportBoxSkeleton";
 import ReportBox from "./components/ReportBox";
 import TextBoxSkeleton from "./components/TextBoxSkeleton";
 import LoadingSpinner from "../../components/ui/LoadingSpinner";
-import { useToast } from "../../hooks/useToast";
 
 type Message = {
   id: string;
@@ -37,6 +36,8 @@ type Message = {
 
 type ReportWithUnread = Report & {
   unreadCount: number;
+  hasChat?: boolean;
+  lastMessageAt?: string | null;
 };
 
 const ChatPage: React.FC = () => {
@@ -57,9 +58,14 @@ const ChatPage: React.FC = () => {
   );
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const messagesContainerRef = useRef<HTMLDivElement>(null);
-  const toast = useToast();
   const typingTimeoutRef = useRef<number | null>(null);
   const typingIndicatorTimeoutRef = useRef<number | null>(null);
+  const selectedReportRef = useRef<Report | null>(null);
+
+  // Keep ref in sync with state
+  useEffect(() => {
+    selectedReportRef.current = selectedReport;
+  }, [selectedReport]);
 
   const {
     data: chatData,
@@ -206,12 +212,40 @@ const ChatPage: React.FC = () => {
   }, [location.state, reports]);
 
   useEffect(() => {
-    toast.info("Socket connecting", "Success");
     socket.connect();
-    toast.success("Socket connected", "Success");
     console.log("socket connected");
+
+    // Listen for real-time message notifications to update the report list
+    const handleNewMessageNotification = (data: {
+      reportId: string;
+      chatId: string;
+      lastMessageAt: string;
+      senderId: string;
+      senderName: string;
+      isSender: boolean;
+    }) => {
+      setReports((prev) =>
+        prev.map((r) =>
+          r.id === data.reportId
+            ? {
+                ...r,
+                lastMessageAt: data.lastMessageAt,
+                hasChat: true,
+                unreadCount:
+                  data.isSender ||
+                  selectedReportRef.current?.id === data.reportId
+                    ? r.unreadCount
+                    : r.unreadCount + 1,
+              }
+            : r,
+        ),
+      );
+    };
+
+    socket.on("new_message_notification", handleNewMessageNotification);
+
     return () => {
-      toast.error("Socket dead", "Error");
+      socket.off("new_message_notification", handleNewMessageNotification);
       socket.disconnect();
     };
   }, []);
@@ -409,7 +443,12 @@ const ChatPage: React.FC = () => {
                     }`}
                   >
                     History (
-                    {reports.filter((r) => r.status === "RESOLVED").length})
+                    {
+                      reports.filter(
+                        (r) => r.status === "RESOLVED" && r.hasChat,
+                      ).length
+                    }
+                    )
                   </button>
                 </div>
               </div>
@@ -419,7 +458,7 @@ const ChatPage: React.FC = () => {
                 ) : reports.filter((r) =>
                     activeTab === "ongoing"
                       ? r.status === "IN_PROGRESS"
-                      : r.status === "RESOLVED",
+                      : r.status === "RESOLVED" && r.hasChat,
                   ).length === 0 ? (
                   <div className="flex flex-col items-center justify-center h-full text-center p-4">
                     <div className="text-gray-400 dark:text-gray-500 mb-2">
@@ -437,8 +476,17 @@ const ChatPage: React.FC = () => {
                       .filter((report) =>
                         activeTab === "ongoing"
                           ? report.status === "IN_PROGRESS"
-                          : report.status === "RESOLVED",
+                          : report.status === "RESOLVED" && report.hasChat,
                       )
+                      .sort((a, b) => {
+                        const aTime = a.lastMessageAt
+                          ? new Date(a.lastMessageAt).getTime()
+                          : 0;
+                        const bTime = b.lastMessageAt
+                          ? new Date(b.lastMessageAt).getTime()
+                          : 0;
+                        return bTime - aTime;
+                      })
                       .map((report) => (
                         <div
                           key={report.id}

@@ -29,6 +29,8 @@ import { AnimatePresence, motion } from "framer-motion";
 import NotificationSidebar from "./NotificationSidebar";
 import { Notification } from "../../types/notification.types";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { hasUnread } from "../../services/chatService";
+import { socket } from "../../utils/socket";
 
 const Header: React.FC = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -53,6 +55,36 @@ const Header: React.FC = () => {
   const navigate = useNavigate();
   const dropdownRef = useRef<HTMLDivElement>(null);
   const queryClient = useQueryClient();
+
+  // Socket-based chat unread indicator
+  const [chatHasUnreadState, setChatHasUnreadState] = useState(false);
+
+  useEffect(() => {
+    if (!isAuthenticated) return;
+    hasUnread()
+      .then((res) => {
+        if (res?.data === true) setChatHasUnreadState(true);
+      })
+      .catch(() => {});
+  }, [isAuthenticated]);
+
+  useEffect(() => {
+    if (!isAuthenticated) return;
+    const handleNewMessageNotification = (data: { isSender?: boolean }) => {
+      if (!data?.isSender) {
+        setChatHasUnreadState(true);
+      }
+    };
+    const handleChatUnreadUpdate = (data: { hasUnread: boolean }) => {
+      setChatHasUnreadState(data.hasUnread);
+    };
+    socket.on("new_message_notification", handleNewMessageNotification);
+    socket.on("chat_unread_update", handleChatUnreadUpdate);
+    return () => {
+      socket.off("new_message_notification", handleNewMessageNotification);
+      socket.off("chat_unread_update", handleChatUnreadUpdate);
+    };
+  }, [isAuthenticated]);
 
   const toggleMobileMenu = () => {
     setIsMobileMenuOpen(!isMobileMenuOpen);
@@ -243,11 +275,17 @@ const Header: React.FC = () => {
             {isAuthenticated && (
               <>
                 <button
-                  onClick={() => navigate("/chat")}
+                  onClick={() => {
+                    setChatHasUnreadState(false);
+                    navigate("/chat");
+                  }}
                   className="relative p-2 text-gray-400 dark:text-gray-300 hover:text-gray-600 dark:hover:text-gray-100 transition-colors hover:cursor-pointer"
                   title="Chat"
                 >
                   <MessageCircle className="h-5 w-5" />
+                  {chatHasUnreadState && (
+                    <span className="absolute top-1 right-1 h-2.5 w-2.5 rounded-full bg-red-500" />
+                  )}
                 </button>
 
                 <div
