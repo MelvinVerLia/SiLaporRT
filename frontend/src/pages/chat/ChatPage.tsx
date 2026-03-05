@@ -46,6 +46,7 @@ const ChatPage: React.FC = () => {
   const [selectedReport, setSelectedReport] = useState<Report | null>(null);
   const [reports, setReports] = useState<ReportWithUnread[]>([]);
   const [newMessage, setNewMessage] = useState("");
+  const [activeTab, setActiveTab] = useState<"ongoing" | "history">("ongoing");
   const [isLoading, setIsLoading] = useState(true);
   const [messages, setMessages] = useState<Message[]>([]);
   const [isLoadingMessages, setIsLoadingMessages] = useState(false);
@@ -147,7 +148,8 @@ const ChatPage: React.FC = () => {
               const hasUser = report.user;
               const isCitizen = report.user?.role === Role.CITIZEN;
               const sameRT = report.user?.rtId === user.rtId;
-              const validStatus = report.status === "IN_PROGRESS";
+              const validStatus =
+                report.status === "IN_PROGRESS" || report.status === "RESOLVED";
 
               return hasUser && isCitizen && user.rtId && sameRT && validStatus;
             })
@@ -169,7 +171,7 @@ const ChatPage: React.FC = () => {
 
           const filteredReports = allReports.filter((report: Report) => {
             const isValidStatus =
-              report.status === "IN_PROGRESS" || report.status === "PENDING";
+              report.status === "IN_PROGRESS" || report.status === "RESOLVED";
             return isValidStatus;
           });
           console.log({ filteredReports });
@@ -194,6 +196,7 @@ const ChatPage: React.FC = () => {
     if (state?.reportId && reports.length > 0) {
       const report = reports.find((r) => r.id === state.reportId);
       if (report) {
+        setActiveTab(report.status === "RESOLVED" ? "history" : "ongoing");
         setSelectedReport(report);
         setMobileView("chat");
         // Clear the state after using it
@@ -373,53 +376,92 @@ const ChatPage: React.FC = () => {
                 mobileView !== "list" ? "hidden lg:flex" : ""
               }`}
             >
-              <div className="p-4 border-b border-gray-200 dark:border-gray-700">
+              <div className="p-4 border-b border-gray-200 dark:border-gray-700 space-y-3">
                 <h2 className="font-semibold text-gray-900 dark:text-white">
                   {user?.role === Role.RT_ADMIN
                     ? "Laporan yang Ditangani"
-                    : "Laporan Saya"}{" "}
-                  <span className="text-gray-500 dark:text-gray-400">
-                    ({reports.length})
-                  </span>
+                    : "Laporan Saya"}
                 </h2>
+                <div className="flex rounded-lg bg-gray-100 dark:bg-gray-700 p-1">
+                  <button
+                    onClick={() => {
+                      setActiveTab("ongoing");
+                      setSelectedReport(null);
+                    }}
+                    className={`flex-1 text-sm font-medium py-1.5 px-3 rounded-md transition-colors ${
+                      activeTab === "ongoing"
+                        ? "bg-white dark:bg-gray-600 text-primary-600 dark:text-primary-400 shadow-sm"
+                        : "text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300"
+                    }`}
+                  >
+                    On Going (
+                    {reports.filter((r) => r.status === "IN_PROGRESS").length})
+                  </button>
+                  <button
+                    onClick={() => {
+                      setActiveTab("history");
+                      setSelectedReport(null);
+                    }}
+                    className={`flex-1 text-sm font-medium py-1.5 px-3 rounded-md transition-colors ${
+                      activeTab === "history"
+                        ? "bg-white dark:bg-gray-600 text-primary-600 dark:text-primary-400 shadow-sm"
+                        : "text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300"
+                    }`}
+                  >
+                    History (
+                    {reports.filter((r) => r.status === "RESOLVED").length})
+                  </button>
+                </div>
               </div>
               <div className="flex-1 overflow-y-auto [&::-webkit-scrollbar]:hidden [scrollbar-width:none]">
                 {isLoading ? (
                   <ReportBoxSkeleton />
-                ) : reports.length === 0 ? (
+                ) : reports.filter((r) =>
+                    activeTab === "ongoing"
+                      ? r.status === "IN_PROGRESS"
+                      : r.status === "RESOLVED",
+                  ).length === 0 ? (
                   <div className="flex flex-col items-center justify-center h-full text-center p-4">
                     <div className="text-gray-400 dark:text-gray-500 mb-2">
                       <User className="h-12 w-12 mx-auto" />
                     </div>
                     <p className="text-gray-600 dark:text-gray-400">
-                      {user?.role === Role.RT_ADMIN
-                        ? "Belum ada laporan yang ditangani"
-                        : "Anda belum membuat laporan"}
+                      {activeTab === "ongoing"
+                        ? "Tidak ada laporan yang sedang ditangani"
+                        : "Belum ada riwayat laporan"}
                     </p>
                   </div>
                 ) : (
                   <div className="divide-y divide-gray-200 dark:divide-gray-700">
-                    {reports.map((report) => (
-                      <div
-                        key={report.id}
-                        onClick={() => {
-                          setSelectedReport(report);
-                          setMobileView("chat");
-                          setReports((prev) =>
-                            prev.map((r) =>
-                              r.id === report.id ? { ...r, unreadCount: 0 } : r,
-                            ),
-                          );
-                        }}
-                      >
-                        <ReportBox
-                          user={user}
-                          report={report}
-                          selectedReport={selectedReport}
-                          setSelectedReport={setSelectedReport}
-                        />
-                      </div>
-                    ))}
+                    {reports
+                      .filter((report) =>
+                        activeTab === "ongoing"
+                          ? report.status === "IN_PROGRESS"
+                          : report.status === "RESOLVED",
+                      )
+                      .map((report) => (
+                        <div
+                          key={report.id}
+                          onClick={() => {
+                            setSelectedReport(report);
+                            setMobileView("chat");
+                            setReports((prev) =>
+                              prev.map((r) =>
+                                r.id === report.id
+                                  ? { ...r, unreadCount: 0 }
+                                  : r,
+                              ),
+                            );
+                          }}
+                        >
+                          <ReportBox
+                            user={user}
+                            report={report}
+                            selectedReport={selectedReport}
+                            setSelectedReport={setSelectedReport}
+                          />
+                        </div>
+                      ))}
                   </div>
                 )}
               </div>
@@ -468,7 +510,11 @@ const ChatPage: React.FC = () => {
                   <MessageBoxSkeleton />
                 ) : !ChatId ? (
                   <div className="flex items-center justify-center h-full">
-                    {isLoadingStartChat ? (
+                    {selectedReport.status === "RESOLVED" ? (
+                      <p className="text-gray-500 dark:text-gray-400">
+                        Tidak ada riwayat chat untuk laporan ini
+                      </p>
+                    ) : isLoadingStartChat ? (
                       <div>
                         <LoadingSpinner />
                       </div>
@@ -535,7 +581,7 @@ const ChatPage: React.FC = () => {
 
               {isLoadingChat || isLoadingMessages ? (
                 <TextBoxSkeleton />
-              ) : ChatId ? (
+              ) : ChatId && selectedReport?.status !== "RESOLVED" ? (
                 <div className="p-4 border-t border-gray-200 dark:border-gray-700">
                   <div className="flex items-center gap-2">
                     <textarea
@@ -557,6 +603,12 @@ const ChatPage: React.FC = () => {
                       <Send className="h-4 w-4" />
                     </Button>
                   </div>
+                </div>
+              ) : ChatId && selectedReport?.status === "RESOLVED" ? (
+                <div className="p-3 border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-750">
+                  <p className="text-sm text-center text-gray-500 dark:text-gray-400">
+                    Laporan sudah selesai. Chat tidak dapat dilanjutkan.
+                  </p>
                 </div>
               ) : null}
             </div>
