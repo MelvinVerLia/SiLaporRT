@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useMemo } from "react";
+import React, { useState, useEffect, useRef, useMemo, useCallback } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { Send, User, MapPin, ChevronLeft, FileText, Camera, X } from "lucide-react";
 import { useAuthContext } from "../../contexts/AuthContext";
@@ -139,7 +139,7 @@ const ChatPage: React.FC = () => {
     fetchMessages();
   }, [ChatId, selectedReport?.id, user?.id, queryClient]);
 
-  const scrollToBottom = (behavior: ScrollBehavior = "auto") => {
+  const scrollToBottom = useCallback((behavior: ScrollBehavior = "auto") => {
     const el = messagesContainerRef.current;
     if (!el) return;
 
@@ -150,25 +150,58 @@ const ChatPage: React.FC = () => {
         behavior,
       });
     });
-  };
+  }, []);
+
+  const scrollToBottomWithImageWait = useCallback(() => {
+    const el = messagesContainerRef.current;
+    if (!el) return;
+
+    // Wait for all images to load before scrolling
+    const images = el.querySelectorAll('img');
+    if (images.length === 0) {
+      scrollToBottom("auto");
+      return;
+    }
+
+    let loadedCount = 0;
+    const totalImages = images.length;
+    let scrolled = false;
+
+    const checkAndScroll = () => {
+      if (scrolled) return;
+      loadedCount++;
+      if (loadedCount === totalImages) {
+        scrolled = true;
+        scrollToBottom("auto");
+      }
+    };
+
+    images.forEach((img) => {
+      if (img.complete) {
+        checkAndScroll();
+      } else {
+        img.addEventListener('load', checkAndScroll);
+        img.addEventListener('error', checkAndScroll);
+      }
+    });
+
+    // Fallback: scroll after 300ms even if images haven't loaded
+    setTimeout(() => {
+      if (!scrolled) {
+        scrolled = true;
+        scrollToBottom("auto");
+      }
+    }, 300);
+  }, [scrollToBottom]);
 
   // Only scroll when message count changes, not on property updates (like isRead)
   useEffect(() => {
     if (messages.length > 0) {
-      scrollToBottom();
+      // Use the image-aware scroll on initial load
+      if (isLoadingMessages) return;
+      scrollToBottomWithImageWait();
     }
-  }, [messages.length]);
-
-  // Additional scroll after loading is complete to handle image rendering
-  useEffect(() => {
-    if (!isLoadingMessages && messages.length > 0) {
-      // Give extra time for images to load
-      const timer = setTimeout(() => {
-        scrollToBottom("auto");
-      }, 100);
-      return () => clearTimeout(timer);
-    }
-  }, [isLoadingMessages, messages.length]);
+  }, [messages.length, isLoadingMessages, scrollToBottomWithImageWait]);
 
   const sortedMessages = useMemo(() => {
     return [...messages].sort(
