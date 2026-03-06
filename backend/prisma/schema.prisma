@@ -117,9 +117,16 @@ enum ReportStatus {
   CLOSED       
 }
 
+enum ResponseStatus {
+  IN_PROGRESS
+  RESOLVED
+  REJECTED
+}
+
 model Response {
-  id          String       @id @default(cuid())
-  message     String       @db.Text
+  id          String          @id @default(cuid())
+  message     String          @db.Text
+  status      ResponseStatus?
   attachments Attachment[] 
   
   report      Report       @relation(fields: [reportId], references: [id], onDelete: Cascade)

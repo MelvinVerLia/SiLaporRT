@@ -162,10 +162,6 @@ class ReportController {
         });
       }
 
-      // if(req.user?.role !== Role.ADMIN && req.user?.id !== adminId) {
-      //   throw new Error("You don't have permission to update this report");
-      // }
-
       const result = await ReportService.updateStatus(reportId, status, user.id, message);
 
       res.json({

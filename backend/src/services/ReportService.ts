@@ -1,5 +1,11 @@
 import ReportRepository from "../repositories/ReportRepository";
-import { ReportStatus, ReportCategory, Role, Attachment } from "@prisma/client";
+import {
+  ReportStatus,
+  ReportCategory,
+  Role,
+  Attachment,
+  ResponseStatus,
+} from "@prisma/client";
 import { CreateReportData } from "../types/reportTypes";
 import { NotificationService } from "./NotificationService";
 import { AuthRepository } from "../repositories/AuthRepository";
@@ -54,8 +60,6 @@ class ReportService {
       throw new Error(`Failed to create report: ${error}`);
     }
   }
-
-
 
   static async getAllReports(
     params: {
@@ -189,36 +193,41 @@ class ReportService {
     }
   }
 
-  static async updateStatus(reportId: string, status: ReportStatus, userId?: string, message?: string) {
+  static async updateStatus(
+    reportId: string,
+    status: ReportStatus,
+    userId?: string,
+    message?: string,
+  ) {
     try {
       const updatedReport = await ReportRepository.updateStatus(
         reportId,
         status,
       );
 
-      // If there's a message, create a response entry
       if (message && userId) {
         await ReportRepository.addOfficialResponse(
           reportId,
           userId,
           message.trim(),
-          undefined
+          undefined,
+          status as ResponseStatus,
         );
       }
 
       const baseUrl = process.env.FRONTEND_URL_PROD || process.env.FRONTEND_URL;
       const url = `${baseUrl}/reports/${updatedReport.id}`;
-      
-      // Get status label for notification
+
       const statusLabels: Record<string, string> = {
         PENDING: "Menunggu",
         IN_PROGRESS: "Diproses",
         RESOLVED: "Selesai",
         REJECTED: "Ditolak",
-        CLOSED: "Ditutup"
+        CLOSED: "Ditutup",
       };
-      const statusLabel = statusLabels[updatedReport.status] || updatedReport.status;
-      
+      const statusLabel =
+        statusLabels[updatedReport.status] || updatedReport.status;
+
       await NotificationService.sendNotificationByUserId(
         [updatedReport.userId!],
         `Laporan "${updatedReport.title}" Telah Diperbarui!`,

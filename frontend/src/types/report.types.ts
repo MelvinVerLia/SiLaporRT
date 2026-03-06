@@ -89,9 +89,16 @@ export interface ReportComment {
   createdAt: string;
 }
 
+export enum ResponseStatus {
+  IN_PROGRESS = "IN_PROGRESS",
+  RESOLVED = "RESOLVED",
+  REJECTED = "REJECTED",
+}
+
 export interface Response {
   id: string;
   message: string;
+  status: ResponseStatus | null;
   attachments: Attachment[];
   reportId: string;
   responder: User;
