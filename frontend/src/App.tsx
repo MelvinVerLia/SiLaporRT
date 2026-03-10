@@ -27,6 +27,7 @@ import ManageAnnouncementsPage from "./pages/announcements/ManageAnnouncementsPa
 import CreateAnnouncementPage from "./pages/announcements/CreateAnnouncementPage";
 import EditAnnouncementPage from "./pages/announcements/EditAnnouncementPage";
 import ManageReportsPage from "./pages/reports/ManageReportsPage";
+import ManageCitizensPage from "./pages/citizens/ManageCitizensPage";
 import ChatPage from "./pages/chat/ChatPage";
 import NotFoundPage from "./pages/NotFoundPage";
 
@@ -34,6 +35,7 @@ import PublicOnlyRoute from "./routes/PublicOnlyRoute";
 import ProtectedRoute from "./routes/ProtectedRoute";
 import { AuthProvider } from "./contexts/AuthContext";
 import RequireCompleteProfile from "./routes/RequireCompleteProfile";
+import RequireVerification from "./routes/RequireVerification";
 import AdminRedirect from "./routes/AdminRedirect";
 
 const queryClient = new QueryClient({
@@ -126,7 +128,9 @@ function App() {
                         element={
                           <ProtectedRoute>
                             <RequireCompleteProfile>
-                              <ReportsPage />
+                              <RequireVerification>
+                                <ReportsPage />
+                              </RequireVerification>
                             </RequireCompleteProfile>
                           </ProtectedRoute>
                         }
@@ -136,7 +140,9 @@ function App() {
                         element={
                           <ProtectedRoute>
                             <RequireCompleteProfile>
-                              <ReportDetailPage />
+                              <RequireVerification>
+                                <ReportDetailPage />
+                              </RequireVerification>
                             </RequireCompleteProfile>
                           </ProtectedRoute>
                         }
@@ -146,7 +152,9 @@ function App() {
                         element={
                           <ProtectedRoute>
                             <RequireCompleteProfile>
-                              <AnnouncementsPage />
+                              <RequireVerification>
+                                <AnnouncementsPage />
+                              </RequireVerification>
                             </RequireCompleteProfile>
                           </ProtectedRoute>
                         }
@@ -156,7 +164,9 @@ function App() {
                         element={
                           <ProtectedRoute>
                             <RequireCompleteProfile>
-                              <AnnouncementDetailPage />
+                              <RequireVerification>
+                                <AnnouncementDetailPage />
+                              </RequireVerification>
                             </RequireCompleteProfile>
                           </ProtectedRoute>
                         }
@@ -167,7 +177,9 @@ function App() {
                         element={
                           <ProtectedRoute>
                             <RequireCompleteProfile>
-                              <CreateReportPage />
+                              <RequireVerification>
+                                <CreateReportPage />
+                              </RequireVerification>
                             </RequireCompleteProfile>
                           </ProtectedRoute>
                         }
@@ -177,7 +189,9 @@ function App() {
                         element={
                           <ProtectedRoute>
                             <RequireCompleteProfile>
-                              <MyReportsPage />
+                              <RequireVerification>
+                                <MyReportsPage />
+                              </RequireVerification>
                             </RequireCompleteProfile>
                           </ProtectedRoute>
                         }
@@ -195,7 +209,9 @@ function App() {
                         element={
                           <ProtectedRoute>
                             <RequireCompleteProfile>
-                              <ChatPage />
+                              <RequireVerification>
+                                <ChatPage />
+                              </RequireVerification>
                             </RequireCompleteProfile>
                           </ProtectedRoute>
                         }
@@ -233,6 +249,7 @@ function App() {
                         path="announcements/edit/:id"
                         element={<EditAnnouncementPage />}
                       />
+                      <Route path="citizens" element={<ManageCitizensPage />} />
                       <Route path="chat" element={<ChatPage />} />
                     </Route>
 

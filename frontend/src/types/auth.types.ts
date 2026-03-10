@@ -3,6 +3,13 @@ export enum Role {
   RT_ADMIN = "RT_ADMIN",
 }
 
+export enum VerificationStatus {
+  UNVERIFIED = "UNVERIFIED",
+  PENDING = "PENDING",
+  VERIFIED = "VERIFIED",
+  REJECTED = "REJECTED",
+}
+
 export interface User {
   id?: string;
   name: string;
@@ -12,6 +19,7 @@ export interface User {
   rtId?: string;
   address: string;
   isActive?: boolean;
+  verificationStatus?: string;
   createdAt?: string;
   updatedAt?: string;
   profile?: string;

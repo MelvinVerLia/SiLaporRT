@@ -27,10 +27,11 @@ model User {
   address     String?
   rt          rt?      @relation(fields: [rtId], references: [id])
 
-  role        Role     @default(CITIZEN)
-  isActive    Boolean  @default(true)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  role                Role                 @default(CITIZEN)
+  isActive            Boolean              @default(true)
+  verificationStatus  VerificationStatus   @default(UNVERIFIED)
+  createdAt           DateTime             @default(now())
+  updatedAt           DateTime @updatedAt
   
   message         message[]
   reports         Report[]
@@ -307,4 +308,11 @@ enum Priority {
   LOW
   NORMAL
   HIGH
+}
+
+enum VerificationStatus {
+  UNVERIFIED
+  PENDING
+  VERIFIED
+  REJECTED
 }
