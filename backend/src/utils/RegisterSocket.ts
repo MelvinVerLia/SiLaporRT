@@ -1,5 +1,9 @@
 import { socketAuth } from "../middleware/SocketMiddleware";
-import { ChatRepository } from "../repositories/ChatRepository";
+import {
+  saveMessage,
+  markMessageAsRead,
+  hasUnread,
+} from "../repositories/ChatRepository";
 import prisma from "../config/prisma";
 
 export const RegisterSocket = (io: any) => {
@@ -35,7 +39,7 @@ export const RegisterSocket = (io: any) => {
 
       const userId = socket.user.userId;
 
-      const savedMessage = await ChatRepository.saveMessage(
+      const savedMessage = await saveMessage(
         messagePayload.message,
         userId,
         messagePayload.chatId,
@@ -83,17 +87,17 @@ export const RegisterSocket = (io: any) => {
           };
 
           // Notify the sender too (for list sorting update)
-          io.to(`user:${userId}`).emit(
-            "new_message_notification",
-            { ...notification, isSender: true },
-          );
+          io.to(`user:${userId}`).emit("new_message_notification", {
+            ...notification,
+            isSender: true,
+          });
 
           // Notify the report owner (citizen)
           if (reportOwnerId && reportOwnerId !== userId) {
-            io.to(`user:${reportOwnerId}`).emit(
-              "new_message_notification",
-              { ...notification, isSender: false },
-            );
+            io.to(`user:${reportOwnerId}`).emit("new_message_notification", {
+              ...notification,
+              isSender: false,
+            });
           }
 
           // Notify all RT admins of the same RT
@@ -110,10 +114,10 @@ export const RegisterSocket = (io: any) => {
 
             for (const admin of rtAdmins) {
               if (admin.id !== userId) {
-                io.to(`user:${admin.id}`).emit(
-                  "new_message_notification",
-                  { ...notification, isSender: false },
-                );
+                io.to(`user:${admin.id}`).emit("new_message_notification", {
+                  ...notification,
+                  isSender: false,
+                });
               }
             }
           }
@@ -127,7 +131,7 @@ export const RegisterSocket = (io: any) => {
       const { messageId, chatId } = data;
 
       // Update database
-      await ChatRepository.markMessageAsRead(messageId);
+      await markMessageAsRead(messageId);
 
       // Broadcast to all users in the chat that message was read
       socket.to(chatId).emit("message_read", { messageId });
@@ -141,7 +145,7 @@ export const RegisterSocket = (io: any) => {
             where: { id: readerId },
             select: { rtId: true },
           });
-          const stillHasUnread = await ChatRepository.hasUnread(
+          const stillHasUnread = await hasUnread(
             readerId,
             reader?.rtId ?? undefined,
           );

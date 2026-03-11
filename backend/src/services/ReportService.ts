@@ -7,7 +7,7 @@ import {
   ResponseStatus,
 } from "@prisma/client";
 import { CreateReportData } from "../types/reportTypes";
-import { NotificationService } from "./NotificationService";
+import { sendNotificationByUserId } from "./NotificationService";
 import { AuthRepository } from "../repositories/AuthRepository";
 import { validateUpload } from "../config/uploadPolicy";
 
@@ -47,7 +47,7 @@ class ReportService {
 
       const rtAdminIds = RT.map((admin) => admin.id);
 
-      await NotificationService.sendNotificationByUserId(
+      await sendNotificationByUserId(
         rtAdminIds,
         `Laporan "${report.title}" Telah Dibuat!`,
         `laporan baru telah diajukan. Silakan diproses lebih lanjut.`,
@@ -228,7 +228,7 @@ class ReportService {
       const statusLabel =
         statusLabels[updatedReport.status] || updatedReport.status;
 
-      await NotificationService.sendNotificationByUserId(
+      await sendNotificationByUserId(
         [updatedReport.userId!],
         `Laporan "${updatedReport.title}" Telah Diperbarui!`,
         message || `Status laporan kamu kini berubah menjadi ${statusLabel}`,
@@ -260,7 +260,7 @@ class ReportService {
 
       const url = `${baseUrl}/reports/${reportId}`;
 
-      await NotificationService.sendNotificationByUserId(
+      await sendNotificationByUserId(
         [response?.report.userId!],
         `Laporan "${response?.report.title}" Telah Diperbarui!`,
         `Laporan anda telah diresponse oleh ${response?.responder.name}, silahkan cek laporan anda`,
@@ -377,7 +377,7 @@ class ReportService {
       const url = `${baseUrl}/reports/${updatedReport.id}`;
 
       if (updatedReport) {
-        NotificationService.sendNotificationByUserId(
+        sendNotificationByUserId(
           [updatedReport.userId!],
           `Laporan "${updatedReport.title}" Telah Diperbarui!`,
           `Status laporan kamu kini berubah menjadi ${updatedReport.status}`,
