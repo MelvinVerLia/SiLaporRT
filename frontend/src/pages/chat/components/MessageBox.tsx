@@ -2,6 +2,22 @@ import { format, isSameDay, isToday, isYesterday, parseISO } from "date-fns";
 import { id } from "date-fns/locale";
 import { User as UserIcon, Clock, CheckCheck } from "lucide-react";
 import type { User as UserProps } from "../../../types/auth.types";
+import AttachmentViewer from "../../../components/ui/AttachmentViewer";
+
+type Attachment = {
+  id: string;
+  filename: string;
+  url: string;
+  fileType: "image" | "video" | "audio" | "document";
+  provider?: "cloudinary";
+  publicId?: string;
+  resourceType?: string;
+  format?: string;
+  bytes?: number;
+  width?: number;
+  height?: number;
+  createdAt: string;
+};
 
 type Message = {
   id: string;
@@ -16,6 +32,7 @@ type Message = {
   createdAt: string;
   optimistic?: boolean;
   isRead?: boolean;
+  attachments?: Attachment[];
 };
 
 type MessageBoxProps = {
@@ -37,18 +54,18 @@ const MessageBox = ({ msg, user, idx, sortedMessages }: MessageBoxProps) => {
     return format(d, "dd MMM yyyy", { locale: id });
   };
 
-  const getStatusText = () => {
+  const getStatusText = (forOverlay = false) => {
     if (msg.userId !== user?.id) return null;
 
     if (msg.optimistic) {
-      return <Clock className="h-3 w-3 text-white/70" />;
+      return <Clock className={forOverlay ? "h-3 w-3 text-white" : "h-3 w-3 text-white/70"} />;
     }
 
     if (msg.isRead) {
       return <CheckCheck className="h-3 w-3 text-blue-400" />;
     }
 
-    return <CheckCheck className="h-3 w-3 text-white/70" />;
+    return <CheckCheck className={forOverlay ? "h-3 w-3 text-white" : "h-3 w-3 text-white/70"} />;
   };
 
   return (
@@ -68,19 +85,52 @@ const MessageBox = ({ msg, user, idx, sortedMessages }: MessageBoxProps) => {
       >
         {msg.userId === user?.id ? (
           <div className="max-w-[85%] sm:max-w-[70%] overflow-hidden">
-            <div className="rounded-lg p-2 bg-primary-600 text-white">
-              <div className="flex items-end gap-2">
-                <p className="text-sm whitespace-pre-wrap break-all flex-1 min-w-0">
-                  {msg.message}
-                </p>
-                <div className="flex items-center gap-1 flex-shrink-0">
-                  <span className="text-[10px] text-white/70">
+            {msg.attachments && msg.attachments.length > 0 ? (
+              <div className="relative">
+                <AttachmentViewer
+                  attachments={msg.attachments.map((attachment) => ({
+                    id: attachment.id,
+                    filename: attachment.filename,
+                    url: attachment.url,
+                    fileType: attachment.fileType,
+                    format: attachment.format,
+                  }))}
+                  gridCols={msg.attachments.length === 1 ? 1 : 2}
+                  showTitle={false}
+                  hideFileInfo={true}
+                />
+                {/* Status overlay at bottom-right */}
+                <div className="absolute bottom-2 right-2 flex items-center gap-1 bg-primary-600 px-2 py-1 rounded">
+                  <span className="text-[10px] text-white">
                     {format(parseISO(msg.createdAt), "HH:mm")}
                   </span>
-                  {getStatusText()}
+                  {getStatusText(true)}
+                </div>
+                {msg.message && (
+                  <div className="rounded-lg p-2 bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white mt-1">
+                    <p className="text-sm whitespace-pre-wrap break-all">
+                      {msg.message}
+                    </p>
+                  </div>
+                )}
+              </div>
+            ) : (
+              <div className="rounded-lg p-2 bg-primary-600 text-white">
+                <div className="flex items-end gap-2">
+                  {msg.message && (
+                    <p className="text-sm whitespace-pre-wrap break-all flex-1 min-w-0">
+                      {msg.message}
+                    </p>
+                  )}
+                  <div className="flex items-center gap-1 flex-shrink-0">
+                    <span className="text-[10px] text-white/70">
+                      {format(parseISO(msg.createdAt), "HH:mm")}
+                    </span>
+                    {getStatusText()}
+                  </div>
                 </div>
               </div>
-            </div>
+            )}
           </div>
         ) : (
           <div className="flex items-start gap-2 max-w-[85%] sm:max-w-[70%]">
@@ -100,18 +150,52 @@ const MessageBox = ({ msg, user, idx, sortedMessages }: MessageBoxProps) => {
                 {msg.user.name}
               </p>
 
-              <div className="rounded-lg p-2 bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white max-w-full overflow-hidden">
-                <div className="flex items-end gap-2">
-                  <p className="text-sm whitespace-pre-wrap break-all flex-1 min-w-0">
-                    {msg.message}
-                  </p>
-                  <div className="flex items-center gap-1 flex-shrink-0">
-                    <span className="text-[10px] text-gray-500 dark:text-gray-400">
-                      {format(parseISO(msg.createdAt), "HH:mm")}
-                    </span>
+              {msg.attachments && msg.attachments.length > 0 ? (
+                <div>
+                  <div className="relative">
+                    <AttachmentViewer
+                      attachments={msg.attachments.map((attachment) => ({
+                        id: attachment.id,
+                        filename: attachment.filename,
+                        url: attachment.url,
+                        fileType: attachment.fileType,
+                        format: attachment.format,
+                      }))}
+                      gridCols={msg.attachments.length === 1 ? 1 : 2}
+                      showTitle={false}
+                      hideFileInfo={true}
+                    />
+                    {/* Timestamp overlay at bottom-left */}
+                    <div className="absolute bottom-2 left-2 flex items-center gap-1 bg-gray-900/60 dark:bg-gray-800/70 px-2 py-1 rounded">
+                      <span className="text-[10px] text-white">
+                        {format(parseISO(msg.createdAt), "HH:mm")}
+                      </span>
+                    </div>
+                  </div>
+                  {msg.message && (
+                    <div className="rounded-lg p-2 bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white mt-1">
+                      <p className="text-sm whitespace-pre-wrap break-all">
+                        {msg.message}
+                      </p>
+                    </div>
+                  )}
+                </div>
+              ) : (
+                <div className="rounded-lg p-2 bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white max-w-full overflow-hidden">
+                  <div className="flex items-end gap-2">
+                    {msg.message && (
+                      <p className="text-sm whitespace-pre-wrap break-all flex-1 min-w-0">
+                        {msg.message}
+                      </p>
+                    )}
+                    <div className="flex items-center gap-1 flex-shrink-0">
+                      <span className="text-[10px] text-gray-500 dark:text-gray-400">
+                        {format(parseISO(msg.createdAt), "HH:mm")}
+                      </span>
+                    </div>
                   </div>
                 </div>
-              </div>
+              )}
             </div>
           </div>
         )}

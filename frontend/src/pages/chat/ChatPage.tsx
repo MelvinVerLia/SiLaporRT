@@ -1,6 +1,6 @@
-import React, { useState, useEffect, useRef, useMemo } from "react";
-import { useLocation } from "react-router-dom";
-import { Send, User, MapPin, ChevronLeft, FileText } from "lucide-react";
+import React, { useState, useEffect, useRef, useMemo, useCallback } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
+import { Send, User, MapPin, ChevronLeft, FileText, Camera, X } from "lucide-react";
 import { useAuthContext } from "../../contexts/AuthContext";
 import { Report } from "../../types/report.types";
 import { Role } from "../../types/auth.types";
@@ -18,7 +18,25 @@ import ReportBoxSkeleton from "./components/ReportBoxSkeleton";
 import ReportBox from "./components/ReportBox";
 import TextBoxSkeleton from "./components/TextBoxSkeleton";
 import LoadingSpinner from "../../components/ui/LoadingSpinner";
-import { useToast } from "../../hooks/useToast";
+import CloudinaryUpload, { CloudinaryUploadRef } from "../../components/upload/CloudinaryUpload";
+import AttachmentViewer from "../../components/ui/AttachmentViewer";
+import { CloudinaryFile } from "../../types/announcement.types";
+import { classifyFile } from "../../utils/classifyFile";
+
+type Attachment = {
+  id: string;
+  filename: string;
+  url: string;
+  fileType: "image" | "video" | "audio" | "document";
+  provider?: "cloudinary";
+  publicId?: string;
+  resourceType?: string;
+  format?: string;
+  bytes?: number;
+  width?: number;
+  height?: number;
+  createdAt: string;
+};
 
 type Message = {
   id: string;
@@ -33,19 +51,24 @@ type Message = {
   createdAt: string;
   optimistic?: boolean;
   isRead?: boolean;
+  attachments?: Attachment[];
 };
 
 type ReportWithUnread = Report & {
   unreadCount: number;
+  hasChat?: boolean;
+  lastMessageAt?: string | null;
 };
 
 const ChatPage: React.FC = () => {
   const { user } = useAuthContext();
   const location = useLocation();
+  const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [selectedReport, setSelectedReport] = useState<Report | null>(null);
   const [reports, setReports] = useState<ReportWithUnread[]>([]);
   const [newMessage, setNewMessage] = useState("");
+  const [activeTab, setActiveTab] = useState<"ongoing" | "history">("ongoing");
   const [isLoading, setIsLoading] = useState(true);
   const [messages, setMessages] = useState<Message[]>([]);
   const [isLoadingMessages, setIsLoadingMessages] = useState(false);
@@ -54,11 +77,20 @@ const ChatPage: React.FC = () => {
   const [mobileView, setMobileView] = useState<"list" | "chat" | "detail">(
     "list",
   );
+  const [attachments, setAttachments] = useState<Attachment[]>([]);
+  const [isUploading, setIsUploading] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const messagesContainerRef = useRef<HTMLDivElement>(null);
-  const toast = useToast();
   const typingTimeoutRef = useRef<number | null>(null);
   const typingIndicatorTimeoutRef = useRef<number | null>(null);
+  const selectedReportRef = useRef<Report | null>(null);
+  const uploadRef = useRef<CloudinaryUploadRef>(null);
+  const hasAutoSelectedRef = useRef(false);
+
+  // Keep ref in sync with state
+  useEffect(() => {
+    selectedReportRef.current = selectedReport;
+  }, [selectedReport]);
 
   const {
     data: chatData,
@@ -75,7 +107,6 @@ const ChatPage: React.FC = () => {
 
   useEffect(() => {
     if (!ChatId) return;
-    setMessages([]);
 
     const reportId = selectedReport?.id;
 
@@ -85,6 +116,7 @@ const ChatPage: React.FC = () => {
       setIsLoadingMessages(true);
       try {
         const response = await getMessages(reportId);
+        // Clear and set messages in one operation to avoid flash
         setMessages(response.data);
 
         response.data.forEach((msg: Message) => {
@@ -105,21 +137,71 @@ const ChatPage: React.FC = () => {
     };
 
     fetchMessages();
-  }, [ChatId, selectedReport?.id, user?.id]);
+  }, [ChatId, selectedReport?.id, user?.id, queryClient]);
 
-  const scrollToBottom = () => {
+  const scrollToBottom = useCallback((behavior: ScrollBehavior = "auto") => {
     const el = messagesContainerRef.current;
     if (!el) return;
 
-    el.scrollTo({
-      top: el.scrollHeight,
-      behavior: "auto",
+    // Use requestAnimationFrame for smoother, no-blink scrolling
+    requestAnimationFrame(() => {
+      el.scrollTo({
+        top: el.scrollHeight,
+        behavior,
+      });
     });
-  };
+  }, []);
 
+  const scrollToBottomWithImageWait = useCallback(() => {
+    const el = messagesContainerRef.current;
+    if (!el) return;
+
+    // Wait for all images to load before scrolling
+    const images = el.querySelectorAll('img');
+    if (images.length === 0) {
+      scrollToBottom("auto");
+      return;
+    }
+
+    let loadedCount = 0;
+    const totalImages = images.length;
+    let scrolled = false;
+
+    const checkAndScroll = () => {
+      if (scrolled) return;
+      loadedCount++;
+      if (loadedCount === totalImages) {
+        scrolled = true;
+        scrollToBottom("auto");
+      }
+    };
+
+    images.forEach((img) => {
+      if (img.complete) {
+        checkAndScroll();
+      } else {
+        img.addEventListener('load', checkAndScroll);
+        img.addEventListener('error', checkAndScroll);
+      }
+    });
+
+    // Fallback: scroll after 300ms even if images haven't loaded
+    setTimeout(() => {
+      if (!scrolled) {
+        scrolled = true;
+        scrollToBottom("auto");
+      }
+    }, 300);
+  }, [scrollToBottom]);
+
+  // Only scroll when message count changes, not on property updates (like isRead)
   useEffect(() => {
-    scrollToBottom();
-  }, [messages]);
+    if (messages.length > 0) {
+      // Use the image-aware scroll on initial load
+      if (isLoadingMessages) return;
+      scrollToBottomWithImageWait();
+    }
+  }, [messages.length, isLoadingMessages, scrollToBottomWithImageWait]);
 
   const sortedMessages = useMemo(() => {
     return [...messages].sort(
@@ -147,7 +229,8 @@ const ChatPage: React.FC = () => {
               const hasUser = report.user;
               const isCitizen = report.user?.role === Role.CITIZEN;
               const sameRT = report.user?.rtId === user.rtId;
-              const validStatus = report.status === "IN_PROGRESS";
+              const validStatus =
+                report.status === "IN_PROGRESS" || report.status === "RESOLVED";
 
               return hasUser && isCitizen && user.rtId && sameRT && validStatus;
             })
@@ -169,7 +252,7 @@ const ChatPage: React.FC = () => {
 
           const filteredReports = allReports.filter((report: Report) => {
             const isValidStatus =
-              report.status === "IN_PROGRESS" || report.status === "PENDING";
+              report.status === "IN_PROGRESS" || report.status === "RESOLVED";
             return isValidStatus;
           });
           console.log({ filteredReports });
@@ -191,24 +274,59 @@ const ChatPage: React.FC = () => {
   // Auto-select report if reportId is passed via navigation state
   useEffect(() => {
     const state = location.state as { reportId?: string } | null;
-    if (state?.reportId && reports.length > 0) {
+    if (state?.reportId && reports.length > 0 && !hasAutoSelectedRef.current) {
       const report = reports.find((r) => r.id === state.reportId);
       if (report) {
+        setActiveTab(report.status === "RESOLVED" ? "history" : "ongoing");
         setSelectedReport(report);
         setMobileView("chat");
+        hasAutoSelectedRef.current = true;
         // Clear the state after using it
-        window.history.replaceState({}, document.title);
+        navigate(location.pathname, { replace: true, state: {} });
       }
     }
-  }, [location.state, reports]);
+
+    // Reset the ref when component unmounts so it works on re-navigation
+    return () => {
+      hasAutoSelectedRef.current = false;
+    };
+  }, [location.state, reports, location.pathname, navigate]);
 
   useEffect(() => {
-    toast.info("Socket connecting", "Success");
     socket.connect();
-    toast.success("Socket connected", "Success");
     console.log("socket connected");
+
+    // Listen for real-time message notifications to update the report list
+    const handleNewMessageNotification = (data: {
+      reportId: string;
+      chatId: string;
+      lastMessageAt: string;
+      senderId: string;
+      senderName: string;
+      isSender: boolean;
+    }) => {
+      setReports((prev) =>
+        prev.map((r) =>
+          r.id === data.reportId
+            ? {
+                ...r,
+                lastMessageAt: data.lastMessageAt,
+                hasChat: true,
+                unreadCount:
+                  data.isSender ||
+                  selectedReportRef.current?.id === data.reportId
+                    ? r.unreadCount
+                    : r.unreadCount + 1,
+              }
+            : r,
+        ),
+      );
+    };
+
+    socket.on("new_message_notification", handleNewMessageNotification);
+
     return () => {
-      toast.error("Socket dead", "Error");
+      socket.off("new_message_notification", handleNewMessageNotification);
       socket.disconnect();
     };
   }, []);
@@ -216,7 +334,6 @@ const ChatPage: React.FC = () => {
   useEffect(() => {
     if (!ChatId) return;
 
-    setMessages([]);
     socket.emit("join_room", ChatId);
 
     const handleReceiveMessage = (tempId: string, payload: Message) => {
@@ -279,7 +396,7 @@ const ChatPage: React.FC = () => {
       socket.off("user_typing", handleUserTyping);
       socket.emit("leave_room", ChatId);
     };
-  }, [ChatId, user?.id]);
+  }, [ChatId, user?.id, queryClient]);
 
   const handleTyping = () => {
     if (typingTimeoutRef.current) {
@@ -293,8 +410,35 @@ const ChatPage: React.FC = () => {
     }, 1000);
   };
 
+  const handleAttachmentUploaded = (files: CloudinaryFile[]) => {
+    const mapped = files.map((f) => {
+      const baseName = f.original_filename || "file";
+      const ext = f.format ? `.${f.format}` : "";
+      const filename = baseName.endsWith(ext) ? baseName : `${baseName}${ext}`;
+      return {
+        id: f.public_id,
+        filename,
+        url: f.secure_url,
+        fileType: classifyFile(f),
+        provider: "cloudinary" as const,
+        publicId: f.public_id,
+        resourceType: f.resource_type,
+        format: f.format,
+        bytes: f.bytes,
+        width: f.width,
+        height: f.height,
+        createdAt: new Date().toISOString(),
+      };
+    });
+    setAttachments((prev) => [...prev, ...mapped]);
+  };
+
+  const handleAttachmentRemove = (identifier: string) => {
+    setAttachments((prev) => prev.filter((a) => a.id !== identifier));
+  };
+
   const sendMessage = () => {
-    if (!newMessage.trim()) return;
+    if (!newMessage.trim() && attachments.length === 0) return;
 
     if (typingTimeoutRef.current) {
       clearTimeout(typingTimeoutRef.current);
@@ -316,6 +460,7 @@ const ChatPage: React.FC = () => {
       createdAt: new Date().toISOString(),
       optimistic: true,
       isRead: false,
+      attachments: attachments.length > 0 ? attachments : undefined,
     };
 
     console.log(optimisticMessage);
@@ -328,6 +473,7 @@ const ChatPage: React.FC = () => {
     });
 
     setNewMessage("");
+    setAttachments([]);
   };
 
   const handleStartChat = async (reportId: string) => {
@@ -349,6 +495,17 @@ const ChatPage: React.FC = () => {
       e.preventDefault();
       sendMessage();
     }
+  };
+
+  const handleNavigateToReportDetail = () => {
+    if (!selectedReport) return;
+    const basePath = user?.role === Role.RT_ADMIN ? "/admin/reports" : "/reports";
+    navigate(`${basePath}/${selectedReport.id}`, { 
+      state: { 
+        from: "chat",
+        reportId: selectedReport.id 
+      } 
+    });
   };
 
   return (
@@ -373,53 +530,106 @@ const ChatPage: React.FC = () => {
                 mobileView !== "list" ? "hidden lg:flex" : ""
               }`}
             >
-              <div className="p-4 border-b border-gray-200 dark:border-gray-700">
+              <div className="p-4 border-b border-gray-200 dark:border-gray-700 space-y-3">
                 <h2 className="font-semibold text-gray-900 dark:text-white">
                   {user?.role === Role.RT_ADMIN
                     ? "Laporan yang Ditangani"
-                    : "Laporan Saya"}{" "}
-                  <span className="text-gray-500 dark:text-gray-400">
-                    ({reports.length})
-                  </span>
+                    : "Laporan Saya"}
                 </h2>
+                <div className="flex rounded-lg bg-gray-100 dark:bg-gray-700 p-1">
+                  <button
+                    onClick={() => {
+                      setActiveTab("ongoing");
+                      setSelectedReport(null);
+                    }}
+                    className={`flex-1 text-sm font-medium py-1.5 px-3 rounded-md transition-colors ${
+                      activeTab === "ongoing"
+                        ? "bg-white dark:bg-gray-600 text-primary-600 dark:text-primary-400 shadow-sm"
+                        : "text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300"
+                    }`}
+                  >
+                    On Going (
+                    {reports.filter((r) => r.status === "IN_PROGRESS").length})
+                  </button>
+                  <button
+                    onClick={() => {
+                      setActiveTab("history");
+                      setSelectedReport(null);
+                    }}
+                    className={`flex-1 text-sm font-medium py-1.5 px-3 rounded-md transition-colors ${
+                      activeTab === "history"
+                        ? "bg-white dark:bg-gray-600 text-primary-600 dark:text-primary-400 shadow-sm"
+                        : "text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300"
+                    }`}
+                  >
+                    History (
+                    {
+                      reports.filter(
+                        (r) => r.status === "RESOLVED" && r.hasChat,
+                      ).length
+                    }
+                    )
+                  </button>
+                </div>
               </div>
               <div className="flex-1 overflow-y-auto [&::-webkit-scrollbar]:hidden [scrollbar-width:none]">
                 {isLoading ? (
                   <ReportBoxSkeleton />
-                ) : reports.length === 0 ? (
+                ) : reports.filter((r) =>
+                    activeTab === "ongoing"
+                      ? r.status === "IN_PROGRESS"
+                      : r.status === "RESOLVED" && r.hasChat,
+                  ).length === 0 ? (
                   <div className="flex flex-col items-center justify-center h-full text-center p-4">
                     <div className="text-gray-400 dark:text-gray-500 mb-2">
                       <User className="h-12 w-12 mx-auto" />
                     </div>
                     <p className="text-gray-600 dark:text-gray-400">
-                      {user?.role === Role.RT_ADMIN
-                        ? "Belum ada laporan yang ditangani"
-                        : "Anda belum membuat laporan"}
+                      {activeTab === "ongoing"
+                        ? "Tidak ada laporan yang sedang ditangani"
+                        : "Belum ada riwayat laporan"}
                     </p>
                   </div>
                 ) : (
                   <div className="divide-y divide-gray-200 dark:divide-gray-700">
-                    {reports.map((report) => (
-                      <div
-                        key={report.id}
-                        onClick={() => {
-                          setSelectedReport(report);
-                          setMobileView("chat");
-                          setReports((prev) =>
-                            prev.map((r) =>
-                              r.id === report.id ? { ...r, unreadCount: 0 } : r,
-                            ),
-                          );
-                        }}
-                      >
-                        <ReportBox
-                          user={user}
-                          report={report}
-                          selectedReport={selectedReport}
-                          setSelectedReport={setSelectedReport}
-                        />
-                      </div>
-                    ))}
+                    {reports
+                      .filter((report) =>
+                        activeTab === "ongoing"
+                          ? report.status === "IN_PROGRESS"
+                          : report.status === "RESOLVED" && report.hasChat,
+                      )
+                      .sort((a, b) => {
+                        const aTime = a.lastMessageAt
+                          ? new Date(a.lastMessageAt).getTime()
+                          : 0;
+                        const bTime = b.lastMessageAt
+                          ? new Date(b.lastMessageAt).getTime()
+                          : 0;
+                        return bTime - aTime;
+                      })
+                      .map((report) => (
+                        <div
+                          key={report.id}
+                          onClick={() => {
+                            setSelectedReport(report);
+                            setMobileView("chat");
+                            setReports((prev) =>
+                              prev.map((r) =>
+                                r.id === report.id
+                                  ? { ...r, unreadCount: 0 }
+                                  : r,
+                              ),
+                            );
+                          }}
+                        >
+                          <ReportBox
+                            user={user}
+                            report={report}
+                            selectedReport={selectedReport}
+                            setSelectedReport={setSelectedReport}
+                          />
+                        </div>
+                      ))}
                   </div>
                 )}
               </div>
@@ -468,7 +678,11 @@ const ChatPage: React.FC = () => {
                   <MessageBoxSkeleton />
                 ) : !ChatId ? (
                   <div className="flex items-center justify-center h-full">
-                    {isLoadingStartChat ? (
+                    {selectedReport.status === "RESOLVED" ? (
+                      <p className="text-gray-500 dark:text-gray-400">
+                        Tidak ada riwayat chat untuk laporan ini
+                      </p>
+                    ) : isLoadingStartChat ? (
                       <div>
                         <LoadingSpinner />
                       </div>
@@ -535,9 +749,57 @@ const ChatPage: React.FC = () => {
 
               {isLoadingChat || isLoadingMessages ? (
                 <TextBoxSkeleton />
-              ) : ChatId ? (
-                <div className="p-4 border-t border-gray-200 dark:border-gray-700">
+              ) : ChatId && selectedReport?.status !== "RESOLVED" ? (
+                <div className="p-4 border-t border-gray-200 dark:border-gray-700 space-y-3">
+                  {/* Attachment Preview */}
+                  {attachments.length > 0 && (
+                    <div className="flex flex-wrap gap-2 p-2 bg-gray-50 dark:bg-gray-700 rounded-lg">
+                      {attachments.map((attachment) => (
+                        <div key={attachment.id} className="relative group">
+                          <img
+                            src={attachment.url}
+                            alt={attachment.filename}
+                            className="h-16 w-16 object-cover rounded"
+                          />
+                          <button
+                            onClick={() => handleAttachmentRemove(attachment.id)}
+                            className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"
+                          >
+                            <X className="h-3 w-3" />
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+
+                  {/* Hidden CloudinaryUpload for file handling */}
+                  <div className="hidden">
+                    <CloudinaryUpload
+                      ref={uploadRef}
+                      folder="reports"
+                      multiple
+                      accept="image/jpeg,image/png,image/jpg"
+                      maxFiles={3}
+                      attachments={attachments}
+                      onUploaded={handleAttachmentUploaded}
+                      onRemove={handleAttachmentRemove}
+                      onUploadingChange={setIsUploading}
+                    />
+                  </div>
+
                   <div className="flex items-center gap-2">
+                    <Button
+                      onClick={() => uploadRef.current?.openFileDialog()}
+                      className="px-3 h-10 flex items-center justify-center"
+                      title="Tambah Lampiran"
+                      disabled={attachments.length >= 3 || isUploading}
+                    >
+                      {isUploading ? (
+                        <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent"></div>
+                      ) : (
+                        <Camera className="h-4 w-4" />
+                      )}
+                    </Button>
                     <textarea
                       value={newMessage}
                       onChange={(e) => {
@@ -551,12 +813,18 @@ const ChatPage: React.FC = () => {
                     />
                     <Button
                       onClick={sendMessage}
-                      disabled={newMessage.trim() === ""}
+                      disabled={(newMessage.trim() === "" && attachments.length === 0) || isUploading}
                       className="px-3 h-10 flex items-center justify-center"
                     >
                       <Send className="h-4 w-4" />
                     </Button>
                   </div>
+                </div>
+              ) : ChatId && selectedReport?.status === "RESOLVED" ? (
+                <div className="p-3 border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-750">
+                  <p className="text-sm text-center text-gray-500 dark:text-gray-400">
+                    Laporan sudah selesai. Chat tidak dapat dilanjutkan.
+                  </p>
                 </div>
               ) : null}
             </div>
@@ -588,19 +856,17 @@ const ChatPage: React.FC = () => {
                   </div>
                 ) : (
                   <div className="space-y-4">
+                    {/* Report Header */}
                     <div>
                       <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
                         {selectedReport.title}
                       </h3>
-                    </div>
-
-                    <div>
-                      <p className="text-sm text-gray-600 dark:text-gray-400">
+                      <p className="text-sm text-gray-600 dark:text-gray-400 mt-2">
                         {selectedReport.description}
                       </p>
                     </div>
 
-                    <div>
+                    <div className="pt-2">
                       <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 flex items-center gap-1">
                         <MapPin className="h-4 w-4" />
                         Lokasi
@@ -617,33 +883,38 @@ const ChatPage: React.FC = () => {
                     {selectedReport.attachments &&
                       selectedReport.attachments.length > 0 && (
                         <div>
-                          <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                            Lampiran ({selectedReport.attachments.length})
-                          </h4>
-                          <div className="grid grid-cols-2 gap-2">
-                            {selectedReport.attachments.map((attachment) => (
-                              <div
-                                key={attachment.id}
-                                className="relative aspect-square rounded-lg overflow-hidden"
-                              >
-                                {attachment.fileType === "image" ? (
-                                  <img
-                                    src={attachment.url}
-                                    alt={attachment.filename}
-                                    className="w-full h-full object-cover"
-                                  />
-                                ) : (
-                                  <div className="w-full h-full bg-gray-100 dark:bg-gray-700 flex items-center justify-center">
-                                    <p className="text-xs text-gray-600 dark:text-gray-400">
-                                      {attachment.fileType}
-                                    </p>
-                                  </div>
-                                )}
-                              </div>
-                            ))}
-                          </div>
+                          <AttachmentViewer
+                            attachments={selectedReport.attachments.map(
+                              (attachment) => ({
+                                id: attachment.id,
+                                filename: attachment.filename,
+                                url: attachment.url,
+                                fileType: attachment.fileType as
+                                  | "image"
+                                  | "video"
+                                  | "audio"
+                                  | "document",
+                                format: attachment.filename
+                                  .split(".")
+                                  .pop()
+                                  ?.toLowerCase(),
+                              }),
+                            )}
+                            title="Lampiran"
+                            gridCols={2}
+                          />
                         </div>
                       )}
+
+                    {/* Link to full detail */}
+                    <div className="pt-2">
+                      <button
+                        onClick={handleNavigateToReportDetail}
+                        className="text-sm text-primary-600 dark:text-primary-400 hover:underline cursor-pointer hover:text-primary-700 dark:hover:text-primary-300"
+                      >
+                        Lihat detail selengkapnya
+                      </button>
+                    </div>
 
                     <div className="pt-4 border-t border-gray-200 dark:border-gray-700">
                       <div className="space-y-2 text-xs text-gray-500 dark:text-gray-400">

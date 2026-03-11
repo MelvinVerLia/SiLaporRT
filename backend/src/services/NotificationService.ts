@@ -1,193 +1,195 @@
-import { NotificationRepository } from "../repositories/NotificationRepository";
+import {
+  getAllSubscriptionsByUserId,
+  getSubscriptionsByUserIds,
+  createNotificationsToCitizens,
+  getAdminSubscription,
+  toggleSubscribe as toggleSub,
+  createMany,
+  subscriptionStatus as subStatus,
+  getNotifications as getNotif,
+  deleteSubscriptionByEndpoint,
+  createNotificationToAdmin,
+} from "../repositories/NotificationRepository";
 import webpush from "../utils/webpush";
 import { AuthRepository } from "../repositories/AuthRepository";
 import { NotificationCategory } from "@prisma/client";
 
-export class NotificationService {
-  static async sendNotificationByUserId(
-    userIds: string[],
-    title: string,
-    body: string,
-    clickUrl: string,
-    icon: string,
-    category: NotificationCategory
-  ) {
-    const subs = await NotificationRepository.getAllSubscriptionsByUserId(
-      userIds
-    );
-    const payload = JSON.stringify({
-      title,
-      body,
-      clickUrl,
-      icon,
-      badge: icon,
-      image: icon,
-    });
+export async function sendNotificationByUserId(
+  userIds: string[],
+  title: string,
+  body: string,
+  clickUrl: string,
+  icon: string,
+  category: NotificationCategory,
+) {
+  const subs = await getAllSubscriptionsByUserId(userIds);
+  const payload = JSON.stringify({
+    title,
+    body,
+    clickUrl,
+    icon,
+    badge: icon,
+    image: icon,
+  });
 
-    if (subs.length) {
-      for (const s of subs) {
-        try {
-          await Promise.allSettled(
-            subs.map((s) =>
-              webpush.sendNotification(
-                {
-                  endpoint: s.endpoint,
-                  keys: {
-                    p256dh: s.p256dh,
-                    auth: s.auth,
-                  },
-                } as any,
-                payload
-              )
-            )
-          );
-        } catch (err: any) {
-          console.error("Push failed:", err.message);
-        }
+  if (subs.length) {
+    for (const s of subs) {
+      try {
+        await Promise.allSettled(
+          subs.map((s) =>
+            webpush.sendNotification(
+              {
+                endpoint: s.endpoint,
+                keys: {
+                  p256dh: s.p256dh,
+                  auth: s.auth,
+                },
+              } as any,
+              payload,
+            ),
+          ),
+        );
+      } catch (err: any) {
+        console.error("Push failed:", err.message);
       }
-
-      console.log("Notification sent successfully");
     }
 
-    await NotificationRepository.createNotificationsToCitizens(
-      userIds.map((u) => ({
-        title,
-        body,
-        clickUrl,
-        userId: u,
-        category,
-      }))
-    );
-
-    return { success: true };
+    console.log("Notification sent successfully");
   }
 
-  static async sendNotificationAll(
-    title: string,
-    body: string,
-    clickUrl: string,
-    imageUrl: string,
-    category: NotificationCategory
-  ) {
-    const citizens = await AuthRepository.getAllUsersByRole("CITIZEN");
-
-    const citizenUserIds = citizens.map((u) => u.id);
-
-    const subs = await NotificationRepository.getSubscriptionsByUserIds(
-      citizenUserIds
-    );
-
-    const payload = {
+  await createNotificationsToCitizens(
+    userIds.map((u) => ({
       title,
       body,
       clickUrl,
-      icon: imageUrl,
-      badge: imageUrl,
-      image: imageUrl,
-    };
-
-    const notificationData = citizens.map((u) => ({
-      title,
-      body,
-      clickUrl,
-      userId: u.id,
+      userId: u,
       category,
-    }));
+    })),
+  );
 
-    await NotificationRepository.createMany(notificationData);
+  return { success: true };
+}
 
-    for (const s of subs) {
-      try {
-        await webpush.sendNotification(
-          {
-            endpoint: s.endpoint,
-            keys: { p256dh: s.p256dh, auth: s.auth },
-          } as any,
-          JSON.stringify(payload)
-        );
-      } catch (err: any) {
-        console.error("Push failed:", err.statusCode, err.body);
+export async function sendNotificationAll(
+  title: string,
+  body: string,
+  clickUrl: string,
+  imageUrl: string,
+  category: NotificationCategory,
+) {
+  const citizens = await AuthRepository.getAllUsersByRole("CITIZEN");
 
-        if (err.statusCode === 410 || err.statusCode === 404) {
-          await NotificationRepository.deleteSubscriptionByEndpoint(s.endpoint);
-          console.log("Deleted expired subscription:", s.endpoint);
-        }
+  const citizenUserIds = citizens.map((u) => u.id);
+
+  const subs = await getSubscriptionsByUserIds(citizenUserIds);
+
+  const payload = {
+    title,
+    body,
+    clickUrl,
+    icon: imageUrl,
+    badge: imageUrl,
+    image: imageUrl,
+  };
+
+  const notificationData = citizens.map((u) => ({
+    title,
+    body,
+    clickUrl,
+    userId: u.id,
+    category,
+  }));
+
+  await createMany(notificationData);
+
+  for (const s of subs) {
+    try {
+      await webpush.sendNotification(
+        {
+          endpoint: s.endpoint,
+          keys: { p256dh: s.p256dh, auth: s.auth },
+        } as any,
+        JSON.stringify(payload),
+      );
+    } catch (err: any) {
+      console.error("Push failed:", err.statusCode, err.body);
+
+      if (err.statusCode === 410 || err.statusCode === 404) {
+        await deleteSubscriptionByEndpoint(s.endpoint);
+        console.log("Deleted expired subscription:", s.endpoint);
       }
     }
-
-    return { success: true };
   }
 
-  static async sendNotificationToAdmin(
-    title: string,
-    body: string,
-    clickUrl: string,
-    imageUrl: string,
-    category: NotificationCategory
-  ) {
-    const payload = {
-      title,
-      body,
-      clickUrl,
-      icon: imageUrl,
-      badge: imageUrl,
-      image: imageUrl,
-    };
-    const subs = await NotificationRepository.getAdminSubscription();
-    for (const s of subs) {
-      try {
-        await webpush.sendNotification(
-          {
-            endpoint: s.endpoint,
-            keys: { p256dh: s.p256dh, auth: s.auth },
-          } as any,
-          JSON.stringify(payload)
-        );
-      } catch (err: any) {
-        console.error("Push failed:", err.statusCode, err.body);
+  return { success: true };
+}
 
-        if (err.statusCode === 410 || err.statusCode === 404) {
-          await NotificationRepository.deleteSubscriptionByEndpoint(s.endpoint);
-          console.log("Deleted expired subscription:", s.endpoint);
-        }
+export async function sendNotificationToAdmin(
+  title: string,
+  body: string,
+  clickUrl: string,
+  imageUrl: string,
+  category: NotificationCategory,
+) {
+  const payload = {
+    title,
+    body,
+    clickUrl,
+    icon: imageUrl,
+    badge: imageUrl,
+    image: imageUrl,
+  };
+  const subs = await getAdminSubscription();
+  for (const s of subs) {
+    try {
+      await webpush.sendNotification(
+        {
+          endpoint: s.endpoint,
+          keys: { p256dh: s.p256dh, auth: s.auth },
+        } as any,
+        JSON.stringify(payload),
+      );
+    } catch (err: any) {
+      console.error("Push failed:", err.statusCode, err.body);
+
+      if (err.statusCode === 410 || err.statusCode === 404) {
+        await deleteSubscriptionByEndpoint(s.endpoint);
+        console.log("Deleted expired subscription:", s.endpoint);
       }
     }
-    await NotificationRepository.createNotificationToAdmin(
-      title,
-      body,
-      clickUrl,
-      subs[0].userId!,
-      category
-    );
   }
+  await createNotificationToAdmin(
+    title,
+    body,
+    clickUrl,
+    subs[0].userId!,
+    category,
+  );
+}
 
-  static async getNotifications(userId: string) {
-    const response = await NotificationRepository.getNotifications(userId);
-    return response;
-  }
+export async function getNotifications(userId: string) {
+  const response = await getNotif(userId);
+  return response;
+}
 
-  static readAllNotification(userId: string) {
-    return NotificationRepository.readAllNotification(userId);
-  }
+export async function readAllNotification(userId: string) {
+  return readAllNotification(userId);
+}
 
-  static readNotification(id: string) {
-    return NotificationRepository.readNotification(id);
-  }
+export async function readNotification(id: string) {
+  return readNotification(id);
+}
 
-  static deleteAllReadNotification(userId: string) {
-    return NotificationRepository.deleteAllReadNotification(userId);
-  }
+export async function deleteAllReadNotification(userId: string) {
+  return deleteAllReadNotification(userId);
+}
 
-  static async toggleSubscribe(userId: string, status: boolean) {
-    const response = await NotificationRepository.toggleSubscribe(
-      userId,
-      status
-    );
-    return response;
-  }
+export async function toggleSubscribe(userId: string, status: boolean) {
+  const response = await toggleSub(userId, status);
+  return response;
+}
 
-  static async subscriptionStatus(userId: string) {
-    const response = await NotificationRepository.subscriptionStatus(userId);
-    return response;
-  }
+export async function subscriptionStatus(userId: string) {
+  const response = await subStatus(userId);
+  return response;
 }

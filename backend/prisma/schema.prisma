@@ -27,10 +27,11 @@ model User {
   address     String?
   rt          rt?      @relation(fields: [rtId], references: [id])
 
-  role        Role     @default(CITIZEN)
-  isActive    Boolean  @default(true)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  role                Role                 @default(CITIZEN)
+  isActive            Boolean              @default(true)
+  verificationStatus  VerificationStatus   @default(UNVERIFIED)
+  createdAt           DateTime             @default(now())
+  updatedAt           DateTime @updatedAt
   
   message         message[]
   reports         Report[]
@@ -117,9 +118,16 @@ enum ReportStatus {
   CLOSED       
 }
 
+enum ResponseStatus {
+  IN_PROGRESS
+  RESOLVED
+  REJECTED
+}
+
 model Response {
-  id          String       @id @default(cuid())
-  message     String       @db.Text
+  id          String          @id @default(cuid())
+  message     String          @db.Text
+  status      ResponseStatus?
   attachments Attachment[] 
   
   report      Report       @relation(fields: [reportId], references: [id], onDelete: Cascade)
@@ -278,6 +286,7 @@ model message {
   chatId String
   chat   chat @relation(fields: [chatId], references: [id])
   message String
+  attachments Json?
   isRead Boolean @default(false)
   createdAt DateTime @default(now())
 }
@@ -299,4 +308,11 @@ enum Priority {
   LOW
   NORMAL
   HIGH
+}
+
+enum VerificationStatus {
+  UNVERIFIED
+  PENDING
+  VERIFIED
+  REJECTED
 }

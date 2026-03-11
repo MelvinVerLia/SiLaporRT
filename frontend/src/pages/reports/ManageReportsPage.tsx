@@ -261,8 +261,6 @@ export default function ManageReportsPage() {
     try {
       if (!currentReportId) return;
 
-      // Update status to IN_PROGRESS with response message
-      // Backend will create response entry and send notification
       await updateReportStatus(
         currentReportId,
         "IN_PROGRESS",
@@ -294,8 +292,6 @@ export default function ManageReportsPage() {
         return;
       }
 
-      // Update status to REJECTED with rejection reason as response message
-      // Backend will create response entry and send notification
       await updateReportStatus(currentReportId, "REJECTED", rejectionReason);
 
       closeRejectModal();

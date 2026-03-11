@@ -27,6 +27,7 @@ import ManageAnnouncementsPage from "./pages/announcements/ManageAnnouncementsPa
 import CreateAnnouncementPage from "./pages/announcements/CreateAnnouncementPage";
 import EditAnnouncementPage from "./pages/announcements/EditAnnouncementPage";
 import ManageReportsPage from "./pages/reports/ManageReportsPage";
+import ManageCitizensPage from "./pages/citizens/ManageCitizensPage";
 import ChatPage from "./pages/chat/ChatPage";
 import NotFoundPage from "./pages/NotFoundPage";
 
@@ -34,6 +35,8 @@ import PublicOnlyRoute from "./routes/PublicOnlyRoute";
 import ProtectedRoute from "./routes/ProtectedRoute";
 import { AuthProvider } from "./contexts/AuthContext";
 import RequireCompleteProfile from "./routes/RequireCompleteProfile";
+import RequireVerification from "./routes/RequireVerification";
+import AdminRedirect from "./routes/AdminRedirect";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -104,7 +107,14 @@ function App() {
                     />
 
                     {/* Routes with layout */}
-                    <Route path="/" element={<CitizenLayout />}>
+                    <Route
+                      path="/"
+                      element={
+                        <AdminRedirect>
+                          <CitizenLayout />
+                        </AdminRedirect>
+                      }
+                    >
                       <Route
                         index
                         element={
@@ -118,7 +128,9 @@ function App() {
                         element={
                           <ProtectedRoute>
                             <RequireCompleteProfile>
-                              <ReportsPage />
+                              <RequireVerification>
+                                <ReportsPage />
+                              </RequireVerification>
                             </RequireCompleteProfile>
                           </ProtectedRoute>
                         }
@@ -128,7 +140,9 @@ function App() {
                         element={
                           <ProtectedRoute>
                             <RequireCompleteProfile>
-                              <ReportDetailPage />
+                              <RequireVerification>
+                                <ReportDetailPage />
+                              </RequireVerification>
                             </RequireCompleteProfile>
                           </ProtectedRoute>
                         }
@@ -138,7 +152,9 @@ function App() {
                         element={
                           <ProtectedRoute>
                             <RequireCompleteProfile>
-                              <AnnouncementsPage />
+                              <RequireVerification>
+                                <AnnouncementsPage />
+                              </RequireVerification>
                             </RequireCompleteProfile>
                           </ProtectedRoute>
                         }
@@ -148,7 +164,9 @@ function App() {
                         element={
                           <ProtectedRoute>
                             <RequireCompleteProfile>
-                              <AnnouncementDetailPage />
+                              <RequireVerification>
+                                <AnnouncementDetailPage />
+                              </RequireVerification>
                             </RequireCompleteProfile>
                           </ProtectedRoute>
                         }
@@ -159,7 +177,9 @@ function App() {
                         element={
                           <ProtectedRoute>
                             <RequireCompleteProfile>
-                              <CreateReportPage />
+                              <RequireVerification>
+                                <CreateReportPage />
+                              </RequireVerification>
                             </RequireCompleteProfile>
                           </ProtectedRoute>
                         }
@@ -169,7 +189,9 @@ function App() {
                         element={
                           <ProtectedRoute>
                             <RequireCompleteProfile>
-                              <MyReportsPage />
+                              <RequireVerification>
+                                <MyReportsPage />
+                              </RequireVerification>
                             </RequireCompleteProfile>
                           </ProtectedRoute>
                         }
@@ -187,7 +209,9 @@ function App() {
                         element={
                           <ProtectedRoute>
                             <RequireCompleteProfile>
-                              <ChatPage />
+                              <RequireVerification>
+                                <ChatPage />
+                              </RequireVerification>
                             </RequireCompleteProfile>
                           </ProtectedRoute>
                         }
@@ -202,34 +226,79 @@ function App() {
                         </ProtectedRoute>
                       }
                     >
-                      <Route index element={<AdminDashboard />} />
+                      <Route
+                        index
+                        element={
+                          <RequireCompleteProfile>
+                            <AdminDashboard />
+                          </RequireCompleteProfile>
+                        }
+                      />
                       <Route path="profile" element={<ProfilePage />} />
                       <Route
-                        path="reports/create"
-                        element={<CreateReportPage />}
+                        path="reports"
+                        element={
+                          <RequireCompleteProfile>
+                            <ManageReportsPage />
+                          </RequireCompleteProfile>
+                        }
                       />
-                      <Route path="reports" element={<ManageReportsPage />} />
                       <Route
                         path="reports/:id"
-                        element={<ReportDetailPage />}
+                        element={
+                          <RequireCompleteProfile>
+                            <ReportDetailPage />
+                          </RequireCompleteProfile>
+                        }
                       />
                       <Route
                         path="announcements"
-                        element={<ManageAnnouncementsPage />}
+                        element={
+                          <RequireCompleteProfile>
+                            <ManageAnnouncementsPage />
+                          </RequireCompleteProfile>
+                        }
                       />
                       <Route
                         path="announcements/:id"
-                        element={<AnnouncementDetailPage />}
+                        element={
+                          <RequireCompleteProfile>
+                            <AnnouncementDetailPage />
+                          </RequireCompleteProfile>
+                        }
                       />
                       <Route
                         path="announcements/create"
-                        element={<CreateAnnouncementPage />}
+                        element={
+                          <RequireCompleteProfile>
+                            <CreateAnnouncementPage />
+                          </RequireCompleteProfile>
+                        }
                       />
                       <Route
                         path="announcements/edit/:id"
-                        element={<EditAnnouncementPage />}
+                        element={
+                          <RequireCompleteProfile>
+                            <EditAnnouncementPage />
+                          </RequireCompleteProfile>
+                        }
                       />
-                      <Route path="chat" element={<ChatPage />} />
+                      <Route
+                        path="citizens"
+                        element={
+                          <RequireCompleteProfile>
+                            <ManageCitizensPage />
+                          </RequireCompleteProfile>
+                        }
+                      />
+                      <Route
+                        path="chat"
+                        element={
+                          <RequireCompleteProfile>
+                            <ChatPage />
+                          </RequireCompleteProfile>
+                        }
+                      />
                     </Route>
 
                     <Route path="*" element={<NotFoundPage />} />

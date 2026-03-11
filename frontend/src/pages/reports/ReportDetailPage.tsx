@@ -28,7 +28,12 @@ import {
   getUserUpvoteStatus,
 } from "../../services/reportService";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Attachment, Response, ReportComment } from "../../types/report.types";
+import {
+  Attachment,
+  Response,
+  ReportComment,
+  ResponseStatus,
+} from "../../types/report.types";
 import ReportDetailSkeleton from "./components/ReportDetailSkeleton";
 import { useAuthContext } from "../../contexts/AuthContext";
 import {
@@ -58,6 +63,9 @@ const ReportDetailPage: React.FC = () => {
     location.state?.from === "my-reports" ||
     document.referrer.includes("/my-reports");
 
+  const isFromChat =
+    location.state?.from === "chat" || document.referrer.includes("/chat");
+
   const {
     data: report,
     isLoading,
@@ -85,6 +93,16 @@ const ReportDetailPage: React.FC = () => {
       REJECTED: { variant: "danger" as const, label: "Ditolak" },
     };
     return variants[status as keyof typeof variants] || variants.PENDING;
+  };
+
+  const getResponseStatusBadge = (status: ResponseStatus | null) => {
+    if (!status) return null;
+    const variants = {
+      IN_PROGRESS: { variant: "info" as const, label: "Diproses" },
+      RESOLVED: { variant: "success" as const, label: "Selesai" },
+      REJECTED: { variant: "danger" as const, label: "Ditolak" },
+    };
+    return variants[status] || null;
   };
 
   const getCategoryLabel = (category: string) => {
@@ -213,17 +231,26 @@ const ReportDetailPage: React.FC = () => {
   const statusInfo = getStatusBadge(report.status);
 
   // Dynamic breadcrumb
-  const breadcrumbItems = isFromAdmin
+  const breadcrumbItems = isFromChat
     ? [
-        { label: "Kelola Laporan", href: "/admin/reports" },
+        {
+          label: "Chat",
+          href: user?.role === "RT_ADMIN" ? "/admin/chat" : "/chat",
+          state: { reportId: id },
+        },
         { label: report.title },
       ]
-    : isFromMyReports
+    : isFromAdmin
       ? [
-          { label: "Laporan Saya", href: "/my-reports" },
+          { label: "Kelola Laporan", href: "/admin/reports" },
           { label: report.title },
         ]
-      : [{ label: "Laporan", href: "/reports" }, { label: report.title }];
+      : isFromMyReports
+        ? [
+            { label: "Laporan Saya", href: "/my-reports" },
+            { label: report.title },
+          ]
+        : [{ label: "Laporan", href: "/reports" }, { label: report.title }];
 
   return (
     <div className="space-y-6">
@@ -403,9 +430,6 @@ const ReportDetailPage: React.FC = () => {
           <CardHeader>
             <div className="flex items-center justify-between">
               <CardTitle>Tanggapan Resmi RT</CardTitle>
-              <Badge variant={statusInfo.variant} size="sm">
-                {statusInfo.label}
-              </Badge>
             </div>
           </CardHeader>
           <CardContent>
@@ -443,9 +467,22 @@ const ReportDetailPage: React.FC = () => {
                         </p>
                       </div>
                     </div>
-                    <span className="text-xs text-gray-500 dark:text-gray-400">
-                      {formatRelativeTime(response.createdAt)}
-                    </span>
+                    <div className="flex items-center gap-2">
+                      {response.status &&
+                        getResponseStatusBadge(response.status) && (
+                          <Badge
+                            variant={
+                              getResponseStatusBadge(response.status)!.variant
+                            }
+                            size="sm"
+                          >
+                            {getResponseStatusBadge(response.status)!.label}
+                          </Badge>
+                        )}
+                      <span className="text-xs text-gray-500 dark:text-gray-400">
+                        {formatRelativeTime(response.createdAt)}
+                      </span>
+                    </div>
                   </div>
 
                   {response.message && (

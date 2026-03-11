@@ -1,22 +1,25 @@
-import { ChatRepository } from "../repositories/ChatRepository";
-export class ChatService {
-  static async getMesssages(reportId: string) {
-    const chatId = await ChatRepository.getChatIdFromReportId(reportId);
-    if (!chatId) return [];
+import {
+  getChatIdFromReportId as getChatIdFromReportIdRepo,
+  getMessagesFromChatId,
+  hasUnread as hasUnreadRepo,
+  startChat as startChatRepo,
+} from "../repositories/ChatRepository";
+export async function getMessages(reportId: string) {
+  const chatId = await getChatIdFromReportId(reportId);
+  if (!chatId) return [];
 
-    const messages = await ChatRepository.getMessagesFromChatId(chatId.id);
-    return messages;
-  }
+  const messages = await getMessagesFromChatId(chatId.id);
+  return messages;
+}
 
-  static async startChat(reportId: string) {
-    return ChatRepository.startChat(reportId);
-  }
+export async function startChat(reportId: string) {
+  return startChatRepo(reportId);
+}
 
-  static async getChatIdFromReportId(reportId: string) {
-    return ChatRepository.getChatIdFromReportId(reportId);
-  }
+export async function getChatIdFromReportId(reportId: string) {
+  return getChatIdFromReportIdRepo(reportId);
+}
 
-  static async hasUnread(userId: string, rtId?: string) {
-    return ChatRepository.hasUnread(userId, rtId);
-  }
+export async function hasUnread(userId: string, rtId?: string) {
+  return hasUnreadRepo(userId, rtId);
 }

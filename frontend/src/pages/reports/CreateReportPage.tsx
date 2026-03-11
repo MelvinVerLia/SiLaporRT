@@ -30,7 +30,6 @@ import {
 import { CloudinaryFile } from "../../types/announcement.types";
 import { useToast } from "../../hooks/useToast";
 import Dropdown from "../../components/ui/Dropdown";
-import { generateReportCategory } from "../../services/reportService";
 
 interface ExtendedCloudinaryFile extends CloudinaryFile {
   fileType?: "image" | "video" | "audio" | "document";
@@ -74,7 +73,6 @@ const CreateReportPage: React.FC = () => {
     label: "Pilih Kategori",
     value: "",
   });
-  const [categoryDropdown, setCategoryDropdown] = useState(false);
 
   const [currentStep, setCurrentStep] = useState(1);
   const [errors, setErrors] = useState<FormErrors>({});
@@ -148,20 +146,6 @@ const CreateReportPage: React.FC = () => {
     }
   };
 
-  const generateCategory = async (
-    data: CreateReportFormData,
-  ): Promise<ReportCategory | null> => {
-    const category = await generateReportCategory(
-      data as unknown as Record<string, unknown>,
-    );
-    if (category === null) {
-      return null;
-    }
-    const generated = (category.data as ReportCategory) ?? null;
-    setFormData((prev) => ({ ...prev, category: generated }));
-    return generated;
-  };
-
   const steps = [
     {
       number: 1,
@@ -196,24 +180,7 @@ const CreateReportPage: React.FC = () => {
     if (!formData.description.trim()) {
       newErrors.description = "Deskripsi laporan wajib diisi";
     }
-
-    // If manual category dropdown is already shown, do NOT try generating again.
-    if (categoryDropdown) {
-      if (!formData.category) {
-        newErrors.category = "Kategori laporan wajib diisi";
-      }
-      return;
-    }
-
-    // If category already exists (generated or previously set), no need to generate.
-    if (formData.category) return;
-
-    // Only attempt generation if required fields are valid.
-    if (newErrors.title || newErrors.description) return;
-
-    const generatedCategory = await generateCategory(formData);
-    if (!generatedCategory) {
-      setCategoryDropdown(true);
+    if (!formData.category) {
       newErrors.category = "Kategori laporan wajib diisi";
     }
   };
@@ -400,17 +367,15 @@ const CreateReportPage: React.FC = () => {
               rows={4}
             />
 
-            {categoryDropdown && (
-              <Dropdown
-                label="Kategori Laporan"
-                name="kategori"
-                options={categories}
-                value={category.value}
-                onChange={handleChangeCategory}
-                error={errors.category}
-                placeholder="Pilih Kategori"
-              />
-            )}
+            <Dropdown
+              label="Kategori Laporan"
+              name="kategori"
+              options={categories}
+              value={category.value}
+              onChange={handleChangeCategory}
+              error={errors.category}
+              placeholder="Pilih Kategori"
+            />
           </div>
         );
 
@@ -722,6 +687,7 @@ const CreateReportPage: React.FC = () => {
               <ReportPreview
                 title={formData.title}
                 description={formData.description}
+                category={formData.category}
                 isAnonymous={formData.isAnonymous}
                 isPublic={formData.isPublic}
                 locationData={locationForm}
@@ -758,6 +724,7 @@ const CreateReportPage: React.FC = () => {
               <ReportPreview
                 title={formData.title}
                 description={formData.description}
+                category={formData.category}
                 isAnonymous={formData.isAnonymous}
                 isPublic={formData.isPublic}
                 locationData={locationForm}

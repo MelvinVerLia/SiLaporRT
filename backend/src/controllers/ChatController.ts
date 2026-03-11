@@ -1,98 +1,101 @@
 import { Request, Response } from "express";
-import { ChatService } from "../services/ChatService";
+import {
+  getMessages as getMesssagesRepo,
+  startChat as startChatRepo,
+  getChatIdFromReportId as getChatIdFromReportIdRepo,
+  hasUnread as hasUnreadRepo,
+} from "../services/ChatService";
 
-export class ChatController {
-  static async getMessages(req: Request, res: Response) {
-    const { reportId } = req.params;
-    try {
-      const result = await ChatService.getMesssages(reportId);
-      if (result.length === 0) {
-        return res.status(404).json({
-          success: false,
-          message: "No messages found",
-        });
-      }
-
-      res.status(201).json({
-        success: true,
-        message: "Message Fetched Successfully",
-        data: result,
-      });
-    } catch (error: any) {
-      console.error("Error in createReport controller:", error);
-      res.status(400).json({
+export async function getMessages(req: Request, res: Response) {
+  const { reportId } = req.params;
+  try {
+    const result = await getMesssagesRepo(reportId);
+    if (result.length === 0) {
+      return res.status(404).json({
         success: false,
-        message: error.message,
+        message: "No messages found",
       });
     }
+
+    res.status(201).json({
+      success: true,
+      message: "Message Fetched Successfully",
+      data: result,
+    });
+  } catch (error: any) {
+    console.error("Error in createReport controller:", error);
+    res.status(400).json({
+      success: false,
+      message: error.message,
+    });
   }
+}
 
-  static async startChat(req: Request, res: Response) {
-    const { reportId } = req.params;
-    try {
-      const result = await ChatService.startChat(reportId);
-      res.status(201).json({
-        success: true,
-        message: "Chat started successfully",
-        data: result,
-      });
-    } catch (error: any) {
-      console.error("Error in createReport controller:", error);
-      res.status(400).json({
-        success: false,
-        message: error.message,
-      });
-    }
+export async function startChat(req: Request, res: Response) {
+  const { reportId } = req.params;
+  try {
+    const result = await startChatRepo(reportId);
+    res.status(201).json({
+      success: true,
+      message: "Chat started successfully",
+      data: result,
+    });
+  } catch (error: any) {
+    console.error("Error in createReport controller:", error);
+    res.status(400).json({
+      success: false,
+      message: error.message,
+    });
   }
+}
 
-  static async getChatId(req: Request, res: Response) {
-    const { reportId } = req.params;
-    try {
-      const result = await ChatService.getChatIdFromReportId(reportId);
-      res.status(201).json({
-        success: true,
-        message: "Chat Fetched Successfully",
-        data: result,
-      });
-    } catch (error: any) {
-      console.error("Error in createReport controller:", error);
-      res.status(400).json({
-        success: false,
-        message: error.message,
-      });
-    }
+export async function getChatId(req: Request, res: Response) {
+  const { reportId } = req.params;
+  try {
+    const result = await getChatIdFromReportIdRepo(reportId);
+    res.status(201).json({
+      success: true,
+      message: "Chat Fetched Successfully",
+      data: result,
+    });
+  } catch (error: any) {
+    console.error("Error in createReport controller:", error);
+    res.status(400).json({
+      success: false,
+      message: error.message,
+    });
   }
+}
 
-  static async hasUnread(req: Request, res: Response) {
-    const user = req.user as { id: string; rtId?: string };
+export async function hasUnread(req: Request, res: Response) {
+  const user = req.user as { id: string; rtId?: string };
 
-    if (!user) {
-      return res.status(400).json({
-        success: false,
-        message: "User not found",
-      });
-    }
-    try {
-      const result = await ChatService.hasUnread(user.id, user.rtId);
-      console.log({ result });
-      if (result === false) {
-        return res.status(201).json({
-          success: true,
-          message: "No unread messages",
-          data: result,
-        });
-      }
-      res.status(201).json({
+  if (!user) {
+    return res.status(400).json({
+      success: false,
+      message: "User not found",
+    });
+  }
+  try {
+    const result = await hasUnreadRepo(user.id, user.rtId);
+    console.log({ result });
+    if (result === false) {
+      return res.status(201).json({
         success: true,
-        message: "There is an unread message",
+        message: "No unread messages",
         data: result,
       });
-    } catch (error: any) {
-      console.error("Error in createReport controller:", error);
-      res.status(400).json({
-        success: false,
-        message: error.message,
-      });
     }
+    res.status(201).json({
+      success: true,
+      message: "There is an unread message",
+      data: result,
+    });
+  } catch (error: any) {
+    console.error("Error in createReport controller:", error);
+    res.status(400).json({
+      success: false,
+      message: error.message,
+    });
   }
 }

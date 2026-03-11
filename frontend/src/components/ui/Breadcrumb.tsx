@@ -5,6 +5,7 @@ import { ChevronRight } from "lucide-react";
 interface BreadcrumbItem {
   label: string;
   href?: string;
+  state?: any;
 }
 
 interface BreadcrumbProps {
@@ -33,6 +34,7 @@ export default function Breadcrumb({
           {item.href && index < items.length - 1 ? (
             <Link
               to={item.href}
+              state={item.state}
               className="text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 transition-colors"
               title={item.label} // Show full label on hover
             >

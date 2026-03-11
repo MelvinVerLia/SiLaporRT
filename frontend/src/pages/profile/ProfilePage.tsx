@@ -10,10 +10,12 @@ import {
   TabsTrigger,
   TabsContent,
 } from "../../components/ui/Tabs";
+import { Clock, XCircle, CheckCircle, UserCog } from "lucide-react";
 import SecurityTab from "./components/SecurityTab";
 import ProfileInformationTab from "./components/ProfileInformationTab";
 import ProfileHeader from "./components/ProfileHeader";
 import NotificationPopup from "../../components/ui/NotificationPopup";
+import { VerificationStatus } from "../../types/auth.types";
 
 const ProfilePage: React.FC = () => {
   const {
@@ -182,6 +184,72 @@ const ProfilePage: React.FC = () => {
           onProfilePictureChange={handleProfilePictureChange}
           isUploadingPicture={isUploadingPicture}
         />
+
+        {/* Verification Status Banner */}
+        {user.role === "CITIZEN" &&
+          user.verificationStatus === VerificationStatus.UNVERIFIED && (
+            <div className="flex items-start gap-3 rounded-lg border border-blue-200 bg-blue-50 p-4 dark:border-blue-500/30 dark:bg-blue-500/10">
+              <UserCog className="h-5 w-5 text-blue-600 dark:text-blue-400 mt-0.5 flex-shrink-0" />
+              <div>
+                <p className="font-medium text-blue-800 dark:text-blue-300">
+                  Lengkapi Profil Anda
+                </p>
+                <p className="text-sm text-blue-700 dark:text-blue-400 mt-0.5">
+                  Silakan lengkapi data profil Anda (nomor telepon, alamat, dan
+                  RT) untuk mengajukan verifikasi akun.
+                </p>
+              </div>
+            </div>
+          )}
+
+        {user.role === "CITIZEN" &&
+          user.verificationStatus === VerificationStatus.PENDING && (
+            <div className="flex items-start gap-3 rounded-lg border border-yellow-200 bg-yellow-50 p-4 dark:border-yellow-500/30 dark:bg-yellow-500/10">
+              <Clock className="h-5 w-5 text-yellow-600 dark:text-yellow-400 mt-0.5 flex-shrink-0" />
+              <div>
+                <p className="font-medium text-yellow-800 dark:text-yellow-300">
+                  Menunggu Verifikasi
+                </p>
+                <p className="text-sm text-yellow-700 dark:text-yellow-400 mt-0.5">
+                  Akun Anda sedang menunggu verifikasi oleh admin RT. Anda akan
+                  mendapatkan akses penuh ke fitur internal setelah
+                  diverifikasi.
+                </p>
+              </div>
+            </div>
+          )}
+
+        {user.role === "CITIZEN" &&
+          user.verificationStatus === VerificationStatus.REJECTED && (
+            <div className="flex items-start gap-3 rounded-lg border border-red-200 bg-red-50 p-4 dark:border-red-500/30 dark:bg-red-500/10">
+              <XCircle className="h-5 w-5 text-red-600 dark:text-red-400 mt-0.5 flex-shrink-0" />
+              <div>
+                <p className="font-medium text-red-800 dark:text-red-300">
+                  Verifikasi Ditolak
+                </p>
+                <p className="text-sm text-red-700 dark:text-red-400 mt-0.5">
+                  Verifikasi akun Anda ditolak oleh admin RT. Silakan hubungi
+                  admin RT untuk informasi lebih lanjut.
+                </p>
+              </div>
+            </div>
+          )}
+
+        {user.role === "CITIZEN" &&
+          user.verificationStatus === VerificationStatus.VERIFIED && (
+            <div className="flex items-start gap-3 rounded-lg border border-green-200 bg-green-50 p-4 dark:border-green-500/30 dark:bg-green-500/10">
+              <CheckCircle className="h-5 w-5 text-green-600 dark:text-green-400 mt-0.5 flex-shrink-0" />
+              <div>
+                <p className="font-medium text-green-800 dark:text-green-300">
+                  Akun Terverifikasi
+                </p>
+                <p className="text-sm text-green-700 dark:text-green-400 mt-0.5">
+                  Akun Anda telah diverifikasi. Anda memiliki akses penuh ke
+                  seluruh fitur.
+                </p>
+              </div>
+            </div>
+          )}
 
         <Card>
           <Tabs defaultValue="profile">

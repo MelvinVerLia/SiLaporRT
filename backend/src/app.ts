@@ -7,6 +7,7 @@ import announcementRouter from "./routes/AnnouncementRoute";
 import uploadRouter from "./routes/UploadRoute";
 import notificationRouter from "./routes/NotificationRoute";
 import chatRouter from "./routes/ChatRoute";
+import citizenRouter from "./routes/CitizenRoute";
 
 import cookieParser from "cookie-parser";
 import passport from "./config/GoogleStrategy";
@@ -33,6 +34,7 @@ app.use("/api/announcements", announcementRouter);
 app.use("/api/uploads", uploadRouter);
 app.use("/api/notification", notificationRouter);
 app.use("/api/chats", chatRouter);
+app.use("/api/citizens", citizenRouter);
 
 app.get("/", (req, res) => {
   res.send("Hello World!");

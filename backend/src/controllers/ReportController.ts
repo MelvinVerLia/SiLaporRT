@@ -4,14 +4,21 @@ import ReportService from "../services/ReportService";
 class ReportController {
   static async createReport(req: Request, res: Response) {
     try {
-      const user = req.user as { id: string };
+      const user = req.user as { id: string; role: string };
       const data = req.body;
       if (!user) {
         throw new Error("User not found");
       }
 
-      if (!data.title || !data.description || !data.location) {
-        throw new Error("Title, description, and location are required");
+      if (user.role === "RT_ADMIN") {
+        return res.status(403).json({
+          success: false,
+          message: "Admin tidak dapat membuat laporan",
+        });
+      }
+
+      if (!data.title || !data.description || !data.location || !data.category) {
+        throw new Error("Title, description, location, and category are required");
       }
 
       const dataWithUser = { ...data, userId: user.id };
@@ -24,25 +31,6 @@ class ReportController {
       });
     } catch (error: any) {
       console.error("Error in createReport controller:", error);
-      res.status(400).json({
-        success: false,
-        message: error.message,
-      });
-    }
-  }
-
-  static async generateReportCategory(req: Request, res: Response) {
-    try {
-      const data = req.body;
-
-      const result = await ReportService.generateReportCategory(data);
-
-      res.status(201).json({
-        success: true,
-        message: "Report created successfully",
-        data: result,
-      });
-    } catch (error: any) {
       res.status(400).json({
         success: false,
         message: error.message,
@@ -173,10 +161,6 @@ class ReportController {
           message: "User authentication required",
         });
       }
-
-      // if(req.user?.role !== Role.ADMIN && req.user?.id !== adminId) {
-      //   throw new Error("You don't have permission to update this report");
-      // }
 
       const result = await ReportService.updateStatus(reportId, status, user.id, message);
 

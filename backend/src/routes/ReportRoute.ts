@@ -1,6 +1,7 @@
 import { Router } from "express";
 import ReportController from "../controllers/ReportController";
 import { authenticateJWT } from "../middleware/AuthMiddleware";
+import { requireVerified } from "../middleware/VerificationMiddleware";
 
 const router = Router();
 
@@ -16,20 +17,20 @@ router.get(
 router.get("/all-reports/stats", ReportController.getAllReportsStatistics);
 router.get("/:reportId", ReportController.getReportById);
 
-router.post("/add", authenticateJWT, ReportController.createReport);
-router.post("/generate/category", ReportController.generateReportCategory);
+router.post("/add", authenticateJWT, requireVerified(), ReportController.createReport);
 
 // === USER REPORT MANAGEMENT ===
-router.delete("/:reportId", authenticateJWT, ReportController.deleteReport);
+router.delete("/:reportId", authenticateJWT, requireVerified(), ReportController.deleteReport);
 router.put(
   "/:reportId/visibility",
   authenticateJWT,
+  requireVerified(),
   ReportController.toggleReportVisibility,
 );
 
 // === COMMUNITY INTERACTION ROUTES ===
-router.post("/:reportId/comment", authenticateJWT, ReportController.addComment);
-router.put("/:reportId/upvote", authenticateJWT, ReportController.toggleUpvote);
+router.post("/:reportId/comment", authenticateJWT, requireVerified(), ReportController.addComment);
+router.put("/:reportId/upvote", authenticateJWT, requireVerified(), ReportController.toggleUpvote);
 router.get(
   "/:reportId/upvote-status",
   authenticateJWT,

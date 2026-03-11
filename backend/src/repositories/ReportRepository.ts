@@ -1,5 +1,5 @@
 import prisma from "../config/prisma";
-import { Attachment, ReportStatus } from "@prisma/client";
+import { Attachment, ReportStatus, ResponseStatus } from "@prisma/client";
 import { CreateReportData } from "../types/reportTypes";
 
 const visibleWhere = (includePrivate: boolean = false) => {
@@ -197,6 +197,11 @@ class ReportRepository {
                     },
                   },
                 },
+                message: {
+                  orderBy: { createdAt: "desc" as const },
+                  take: 1,
+                  select: { createdAt: true },
+                },
               },
             },
           },
@@ -213,7 +218,17 @@ class ReportRepository {
               (sum: number, c: any) => sum + (c._count?.message ?? 0),
               0,
             );
-            return { ...rest, unreadCount };
+            const hasChat = chat.length > 0;
+            const lastMessageAt = chat.reduce(
+              (latest: string | null, c: any) => {
+                const msgDate = c.message?.[0]?.createdAt;
+                if (!msgDate) return latest;
+                if (!latest) return msgDate;
+                return new Date(msgDate) > new Date(latest) ? msgDate : latest;
+              },
+              null,
+            );
+            return { ...rest, unreadCount, hasChat, lastMessageAt };
           });
 
         return { total, items: sortedReports };
@@ -258,6 +273,11 @@ class ReportRepository {
                     },
                   },
                 },
+                message: {
+                  orderBy: { createdAt: "desc" as const },
+                  take: 1,
+                  select: { createdAt: true },
+                },
               },
             },
           },
@@ -271,7 +291,14 @@ class ReportRepository {
           (sum: number, c: any) => sum + (c._count?.message ?? 0),
           0,
         );
-        return { ...rest, unreadCount };
+        const hasChat = chat.length > 0;
+        const lastMessageAt = chat.reduce((latest: string | null, c: any) => {
+          const msgDate = c.message?.[0]?.createdAt;
+          if (!msgDate) return latest;
+          if (!latest) return msgDate;
+          return new Date(msgDate) > new Date(latest) ? msgDate : latest;
+        }, null);
+        return { ...rest, unreadCount, hasChat, lastMessageAt };
       });
 
       return { total, items };
@@ -399,6 +426,11 @@ class ReportRepository {
                     },
                   },
                 },
+                message: {
+                  orderBy: { createdAt: "desc" as const },
+                  take: 1,
+                  select: { createdAt: true },
+                },
               },
             },
           },
@@ -415,7 +447,17 @@ class ReportRepository {
               (sum: number, c: any) => sum + (c._count?.message ?? 0),
               0,
             );
-            return { ...rest, unreadCount };
+            const hasChat = chat.length > 0;
+            const lastMessageAt = chat.reduce(
+              (latest: string | null, c: any) => {
+                const msgDate = c.message?.[0]?.createdAt;
+                if (!msgDate) return latest;
+                if (!latest) return msgDate;
+                return new Date(msgDate) > new Date(latest) ? msgDate : latest;
+              },
+              null,
+            );
+            return { ...rest, unreadCount, hasChat, lastMessageAt };
           });
 
         return { total, items: sortedReports };
@@ -460,6 +502,11 @@ class ReportRepository {
                     },
                   },
                 },
+                message: {
+                  orderBy: { createdAt: "desc" as const },
+                  take: 1,
+                  select: { createdAt: true },
+                },
               },
             },
           },
@@ -473,7 +520,14 @@ class ReportRepository {
           (sum: number, c: any) => sum + (c._count?.message ?? 0),
           0,
         );
-        return { ...rest, unreadCount };
+        const hasChat = chat.length > 0;
+        const lastMessageAt = chat.reduce((latest: string | null, c: any) => {
+          const msgDate = c.message?.[0]?.createdAt;
+          if (!msgDate) return latest;
+          if (!latest) return msgDate;
+          return new Date(msgDate) > new Date(latest) ? msgDate : latest;
+        }, null);
+        return { ...rest, unreadCount, hasChat, lastMessageAt };
       });
 
       return { total, items };
@@ -642,6 +696,7 @@ class ReportRepository {
     responderId: string,
     message: string,
     attachments?: string[],
+    status?: ResponseStatus,
   ) {
     try {
       return await prisma.$transaction(async (tx) => {
@@ -650,6 +705,7 @@ class ReportRepository {
             reportId,
             responderId,
             message,
+            ...(status && { status }),
             ...(attachments &&
               attachments.length > 0 && {
                 attachments: {
@@ -886,12 +942,13 @@ class ReportRepository {
     }
   }
 
-  static nextStep(currentStatus: ReportStatus) {
+  static nextStep(currentStatus: ReportStatus): ReportStatus {
     if (currentStatus === "PENDING") {
       return "IN_PROGRESS";
     } else if (currentStatus === "IN_PROGRESS") {
       return "RESOLVED";
     }
+    return currentStatus;
   }
 
   static async updateReportStatus(
@@ -910,11 +967,16 @@ class ReportRepository {
 
     try {
       const updatedReport = await prisma.$transaction(async (tx) => {
+        const newStatus = this.nextStep(report.status!);
+
         await tx.response.create({
           data: {
             reportId,
             responderId,
             message: message ?? "",
+            ...(newStatus !== report.status && {
+              status: newStatus as unknown as ResponseStatus,
+            }),
             ...(attachments && attachments.length > 0
               ? {
                   attachments: {
@@ -938,7 +1000,7 @@ class ReportRepository {
 
         const updated = await tx.report.update({
           where: { id: reportId },
-          data: { status: this.nextStep(report.status!) },
+          data: { status: newStatus },
           include: {
             location: true,
             user: {

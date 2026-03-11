@@ -333,6 +333,20 @@ export class AuthService {
   }
 
   static async updateProfile(userId: string, data: User) {
+    const current = await AuthRepository.getUserById(userId);
+
+    const profileWillBeComplete =
+      (data.phone || current?.phone) &&
+      (data.address || current?.address) &&
+      (data.rtId || current?.rtId);
+
+    if (
+      current?.verificationStatus === "UNVERIFIED" &&
+      profileWillBeComplete
+    ) {
+      (data as any).verificationStatus = "PENDING";
+    }
+
     const user = await AuthRepository.updateProfile(userId, data);
     return user;
   }

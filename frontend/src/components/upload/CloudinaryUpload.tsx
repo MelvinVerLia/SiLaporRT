@@ -1,4 +1,4 @@
-import React, { useRef, useState } from "react";
+import { useRef, useState, forwardRef, useImperativeHandle } from "react";
 import {
   UploadCloud,
   X,
@@ -40,7 +40,11 @@ type Props = {
   className?: string;
 };
 
-const CloudinaryUpload: React.FC<Props> = ({
+export type CloudinaryUploadRef = {
+  openFileDialog: () => void;
+};
+
+const CloudinaryUpload = forwardRef<CloudinaryUploadRef, Props>(({
   folder,
   multiple = true,
   accept,
@@ -52,10 +56,19 @@ const CloudinaryUpload: React.FC<Props> = ({
   onUploadingChange,
   error,
   className,
-}) => {
+}, ref) => {
   const inputRef = useRef<HTMLInputElement | null>(null);
   const [uploading, setUploading] = useState(false);
   const toast = useToast();
+
+  // Expose methods to parent component
+  useImperativeHandle(ref, () => ({
+    openFileDialog: () => {
+      if (attachments.length < maxFiles) {
+        inputRef.current?.click();
+      }
+    },
+  }));
 
   const setUploadingWithCallback = (isUploading: boolean) => {
     setUploading(isUploading);
@@ -344,6 +357,8 @@ const CloudinaryUpload: React.FC<Props> = ({
       )}
     </div>
   );
-};
+});
+
+CloudinaryUpload.displayName = "CloudinaryUpload";
 
 export default CloudinaryUpload;

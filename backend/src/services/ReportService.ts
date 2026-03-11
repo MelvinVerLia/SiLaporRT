@@ -1,8 +1,13 @@
 import ReportRepository from "../repositories/ReportRepository";
-import { ReportStatus, ReportCategory, Role, Attachment } from "@prisma/client";
+import {
+  ReportStatus,
+  ReportCategory,
+  Role,
+  Attachment,
+  ResponseStatus,
+} from "@prisma/client";
 import { CreateReportData } from "../types/reportTypes";
-import { generateCategory } from "../utils/llm";
-import { NotificationService } from "./NotificationService";
+import { sendNotificationByUserId } from "./NotificationService";
 import { AuthRepository } from "../repositories/AuthRepository";
 import { validateUpload } from "../config/uploadPolicy";
 
@@ -25,13 +30,9 @@ class ReportService {
         }
       }
 
-      // bruh gemini ada limit sekarang
-      // const category = await generateCategory(data.title, data.description);
-      // console.log(category);
-
-      // if (!category) {
-      //   throw new Error("Category could not be determined.");
-      // }
+      if (!data.category) {
+        throw new Error("Category is required.");
+      }
 
       const report = await ReportRepository.createReport(data);
 
@@ -46,7 +47,7 @@ class ReportService {
 
       const rtAdminIds = RT.map((admin) => admin.id);
 
-      await NotificationService.sendNotificationByUserId(
+      await sendNotificationByUserId(
         rtAdminIds,
         `Laporan "${report.title}" Telah Dibuat!`,
         `laporan baru telah diajukan. Silakan diproses lebih lanjut.`,
@@ -57,24 +58,6 @@ class ReportService {
       return report;
     } catch (error) {
       throw new Error(`Failed to create report: ${error}`);
-    }
-  }
-
-  static async generateReportCategory(data: CreateReportData) {
-    try {
-      const category = await generateCategory(data.title, data.description);
-      if (!category) {
-        throw new Error("AI IS NOT WORKING");
-      }
-      // console.log({ category });
-
-      // const category = "INFRASTRUCTURE";
-      // console.log(category);
-      // throw new Error("Force catch block");
-
-      return category;
-    } catch (error) {
-      throw new Error(`Failed to generate report category: ${error}`);
     }
   }
 
@@ -210,37 +193,42 @@ class ReportService {
     }
   }
 
-  static async updateStatus(reportId: string, status: ReportStatus, userId?: string, message?: string) {
+  static async updateStatus(
+    reportId: string,
+    status: ReportStatus,
+    userId?: string,
+    message?: string,
+  ) {
     try {
       const updatedReport = await ReportRepository.updateStatus(
         reportId,
         status,
       );
 
-      // If there's a message, create a response entry
       if (message && userId) {
         await ReportRepository.addOfficialResponse(
           reportId,
           userId,
           message.trim(),
-          undefined
+          undefined,
+          status as ResponseStatus,
         );
       }
 
       const baseUrl = process.env.FRONTEND_URL_PROD || process.env.FRONTEND_URL;
       const url = `${baseUrl}/reports/${updatedReport.id}`;
-      
-      // Get status label for notification
+
       const statusLabels: Record<string, string> = {
         PENDING: "Menunggu",
         IN_PROGRESS: "Diproses",
         RESOLVED: "Selesai",
         REJECTED: "Ditolak",
-        CLOSED: "Ditutup"
+        CLOSED: "Ditutup",
       };
-      const statusLabel = statusLabels[updatedReport.status] || updatedReport.status;
-      
-      await NotificationService.sendNotificationByUserId(
+      const statusLabel =
+        statusLabels[updatedReport.status] || updatedReport.status;
+
+      await sendNotificationByUserId(
         [updatedReport.userId!],
         `Laporan "${updatedReport.title}" Telah Diperbarui!`,
         message || `Status laporan kamu kini berubah menjadi ${statusLabel}`,
@@ -272,7 +260,7 @@ class ReportService {
 
       const url = `${baseUrl}/reports/${reportId}`;
 
-      await NotificationService.sendNotificationByUserId(
+      await sendNotificationByUserId(
         [response?.report.userId!],
         `Laporan "${response?.report.title}" Telah Diperbarui!`,
         `Laporan anda telah diresponse oleh ${response?.responder.name}, silahkan cek laporan anda`,
@@ -389,7 +377,7 @@ class ReportService {
       const url = `${baseUrl}/reports/${updatedReport.id}`;
 
       if (updatedReport) {
-        NotificationService.sendNotificationByUserId(
+        sendNotificationByUserId(
           [updatedReport.userId!],
           `Laporan "${updatedReport.title}" Telah Diperbarui!`,
           `Status laporan kamu kini berubah menjadi ${updatedReport.status}`,

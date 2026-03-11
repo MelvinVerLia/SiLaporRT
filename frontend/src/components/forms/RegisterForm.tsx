@@ -459,25 +459,6 @@ const RegisterForm: React.FC = () => {
           </div>
         </CardContent>
       </Card>
-
-      <div className="mt-8 text-center px-4">
-        <p className="text-xs text-gray-500 dark:text-gray-300">
-          Dengan mendaftar, Anda menyetujui{" "}
-          <Link
-            to="/terms"
-            className="text-primary-600 dark:text-primary-400 hover:text-primary-700 dark:hover:text-primary-300"
-          >
-            Syarat & Ketentuan
-          </Link>{" "}
-          dan{" "}
-          <Link
-            to="/privacy"
-            className="text-primary-600 dark:text-primary-400 hover:text-primary-700 dark:hover:text-primary-300"
-          >
-            Kebijakan Privasi
-          </Link>
-        </p>
-      </div>
     </div>
   );
 };
