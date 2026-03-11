@@ -14,7 +14,6 @@ function RequireCompleteProfile({ children }: { children: React.ReactNode }) {
     user.isDeleted !== true;
 
   useEffect(() => {
-    console.log("isIncomplete", isIncomplete);
     if (isIncomplete && !warnedRef.current) {
       toast.warning("Lengkapi profil terlebih dahulu", "Peringatan");
       warnedRef.current = true;
@@ -22,7 +21,9 @@ function RequireCompleteProfile({ children }: { children: React.ReactNode }) {
   }, [isIncomplete, toast]);
 
   if (isIncomplete) {
-    return <Navigate to="/profile" replace />;
+    const redirectTo =
+      user?.role === "RT_ADMIN" ? "/admin/profile" : "/profile";
+    return <Navigate to={redirectTo} replace />;
   }
 
   return children;

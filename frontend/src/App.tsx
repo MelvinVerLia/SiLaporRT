@@ -226,31 +226,79 @@ function App() {
                         </ProtectedRoute>
                       }
                     >
-                      <Route index element={<AdminDashboard />} />
+                      <Route
+                        index
+                        element={
+                          <RequireCompleteProfile>
+                            <AdminDashboard />
+                          </RequireCompleteProfile>
+                        }
+                      />
                       <Route path="profile" element={<ProfilePage />} />
-                      <Route path="reports" element={<ManageReportsPage />} />
+                      <Route
+                        path="reports"
+                        element={
+                          <RequireCompleteProfile>
+                            <ManageReportsPage />
+                          </RequireCompleteProfile>
+                        }
+                      />
                       <Route
                         path="reports/:id"
-                        element={<ReportDetailPage />}
+                        element={
+                          <RequireCompleteProfile>
+                            <ReportDetailPage />
+                          </RequireCompleteProfile>
+                        }
                       />
                       <Route
                         path="announcements"
-                        element={<ManageAnnouncementsPage />}
+                        element={
+                          <RequireCompleteProfile>
+                            <ManageAnnouncementsPage />
+                          </RequireCompleteProfile>
+                        }
                       />
                       <Route
                         path="announcements/:id"
-                        element={<AnnouncementDetailPage />}
+                        element={
+                          <RequireCompleteProfile>
+                            <AnnouncementDetailPage />
+                          </RequireCompleteProfile>
+                        }
                       />
                       <Route
                         path="announcements/create"
-                        element={<CreateAnnouncementPage />}
+                        element={
+                          <RequireCompleteProfile>
+                            <CreateAnnouncementPage />
+                          </RequireCompleteProfile>
+                        }
                       />
                       <Route
                         path="announcements/edit/:id"
-                        element={<EditAnnouncementPage />}
+                        element={
+                          <RequireCompleteProfile>
+                            <EditAnnouncementPage />
+                          </RequireCompleteProfile>
+                        }
                       />
-                      <Route path="citizens" element={<ManageCitizensPage />} />
-                      <Route path="chat" element={<ChatPage />} />
+                      <Route
+                        path="citizens"
+                        element={
+                          <RequireCompleteProfile>
+                            <ManageCitizensPage />
+                          </RequireCompleteProfile>
+                        }
+                      />
+                      <Route
+                        path="chat"
+                        element={
+                          <RequireCompleteProfile>
+                            <ChatPage />
+                          </RequireCompleteProfile>
+                        }
+                      />
                     </Route>
 
                     <Route path="*" element={<NotFoundPage />} />
