@@ -118,8 +118,8 @@ const ProfileInformationTab: React.FC<ProfileInformationTabProps> = ({
 
     if (!profileForm.phone.trim()) {
       errors.phone = "Nomor telepon wajib diisi";
-    } else if (!/^[0-9+\-\s]+$/.test(profileForm.phone)) {
-      errors.phone = "Format nomor telepon tidak valid";
+    } else if (!/^08[1-9][0-9]{7,10}$/.test(profileForm.phone)) {
+      errors.phone = "Format nomor telepon tidak valid (contoh: 081234567890)";
     }
 
     if (!profileForm.address.trim()) {
@@ -247,11 +247,15 @@ const ProfileInformationTab: React.FC<ProfileInformationTabProps> = ({
           label="Nomor Telepon"
           type="tel"
           value={profileForm.phone}
-          onChange={(e) => handleProfileChange("phone", e.target.value)}
+          onChange={(e) => {
+            const value = e.target.value.replace(/[^0-9]/g, "");
+            handleProfileChange("phone", value);
+          }}
           error={profileErrors.phone}
-          placeholder="Masukkan nomor telepon"
+          placeholder="08xxxxxxxxxx"
           disabled={!isEditing}
           required={isEditing}
+          maxLength={14}
         />
 
         <Input
@@ -275,8 +279,18 @@ const ProfileInformationTab: React.FC<ProfileInformationTabProps> = ({
           search={search}
           onSearchChange={setSearch}
           onChange={handleChange}
-          disabled={!isEditing}
+          disabled={
+            !isEditing ||
+            user.role === "RT_ADMIN" ||
+            (user.role === "CITIZEN" && user.verificationStatus === "VERIFIED")
+          }
         />
+
+        {user.role === "CITIZEN" && (
+          <p className="mb-1 text-xs text-red-500">
+            RT tidak dapat diubah setelah akun diverifikasi oleh admin RT.
+          </p>
+        )}
 
         {profileForm.rtId && (
           <div className="mt-3 overflow-hidden rounded-xl border border-gray-200/70 bg-white/60 shadow-sm backdrop-blur dark:border-gray-700/50 dark:bg-gray-800/40">

@@ -7,7 +7,7 @@ async function main() {
       kecamatan: "Kebayoran Baru",
       kelurahan: "Senayan",
       rw: "01",
-      rt: "001",
+      rt: "01",
     },
   });
 
