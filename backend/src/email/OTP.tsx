@@ -1,9 +1,9 @@
-import { EmailService } from "./EmailService";
+import { transporter as getTransporter } from "./EmailService";
 
 export const sendOTPEmail = async (
   email: string,
   otp: string,
-  expiryMinutes: number
+  expiryMinutes: number,
 ) => {
   const emailHTML = `
 <!DOCTYPE html>
@@ -167,7 +167,7 @@ export const sendOTPEmail = async (
   </body>
   `;
   try {
-    const transporter = await EmailService.transporter();
+    const transporter = await getTransporter();
     await transporter.sendMail({
       from: process.env.MAIL_FROM,
       to: email,

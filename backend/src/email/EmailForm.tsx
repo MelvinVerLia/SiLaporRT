@@ -1,9 +1,9 @@
-import { EmailService } from "./EmailService";
+import { transporter as getTransporter } from "./EmailService";
 
 export const sendPasswordResetEmail = async (
   email: string,
   resetLink: string,
-  expiryNumber: number
+  expiryNumber: number,
 ) => {
   const emailHTML = `
 <!DOCTYPE html>
@@ -141,7 +141,7 @@ export const sendPasswordResetEmail = async (
   `;
 
   try {
-    const transporter = await EmailService.transporter();
+    const transporter = await getTransporter();
     await transporter.sendMail({
       from: process.env.MAIL_FROM,
       to: email,
