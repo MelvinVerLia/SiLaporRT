@@ -1,65 +1,69 @@
 import { Router } from "express";
-import ReportController from "../controllers/ReportController";
+import {
+  getAllReports,
+  getRecentReports,
+  getUserReports,
+  getUserReportStatistics,
+  getAllReportsStatistics,
+  getReportById,
+  createReport,
+  deleteReport,
+  toggleReportVisibility,
+  addComment,
+  toggleUpvote,
+  getUserUpvoteStatus,
+  updateStatus,
+  addOfficialResponse,
+  updateReportStatus,
+  getReportsByCategory,
+  getReportsByStatus,
+} from "../controllers/ReportController";
 import { authenticateJWT } from "../middleware/AuthMiddleware";
 import { requireVerified } from "../middleware/VerificationMiddleware";
 
 const router = Router();
 
 // === CORE REPORT ROUTES ===
-router.get("/", authenticateJWT, ReportController.getAllReports);
-router.get("/get-recent", authenticateJWT, ReportController.getRecentReports);
-router.get("/my-reports", authenticateJWT, ReportController.getUserReports);
-router.get(
-  "/my-reports/stats",
-  authenticateJWT,
-  ReportController.getUserReportStatistics,
-);
-router.get("/all-reports/stats", ReportController.getAllReportsStatistics);
-router.get("/:reportId", ReportController.getReportById);
+router.get("/", authenticateJWT, getAllReports);
+router.get("/get-recent", authenticateJWT, getRecentReports);
+router.get("/my-reports", authenticateJWT, getUserReports);
+router.get("/my-reports/stats", authenticateJWT, getUserReportStatistics);
+router.get("/all-reports/stats", getAllReportsStatistics);
+router.get("/:reportId", getReportById);
 
-router.post("/add", authenticateJWT, requireVerified(), ReportController.createReport);
+router.post("/add", authenticateJWT, requireVerified(), createReport);
 
 // === USER REPORT MANAGEMENT ===
-router.delete("/:reportId", authenticateJWT, requireVerified(), ReportController.deleteReport);
+router.delete("/:reportId", authenticateJWT, requireVerified(), deleteReport);
 router.put(
   "/:reportId/visibility",
   authenticateJWT,
   requireVerified(),
-  ReportController.toggleReportVisibility,
+  toggleReportVisibility,
 );
 
 // === COMMUNITY INTERACTION ROUTES ===
-router.post("/:reportId/comment", authenticateJWT, requireVerified(), ReportController.addComment);
-router.put("/:reportId/upvote", authenticateJWT, requireVerified(), ReportController.toggleUpvote);
-router.get(
-  "/:reportId/upvote-status",
-  authenticateJWT,
-  ReportController.getUserUpvoteStatus,
-);
-
-// === ADMIN/RT ROUTES ===
-router.put("/:reportId/status", authenticateJWT, ReportController.updateStatus);
 router.post(
-  "/:reportId/response",
+  "/:reportId/comment",
   authenticateJWT,
-  ReportController.addOfficialResponse,
+  requireVerified(),
+  addComment,
 );
 router.put(
-  "/:reportId/update-status",
+  "/:reportId/upvote",
   authenticateJWT,
-  ReportController.updateReportStatus,
+  requireVerified(),
+  toggleUpvote,
 );
+router.get("/:reportId/upvote-status", authenticateJWT, getUserUpvoteStatus);
+
+// === ADMIN/RT ROUTES ===
+router.put("/:reportId/status", authenticateJWT, updateStatus);
+router.post("/:reportId/response", authenticateJWT, addOfficialResponse);
+router.put("/:reportId/update-status", authenticateJWT, updateReportStatus);
 
 // === FILTERING ROUTES ===
-router.get(
-  "/category/:category",
-  authenticateJWT,
-  ReportController.getReportsByCategory,
-);
-router.get(
-  "/status/:status",
-  authenticateJWT,
-  ReportController.getReportsByStatus,
-);
+router.get("/category/:category", authenticateJWT, getReportsByCategory);
+router.get("/status/:status", authenticateJWT, getReportsByStatus);
 
 export default router;

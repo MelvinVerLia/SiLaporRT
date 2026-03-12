@@ -1,5 +1,24 @@
 import { Router } from "express";
-import { AuthController } from "../controllers/AuthController";
+import {
+  googleCallback,
+  login,
+  register,
+  logout,
+  sendOtp,
+  resendOtp,
+  refresh,
+  forgotPassword,
+  changeForgotPassword,
+  validateToken,
+  getAllAvailableRTLocation,
+  getAllRTAdmins,
+  getRtLocationBasedOnRtId,
+  getProfile,
+  deleteAccount,
+  updateProfile,
+  changePassword,
+  getAllUsers,
+} from "../controllers/AuthController";
 import passport from "../config/GoogleStrategy";
 import { authenticateJWT } from "../middleware/AuthMiddleware";
 
@@ -10,34 +29,34 @@ router.get(
   "/google",
   passport.authenticate("google", {
     scope: ["profile", "email"],
-  })
+  }),
 );
 
 router.get(
   "/google/callback",
   passport.authenticate("google", { session: false }),
-  AuthController.googleCallback
+  googleCallback,
 );
-router.post("/login", AuthController.login);
-router.post("/register", AuthController.register);
-router.post("/logout", AuthController.logout);
-router.post("/send-otp", AuthController.sendOtp);
-router.post("/resend-otp", AuthController.resendOtp);
-router.post("/refresh", AuthController.refresh);
-router.post("/forgot-password", AuthController.forgotPassword);
+router.post("/login", login);
+router.post("/register", register);
+router.post("/logout", logout);
+router.post("/send-otp", sendOtp);
+router.post("/resend-otp", resendOtp);
+router.post("/refresh", refresh);
+router.post("/forgot-password", forgotPassword);
 
 // forgot password in forgot password page
-router.put("/forgot-password-change", AuthController.changeForgotPassword);
-router.post("/validate-token", AuthController.validateToken);
-router.get("/all-available-rt", AuthController.getAllAvailableRTLocation);
-router.get("/available-rt", AuthController.getAllRTAdmins);
-router.get("/location/:rt", AuthController.getRtLocationBasedOnRtId);
+router.put("/forgot-password-change", changeForgotPassword);
+router.post("/validate-token", validateToken);
+router.get("/all-available-rt", getAllAvailableRTLocation);
+router.get("/available-rt", getAllRTAdmins);
+router.get("/location/:rt", getRtLocationBasedOnRtId);
 
 //protected routes
-router.get("/profile", authenticateJWT, AuthController.getProfile);
-router.delete("/delete-account", authenticateJWT, AuthController.deleteAccount);
-router.put("/update/profile", authenticateJWT, AuthController.updateProfile);
-router.put("/change-password", authenticateJWT, AuthController.changePassword);
-router.get("/all-users", AuthController.getAllUsers);
+router.get("/profile", authenticateJWT, getProfile);
+router.delete("/delete-account", authenticateJWT, deleteAccount);
+router.put("/update/profile", authenticateJWT, updateProfile);
+router.put("/change-password", authenticateJWT, changePassword);
+router.get("/all-users", getAllUsers);
 
 export default router;

@@ -11,7 +11,7 @@ import {
   createNotificationToAdmin,
 } from "../repositories/NotificationRepository";
 import webpush from "../utils/webpush";
-import { AuthRepository } from "../repositories/AuthRepository";
+import { getAllUsersByRole } from "../repositories/AuthRepository";
 import { NotificationCategory } from "@prisma/client";
 
 export async function sendNotificationByUserId(
@@ -77,7 +77,7 @@ export async function sendNotificationAll(
   imageUrl: string,
   category: NotificationCategory,
 ) {
-  const citizens = await AuthRepository.getAllUsersByRole("CITIZEN");
+  const citizens = await getAllUsersByRole("CITIZEN");
 
   const citizenUserIds = citizens.map((u) => u.id);
 

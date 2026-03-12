@@ -1,8 +1,8 @@
 import { Strategy as GoogleStrategy } from "passport-google-oauth20";
 import { Strategy as JwtStrategy, ExtractJwt } from "passport-jwt";
 import passport from "passport";
-import { AuthRepository } from "../repositories/AuthRepository";
-import { AuthService } from "../services/AuthService";
+import { getUserById } from "../repositories/AuthRepository";
+import { handleGoogleAuth } from "../services/AuthService";
 
 const cookieExtractor = (req: any) => req?.cookies?.access_token || null;
 
@@ -15,13 +15,13 @@ passport.use(
     },
     async (_accessToken, _refreshToken, profile, done) => {
       try {
-        const result = await AuthService.handleGoogleAuth(profile);
+        const result = await handleGoogleAuth(profile);
         return done(null, result);
       } catch (error) {
         return done(error, undefined);
       }
-    }
-  )
+    },
+  ),
 );
 
 passport.use(
@@ -32,7 +32,7 @@ passport.use(
     },
     async (payload, done) => {
       try {
-        const user = await AuthRepository.getUserById(payload.userId);
+        const user = await getUserById(payload.userId);
         if (user) {
           return done(null, user);
         } else {
@@ -41,8 +41,8 @@ passport.use(
       } catch (error) {
         return done(error, false);
       }
-    }
-  )
+    },
+  ),
 );
 
 export default passport;
