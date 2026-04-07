@@ -5,6 +5,9 @@ import {
   getAdminSubscription,
   toggleSubscribe as toggleSub,
   createMany,
+  readNotification as readNotif,
+  deleteAllReadNotification as delAllReadNotif,
+  readAllNotification as readAllNotif,
   subscriptionStatus as subStatus,
   getNotifications as getNotif,
   deleteSubscriptionByEndpoint,
@@ -173,15 +176,15 @@ export async function getNotifications(userId: string) {
 }
 
 export async function readAllNotification(userId: string) {
-  return readAllNotification(userId);
+  return readAllNotif(userId);
 }
 
 export async function readNotification(id: string) {
-  return readNotification(id);
+  return readNotif(id);
 }
 
 export async function deleteAllReadNotification(userId: string) {
-  return deleteAllReadNotification(userId);
+  return delAllReadNotif(userId);
 }
 
 export async function toggleSubscribe(userId: string, status: boolean) {
