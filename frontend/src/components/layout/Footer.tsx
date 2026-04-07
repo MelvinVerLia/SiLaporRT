@@ -23,15 +23,6 @@ const Footer: React.FC = () => {
               Memudahkan warga dalam menyampaikan keluhan dan meningkatkan
               transparansi penanganan.
             </p>
-            <p className="text-xs text-primary-100 dark:text-gray-400 mt-2">
-              Some illustrations designed by{" "}
-              <a
-                href="http://www.freepik.com"
-                className="underline hover:text-white dark:hover:text-gray-100 transition-colors"
-              >
-                vectorjuice / Freepik
-              </a>
-            </p>
           </div>
           <div>
             <h4 className="text-lg font-semibold mb-4 flex items-center">
@@ -57,7 +48,6 @@ const Footer: React.FC = () => {
             <div className="space-y-2 text-primary-100 dark:text-gray-300">
               <p>Senin - Jumat: 08:00 - 17:00</p>
               <p>Sabtu: 08:00 - 12:00</p>
-              <p>Minggu: Tutup</p>
             </div>
           </div>
         </div>
