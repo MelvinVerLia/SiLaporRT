@@ -20,7 +20,6 @@ const RegisterForm: React.FC = () => {
   });
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  const [agreedToTerms, setAgreedToTerms] = useState(false);
   const [search, setSearch] = useState("");
   const [rtData, setRtData] = useState([]);
   const [rtFormData, setRtFormData] = useState({
@@ -29,6 +28,10 @@ const RegisterForm: React.FC = () => {
     rw: "",
     rt: "",
   });
+  const [validationErrors, setValidationErrors] = useState<{
+    phone?: string;
+    email?: string;
+  }>({});
 
   const navigate = useNavigate();
   const {
@@ -78,12 +81,33 @@ const RegisterForm: React.FC = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     clearError();
+    setValidationErrors({});
 
-    if (!agreedToTerms) return;
+    validateFormData();
 
     const response = await sendOtp(formData);
     if (response) {
       navigate(`/verify-otp/${response}`, { replace: true });
+    }
+  };
+
+  const validateFormData = async () => {
+    if (!formData.email.trim()) {
+      setValidationErrors({ phone: "Email wajib diisi" });
+      return;
+    } else if (
+      !/^\w+([.-]?\w+)*@\w+([.-]?\w+)*(\.\w{2,3})+$/.test(formData.email)
+    ) {
+      setValidationErrors({ email: "Format email tidak valid" });
+      return;
+    } else if (!formData.phone.trim()) {
+      setValidationErrors({ phone: "Nomor telepon wajib diisi" });
+      return;
+    } else if (!/^08[1-9][0-9]{7,10}$/.test(formData.phone)) {
+      setValidationErrors({
+        phone: "Format nomor telepon tidak valid (contoh: 081234567890)",
+      });
+      return;
     }
   };
 
@@ -164,7 +188,11 @@ const RegisterForm: React.FC = () => {
                 name="email"
                 value={formData.email}
                 onChange={handleChange}
-                error={error?.field === "email" ? error.message : undefined}
+                error={
+                  error?.field === "email"
+                    ? error.message
+                    : validationErrors.email
+                }
                 placeholder="contoh@email.com"
                 required
                 disabled={isLoading}
@@ -177,7 +205,11 @@ const RegisterForm: React.FC = () => {
                 name="phone"
                 value={formData.phone}
                 onChange={handleChange}
-                error={error?.field === "phone" ? error.message : undefined}
+                error={
+                  error?.field === "phone"
+                    ? error.message
+                    : validationErrors.phone
+                }
                 placeholder="08xxxxxxxxxx"
                 required
                 disabled={isLoading}
@@ -365,36 +397,6 @@ const RegisterForm: React.FC = () => {
                 )}
               </div>
 
-              <div className="space-y-4">
-                <label className="flex items-start space-x-3 cursor-pointer group">
-                  <input
-                    type="checkbox"
-                    checked={agreedToTerms}
-                    onChange={(e) => setAgreedToTerms(e.target.checked)}
-                    className="w-4 h-4 text-primary-600 bg-gray-100 border-gray-300 rounded focus:ring-primary-500 focus:ring-2 mt-0.5"
-                    disabled={isLoading}
-                    required
-                  />
-                  <span className="text-sm text-gray-600 dark:text-gray-300 select-none leading-relaxed group-hover:text-gray-800 dark:group-hover:text-gray-200 transition-colors">
-                    Saya menyetujui{" "}
-                    <Link
-                      to="/terms"
-                      className="text-primary-600 dark:text-primary-400 hover:text-primary-700 dark:hover:text-primary-300 font-medium"
-                    >
-                      Syarat & Ketentuan
-                    </Link>{" "}
-                    dan{" "}
-                    <Link
-                      to="/privacy"
-                      className="text-primary-600 dark:text-primary-400 hover:text-primary-700 dark:hover:text-primary-300 font-medium"
-                    >
-                      Kebijakan Privasi
-                    </Link>{" "}
-                    SiLaporRT
-                  </span>
-                </label>
-              </div>
-
               {error && !error.field && (
                 <div className="text-sm text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-800 p-3 rounded-lg flex items-start space-x-2">
                   <span className="text-red-500 dark:text-red-400 mt-0.5">
@@ -414,7 +416,6 @@ const RegisterForm: React.FC = () => {
                   !formData.phone ||
                   !formData.password ||
                   !formData.confirmPassword ||
-                  !agreedToTerms ||
                   !passwordsMatch ||
                   !formData.rtId
                 }
