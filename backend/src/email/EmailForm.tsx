@@ -13,7 +13,7 @@ export const sendPasswordResetEmail = async (
     <title>SiLaporRT - Reset Kata Sandi</title>
   </head>
   <body
-    style="margin:0; padding:0; font-family: Arial, sans-serif; background-color:#e6521f;"
+    style="margin:0; padding:0; font-family: Arial, sans-serif; background-color:#f8fafc;"
   >
     <table
       role="presentation"
@@ -21,7 +21,7 @@ export const sendPasswordResetEmail = async (
       cellpadding="0"
       cellspacing="0"
       width="100%"
-      style="background-color:#e6521f;"
+      style="background-color:#f8fafc;"
     >
       <tr>
         <td align="center">
@@ -37,17 +37,17 @@ export const sendPasswordResetEmail = async (
             <tr>
               <td
                 align="center"
-                bgcolor="#1d4ed8"
+                bgcolor="#e6521f"
                 style="padding:30px; color:#ffffff;"
               >
                 <table border="0" cellpadding="0" cellspacing="0">
                   <tr>
                     <td
-                      bgcolor="#ffffff"
+                      bgcolor="#f8fafc"
                       style="border-radius:12px; padding:10px;"
                     >
                       <img
-                        src="https://res.cloudinary.com/dgnedkivd/image/upload/v1757562088/silaporrt/dev/logo/logo_lnenhb.png"
+                        src="https://res.cloudinary.com/dgnedkivd/image/upload/v1775999498/silaporrt/dev/logo/logo_ktpewo_l0n98m.png"
                         width="40"
                         height="40"
                         alt="SiLaporRT Logo"
@@ -89,12 +89,12 @@ export const sendPasswordResetEmail = async (
                   <tr>
                     <td
                       align="center"
-                      bgcolor="#1d4ed8"
+                      bgcolor="#e6521f"
                       style="border-radius:12px;"
                     >
                       <a
                         href="${resetLink}"
-                        style="display:inline-block; padding:16px 32px; font-size:16px; font-weight:600; color:#ffffff; text-decoration:none; font-family:Arial, sans-serif;"
+                        style="display:inline-block; padding:16px 32px; font-size:16px; font-weight:600; color:#f8fafc; text-decoration:none; font-family:Arial, sans-serif;"
                       >
                         Reset Kata Sandi
                       </a>
