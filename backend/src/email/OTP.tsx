@@ -37,7 +37,7 @@ export const sendOTPEmail = async (
             <tr>
               <td
                 align="center"
-                bgcolor="#1d4ed8"
+                bgcolor="#e6521f"
                 style="padding:30px; color:#ffffff;"
               >
                 <table border="0" cellpadding="0" cellspacing="0">
@@ -47,7 +47,7 @@ export const sendOTPEmail = async (
                       style="border-radius:12px; padding:10px;"
                     >
                       <img
-                        src="https://res.cloudinary.com/dgnedkivd/image/upload/v1757562088/silaporrt/dev/logo/logo_lnenhb.png"
+                        src="https://res.cloudinary.com/dgnedkivd/image/upload/v1775999498/silaporrt/dev/logo/logo_ktpewo_l0n98m.png"
                         width="50"
                         height="50"
                         alt="SiLaporRT Logo"
@@ -84,12 +84,12 @@ export const sendOTPEmail = async (
                   role="presentation"
                   cellpadding="0"
                   cellspacing="0"
-                  style="margin:40px auto; border:2px solid #3b82f6; border-radius:16px; background-color:#f1f5f9;"
+                  style="margin:40px auto; border:2px solid #e6521f; border-radius:16px; background-color:#f1f5f9;"
                 >
                   <tr>
                     <td
                       align="center"
-                      style="padding:20px 30px; font-family:Courier, monospace; font-size:32px; font-weight:bold; color:#3b82f6; letter-spacing:8px;"
+                      style="padding:20px 30px; font-family:Courier, monospace; font-size:32px; font-weight:bold; color:#e6521f; letter-spacing:8px;"
                     >
                       ${otp}
                     </td>
@@ -131,7 +131,7 @@ export const sendOTPEmail = async (
                 <table
                   role="presentation"
                   width="100%"
-                  style="margin-top:30px; background-color:#f1f5f9; border-left:4px solid #3b82f6;"
+                  style="margin-top:30px; background-color:#f1f5f9; border-left:4px solid #e6521f;"
                 >
                   <tr>
                     <td
