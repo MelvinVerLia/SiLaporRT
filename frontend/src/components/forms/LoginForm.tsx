@@ -199,9 +199,6 @@ const LoginForm: React.FC = () => {
                 </svg>
                 Masuk dengan Google
               </Button>
-              <p className="text-xs text-gray-500 dark:text-gray-400 mt-3 text-center">
-                Bergabung dengan komunitas RT Anda
-              </p>
             </div>
           </div>
         </CardContent>
