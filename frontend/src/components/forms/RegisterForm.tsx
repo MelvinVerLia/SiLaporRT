@@ -453,9 +453,6 @@ const RegisterForm: React.FC = () => {
                 </svg>
                 Daftar dengan Google
               </Button>
-              <p className="text-xs text-gray-500 dark:text-gray-400 mt-3 text-center">
-                Cepat dan mudah dalam 1 menit
-              </p>
             </div>
           </div>
         </CardContent>
