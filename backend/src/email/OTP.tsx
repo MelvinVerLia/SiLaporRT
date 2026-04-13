@@ -13,7 +13,7 @@ export const sendOTPEmail = async (
     <title>SiLaporRT - Kode Verifikasi</title>
   </head>
   <body
-    style="margin:0; padding:0; font-family: Arial, sans-serif; background-color:#e6521f;"
+    style="margin:0; padding:0; font-family: Arial, sans-serif; background-color:#f8fafc;"
   >
     <table
       role="presentation"
@@ -21,7 +21,7 @@ export const sendOTPEmail = async (
       cellpadding="0"
       cellspacing="0"
       width="100%"
-      style="background-color:#e6521f;"
+      style="background-color:#f8fafc;"
     >
       <tr>
         <td align="center">
