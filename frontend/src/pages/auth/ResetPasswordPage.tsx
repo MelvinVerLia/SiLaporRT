@@ -38,7 +38,7 @@ const ResetPasswordPage: React.FC = () => {
       setIsTokenValid(false);
     }
   };
-  
+
   useEffect(() => {
     validateToken();
   }, []);
@@ -291,7 +291,9 @@ const ResetPasswordPage: React.FC = () => {
 
               {error && (
                 <div className="text-sm text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-800 p-3 rounded-lg flex items-start space-x-2">
-                  <span className="text-red-500 dark:text-red-400 mt-0.5">⚠</span>
+                  <span className="text-red-500 dark:text-red-400 mt-0.5">
+                    ⚠
+                  </span>
                   <span>{error}</span>
                 </div>
               )}
@@ -320,13 +322,6 @@ const ResetPasswordPage: React.FC = () => {
           </div>
         </CardContent>
       </Card>
-
-      {/* Footer */}
-      <div className="mt-8 text-center px-4">
-        <p className="text-xs text-gray-500">
-          Link reset akan kedaluwarsa dalam 15 menit setelah dikirim
-        </p>
-      </div>
     </div>
   );
 };

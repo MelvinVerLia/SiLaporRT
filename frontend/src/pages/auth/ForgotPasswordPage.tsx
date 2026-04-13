@@ -139,20 +139,6 @@ const ForgotPasswordPage: React.FC = () => {
             </div>
           </CardContent>
         </Card>
-
-        {/* Footer */}
-        <div className="mt-8 text-center px-4">
-          <p className="text-xs text-gray-500 dark:text-gray-400">
-            Tidak menerima email? Periksa folder spam atau{" "}
-            <button
-              onClick={handleResendEmail}
-              className="text-primary-600 hover:text-primary-700 underline"
-              disabled={isLoading}
-            >
-              kirim ulang
-            </button>
-          </p>
-        </div>
       </div>
     );
   }
@@ -247,16 +233,6 @@ const ForgotPasswordPage: React.FC = () => {
           </div>
         </CardContent>
       </Card>
-
-      {/* Footer */}
-      <div className="mt-8 text-center px-4">
-        <p className="text-xs text-gray-500 dark:text-gray-400">
-          Ingat password Anda?{" "}
-          <Link to="/login" className="text-primary-600 dark:text-primary-400 hover:text-primary-700 dark:hover:text-primary-300">
-            Masuk sekarang
-          </Link>
-        </p>
-      </div>
     </div>
   );
 };
