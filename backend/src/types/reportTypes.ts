@@ -26,8 +26,6 @@ interface CreateReportData {
     resourceType?: string;
     format?: string;
     bytes?: number;
-    width?: number;
-    height?: number;
   }[];
 }
 

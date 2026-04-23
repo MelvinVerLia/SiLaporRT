@@ -9,8 +9,6 @@ export function create(data: {
   resourceType?: string | null;
   format?: string | null;
   bytes?: number | null;
-  width?: number | null;
-  height?: number | null;
   linkTo?: { type: "announcement" | "report" | "profile"; id?: string };
   userId?: string;
 }) {
@@ -23,8 +21,6 @@ export function create(data: {
     resourceType: data.resourceType ?? null,
     format: data.format ?? null,
     bytes: data.bytes ?? null,
-    width: data.width ?? null,
-    height: data.height ?? null,
   };
 
   if (data.linkTo?.type === "announcement" && data.linkTo.id) {

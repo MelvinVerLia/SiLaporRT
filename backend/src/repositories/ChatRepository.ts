@@ -1,19 +1,47 @@
 import prisma from "../config/prisma";
 
+type MessageAttachmentInput = {
+  filename: string;
+  url: string;
+  fileType: string;
+  provider?: string;
+  publicId?: string;
+  resourceType?: string;
+  format?: string;
+  bytes?: number;
+};
+
 export async function saveMessage(
   message: string,
   userId: string,
   chatId: string,
-  attachments?: any[],
+  attachments?: MessageAttachmentInput[],
 ) {
   return prisma.message.create({
     data: {
       message,
       chatId,
       userId,
-      attachments: attachments ? attachments : undefined,
+      ...(attachments &&
+        attachments.length > 0 && {
+          attachments: {
+            create: attachments.map((attachment) => ({
+              filename: attachment.filename,
+              url: attachment.url,
+              fileType: attachment.fileType,
+              provider: attachment.provider,
+              publicId: attachment.publicId,
+              resourceType: attachment.resourceType,
+              format: attachment.format,
+              bytes: attachment.bytes,
+            })),
+          },
+        }),
     },
-    include: { user: { select: { name: true, role: true, profile: true } } },
+    include: {
+      user: { select: { name: true, role: true, profile: true } },
+      attachments: true,
+    },
   });
 }
 
@@ -27,7 +55,10 @@ export async function getChatIdFromReportId(reportId: string) {
 export async function getMessagesFromChatId(chatId: string) {
   return prisma.message.findMany({
     where: { chatId },
-    include: { user: { select: { name: true, role: true, profile: true } } },
+    include: {
+      user: { select: { name: true, role: true, profile: true } },
+      attachments: true,
+    },
     orderBy: { createdAt: "asc" },
   });
 }

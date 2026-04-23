@@ -78,8 +78,6 @@ export default function ManageReportsPage() {
       resourceType?: string;
       format?: string;
       bytes?: number;
-      width?: number;
-      height?: number;
       createdAt: string;
     }[]
   >([]);
@@ -218,8 +216,6 @@ export default function ManageReportsPage() {
         resourceType: f.resource_type,
         format: f.format,
         bytes: f.bytes,
-        width: f.width,
-        height: f.height,
         createdAt: new Date().toISOString(),
       };
     });

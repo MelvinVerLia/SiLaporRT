@@ -45,8 +45,6 @@ export async function createReport(data: CreateReportData) {
                 resourceType: att.resourceType,
                 format: att.format,
                 bytes: att.bytes,
-                width: att.width,
-                height: att.height,
               })),
             }
           : undefined,
@@ -985,8 +983,6 @@ export async function updateReportStatus(
                     resourceType: att.resourceType,
                     format: att.format,
                     bytes: att.bytes,
-                    width: att.width,
-                    height: att.height,
                   })),
                 },
               }

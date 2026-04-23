@@ -14,8 +14,6 @@ type Attachment = {
   resourceType?: string;
   format?: string;
   bytes?: number;
-  width?: number;
-  height?: number;
   createdAt: string;
 };
 
@@ -58,14 +56,24 @@ const MessageBox = ({ msg, user, idx, sortedMessages }: MessageBoxProps) => {
     if (msg.userId !== user?.id) return null;
 
     if (msg.optimistic) {
-      return <Clock className={forOverlay ? "h-3 w-3 text-white" : "h-3 w-3 text-white/70"} />;
+      return (
+        <Clock
+          className={
+            forOverlay ? "h-3 w-3 text-white" : "h-3 w-3 text-white/70"
+          }
+        />
+      );
     }
 
     if (msg.isRead) {
       return <CheckCheck className="h-3 w-3 text-blue-400" />;
     }
 
-    return <CheckCheck className={forOverlay ? "h-3 w-3 text-white" : "h-3 w-3 text-white/70"} />;
+    return (
+      <CheckCheck
+        className={forOverlay ? "h-3 w-3 text-white" : "h-3 w-3 text-white/70"}
+      />
+    );
   };
 
   return (

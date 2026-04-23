@@ -80,8 +80,6 @@ export default function AdminAnnouncementForm({ initial, onSuccess }: Props) {
     resourceType?: string;
     format?: string;
     bytes?: number;
-    width?: number;
-    height?: number;
   };
 
   // Attachments
@@ -124,8 +122,6 @@ export default function AdminAnnouncementForm({ initial, onSuccess }: Props) {
                 resourceType: "",
                 format: "",
                 bytes: 0,
-                width: undefined,
-                height: undefined,
               };
             },
           );
@@ -170,8 +166,6 @@ export default function AdminAnnouncementForm({ initial, onSuccess }: Props) {
         resourceType: att.resourceType,
         format: att.format,
         bytes: att.bytes,
-        width: att.width,
-        height: att.height,
       })),
     }),
     [
@@ -261,8 +255,6 @@ export default function AdminAnnouncementForm({ initial, onSuccess }: Props) {
         resourceType: f.resource_type || "",
         format: f.format || "",
         bytes: f.bytes || 0,
-        width: f.width,
-        height: f.height,
       };
     });
     setAttachments((prev) => [...(prev || []), ...mapped]);

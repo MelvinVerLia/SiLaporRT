@@ -24,8 +24,6 @@ export type UpsertAnnouncementPayload = {
     resourceType?: string;
     format?: string;
     bytes?: number;
-    width?: number;
-    height?: number;
   }>;
 };
 
