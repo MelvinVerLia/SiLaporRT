@@ -196,13 +196,13 @@ model Attachment {
   resourceType String?  
   format       String?
   bytes        Int?
-  width        Int?
-  height       Int?
   
   report     Report?   @relation(fields: [reportId], references: [id], onDelete: Cascade)
   reportId   String?
   response   Response? @relation(fields: [responseId], references: [id], onDelete: Cascade)
   responseId String?
+  message    message?  @relation(fields: [messageId], references: [id], onDelete: Cascade)
+  messageId  String?
   announcement   Announcement? @relation(fields: [announcementId], references: [id], onDelete: Cascade)
   announcementId String?
   
@@ -286,7 +286,7 @@ model message {
   chatId String
   chat   chat @relation(fields: [chatId], references: [id])
   message String
-  attachments Json?
+  attachments Attachment[]
   isRead Boolean @default(false)
   createdAt DateTime @default(now())
 }

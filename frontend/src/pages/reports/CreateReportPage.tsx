@@ -446,8 +446,6 @@ const CreateReportPage: React.FC = () => {
                   resourceType: file.resource_type,
                   format: file.format,
                   bytes: file.bytes,
-                  width: file.width,
-                  height: file.height,
                 };
               })}
               onUploaded={onUploaded}

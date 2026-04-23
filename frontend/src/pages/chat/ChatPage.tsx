@@ -1,6 +1,20 @@
-import React, { useState, useEffect, useRef, useMemo, useCallback } from "react";
+import React, {
+  useState,
+  useEffect,
+  useRef,
+  useMemo,
+  useCallback,
+} from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import { Send, User, MapPin, ChevronLeft, FileText, Camera, X } from "lucide-react";
+import {
+  Send,
+  User,
+  MapPin,
+  ChevronLeft,
+  FileText,
+  Camera,
+  X,
+} from "lucide-react";
 import { useAuthContext } from "../../contexts/AuthContext";
 import { Report } from "../../types/report.types";
 import { Role } from "../../types/auth.types";
@@ -18,7 +32,9 @@ import ReportBoxSkeleton from "./components/ReportBoxSkeleton";
 import ReportBox from "./components/ReportBox";
 import TextBoxSkeleton from "./components/TextBoxSkeleton";
 import LoadingSpinner from "../../components/ui/LoadingSpinner";
-import CloudinaryUpload, { CloudinaryUploadRef } from "../../components/upload/CloudinaryUpload";
+import CloudinaryUpload, {
+  CloudinaryUploadRef,
+} from "../../components/upload/CloudinaryUpload";
 import AttachmentViewer from "../../components/ui/AttachmentViewer";
 import { CloudinaryFile } from "../../types/announcement.types";
 import { classifyFile } from "../../utils/classifyFile";
@@ -33,8 +49,6 @@ type Attachment = {
   resourceType?: string;
   format?: string;
   bytes?: number;
-  width?: number;
-  height?: number;
   createdAt: string;
 };
 
@@ -157,7 +171,7 @@ const ChatPage: React.FC = () => {
     if (!el) return;
 
     // Wait for all images to load before scrolling
-    const images = el.querySelectorAll('img');
+    const images = el.querySelectorAll("img");
     if (images.length === 0) {
       scrollToBottom("auto");
       return;
@@ -180,8 +194,8 @@ const ChatPage: React.FC = () => {
       if (img.complete) {
         checkAndScroll();
       } else {
-        img.addEventListener('load', checkAndScroll);
-        img.addEventListener('error', checkAndScroll);
+        img.addEventListener("load", checkAndScroll);
+        img.addEventListener("error", checkAndScroll);
       }
     });
 
@@ -425,8 +439,6 @@ const ChatPage: React.FC = () => {
         resourceType: f.resource_type,
         format: f.format,
         bytes: f.bytes,
-        width: f.width,
-        height: f.height,
         createdAt: new Date().toISOString(),
       };
     });
@@ -499,12 +511,13 @@ const ChatPage: React.FC = () => {
 
   const handleNavigateToReportDetail = () => {
     if (!selectedReport) return;
-    const basePath = user?.role === Role.RT_ADMIN ? "/admin/reports" : "/reports";
-    navigate(`${basePath}/${selectedReport.id}`, { 
-      state: { 
+    const basePath =
+      user?.role === Role.RT_ADMIN ? "/admin/reports" : "/reports";
+    navigate(`${basePath}/${selectedReport.id}`, {
+      state: {
         from: "chat",
-        reportId: selectedReport.id 
-      } 
+        reportId: selectedReport.id,
+      },
     });
   };
 
@@ -762,7 +775,9 @@ const ChatPage: React.FC = () => {
                             className="h-16 w-16 object-cover rounded"
                           />
                           <button
-                            onClick={() => handleAttachmentRemove(attachment.id)}
+                            onClick={() =>
+                              handleAttachmentRemove(attachment.id)
+                            }
                             className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"
                           >
                             <X className="h-3 w-3" />
@@ -813,7 +828,11 @@ const ChatPage: React.FC = () => {
                     />
                     <Button
                       onClick={sendMessage}
-                      disabled={(newMessage.trim() === "" && attachments.length === 0) || isUploading}
+                      disabled={
+                        (newMessage.trim() === "" &&
+                          attachments.length === 0) ||
+                        isUploading
+                      }
                       className="px-3 h-10 flex items-center justify-center"
                     >
                       <Send className="h-4 w-4" />

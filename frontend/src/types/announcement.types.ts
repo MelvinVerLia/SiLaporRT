@@ -55,6 +55,4 @@ export interface CloudinaryFile {
   public_id: string;
   format?: string;
   bytes?: number;
-  width?: number;
-  height?: number;
 }

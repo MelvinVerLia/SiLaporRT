@@ -33,8 +33,6 @@ export interface CreateReportPayload {
     resourceType?: string;
     format?: string;
     bytes?: number;
-    width?: number;
-    height?: number;
   }[];
 }
 
@@ -73,8 +71,6 @@ export async function createReport(
           resourceType: file.resource_type,
           format: file.format,
           bytes: file.bytes,
-          width: file.width,
-          height: file.height,
         };
       }),
     };
