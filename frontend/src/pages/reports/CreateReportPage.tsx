@@ -109,20 +109,8 @@ const CreateReportPage: React.FC = () => {
       value: "CLEANLINESS",
     },
     {
-      label: "Penerangan",
-      value: "LIGHTING",
-    },
-    {
       label: "Kejahatan",
       value: "SECURITY",
-    },
-    {
-      label: "Lingkungan",
-      value: "ENVIRONMENT",
-    },
-    {
-      label: "Utilitas",
-      value: "UTILITIES",
     },
     {
       label: "Sugesti",

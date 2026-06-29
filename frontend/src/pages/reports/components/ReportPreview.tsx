@@ -7,10 +7,7 @@ import Badge from "../../../components/ui/Badge";
 const categoryLabels: Record<ReportCategory, string> = {
   INFRASTRUCTURE: "Infrastruktur",
   CLEANLINESS: "Kebersihan",
-  LIGHTING: "Penerangan",
   SECURITY: "Kejahatan",
-  ENVIRONMENT: "Lingkungan",
-  UTILITIES: "Utilitas",
   SUGGESTION: "Sugesti",
   OTHER: "Lainnya",
 };

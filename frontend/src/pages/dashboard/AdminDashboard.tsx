@@ -238,10 +238,7 @@ const AdminDashboard: React.FC = () => {
     const categoryColors = {
       INFRASTRUCTURE: "#3b82f6",
       CLEANLINESS: "#10b981",
-      LIGHTING: "#f59e0b",
       SECURITY: "#ef4444",
-      UTILITIES: "#8b5cf6",
-      ENVIRONMENT: "#06b6d4",
       SUGGESTION: "#f97316",
       OTHER: "#6b7280",
     };
@@ -249,10 +246,7 @@ const AdminDashboard: React.FC = () => {
     const categoryLabels = {
       INFRASTRUCTURE: "Infrastruktur",
       CLEANLINESS: "Kebersihan",
-      LIGHTING: "Penerangan",
       SECURITY: "Keamanan",
-      UTILITIES: "Utilitas",
-      ENVIRONMENT: "Lingkungan",
       SUGGESTION: "Saran",
       OTHER: "Lainnya",
     };

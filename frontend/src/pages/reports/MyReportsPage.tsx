@@ -326,9 +326,9 @@ const MyReportsPage: React.FC = () => {
     { value: "", label: "Semua Kategori" },
     { value: "INFRASTRUCTURE", label: "Infrastruktur" },
     { value: "CLEANLINESS", label: "Kebersihan" },
-    { value: "LIGHTING", label: "Penerangan" },
     { value: "SECURITY", label: "Keamanan" },
     { value: "SUGGESTION", label: "Saran" },
+    { value: "OTHER", label: "Lainnya" },
   ];
 
   const sortByOptions = [
@@ -433,12 +433,10 @@ const MyReportsPage: React.FC = () => {
   const getCategoryLabel = (category: string) => {
     const labels = {
       INFRASTRUCTURE: "Infrastruktur",
-      LIGHTING: "Penerangan",
       CLEANLINESS: "Kebersihan",
       SECURITY: "Keamanan",
-      UTILITIES: "Utilitas",
-      ENVIRONMENT: "Lingkungan",
       SUGGESTION: "Saran",
+      OTHER: "Lainnya",
       EVENT: "Kegiatan",
     };
     return labels[category as keyof typeof labels] || category;

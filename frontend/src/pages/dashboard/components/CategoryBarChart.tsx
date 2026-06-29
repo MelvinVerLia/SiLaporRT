@@ -19,10 +19,7 @@ const CategoryBarChart: React.FC<CategoryBarChartProps> = ({
   const allCategories = [
     { key: "INFRASTRUCTURE", label: "Infrastruktur", color: "#3b82f6" },
     { key: "CLEANLINESS", label: "Kebersihan", color: "#10b981" },
-    { key: "LIGHTING", label: "Penerangan", color: "#f59e0b" },
     { key: "SECURITY", label: "Keamanan", color: "#ef4444" },
-    { key: "UTILITIES", label: "Utilitas", color: "#8b5cf6" },
-    { key: "ENVIRONMENT", label: "Lingkungan", color: "#06b6d4" },
     { key: "SUGGESTION", label: "Saran", color: "#f97316" },
     { key: "OTHER", label: "Lainnya", color: "#6b7280" },
   ];

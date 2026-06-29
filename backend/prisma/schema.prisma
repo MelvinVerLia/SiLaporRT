@@ -102,10 +102,7 @@ model Report {
 enum ReportCategory {
   INFRASTRUCTURE  
   CLEANLINESS    
-  LIGHTING      
   SECURITY       
-  UTILITIES      
-  ENVIRONMENT    
   SUGGESTION     
   OTHER          
 }
