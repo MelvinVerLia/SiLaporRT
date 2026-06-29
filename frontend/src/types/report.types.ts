@@ -3,10 +3,7 @@ import { CloudinaryFile } from "./announcement.types";
 export enum ReportCategory {
   INFRASTRUCTURE = "INFRASTRUCTURE",
   CLEANLINESS = "CLEANLINESS",
-  LIGHTING = "LIGHTING",
   SECURITY = "SECURITY",
-  UTILITIES = "UTILITIES",
-  ENVIRONMENT = "ENVIRONMENT",
   SUGGESTION = "SUGGESTION",
   OTHER = "OTHER",
 }

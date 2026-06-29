@@ -17,11 +17,9 @@ const ReportListItem = ({ r }: { r: Report }) => {
   const getCategoryLabel = (category: string) => {
     const labels = {
       INFRASTRUCTURE: "Infrastruktur",
-      LIGHTING: "Penerangan",
       CLEANLINESS: "Kebersihan",
       SECURITY: "Keamanan",
-      UTILITIES: "Utilitas",
-      ENVIRONMENT: "Lingkungan",
+      SUGGESTION: "Saran",
       OTHER: "Lainnya",
     };
     return labels[category as keyof typeof labels] || category;

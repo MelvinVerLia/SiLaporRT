@@ -71,10 +71,9 @@ const ReportsPage: React.FC = () => {
     { value: "", label: "Semua Kategori" },
     { value: "INFRASTRUCTURE", label: "Infrastruktur" },
     { value: "CLEANLINESS", label: "Kebersihan" },
-    { value: "LIGHTING", label: "Penerangan" },
     { value: "SECURITY", label: "Keamanan" },
-    { value: "UTILITIES", label: "Utilitas" },
-    { value: "ENVIRONMENT", label: "Lingkungan" },
+    { value: "SUGGESTION", label: "Saran" },
+    { value: "OTHER", label: "Lainnya" },
   ];
 
   const statusOptions = [

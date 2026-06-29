@@ -351,10 +351,7 @@ export async function getDashboardStats(
     const allCategories = [
       "INFRASTRUCTURE",
       "CLEANLINESS",
-      "LIGHTING",
       "SECURITY",
-      "UTILITIES",
-      "ENVIRONMENT",
       "SUGGESTION",
       "OTHER",
     ];
